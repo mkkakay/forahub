@@ -1,63 +1,64 @@
 import { Search, MapPin, Calendar, Building2, Tag } from "lucide-react";
+import { supabase } from "@/lib/supabase/client";
+import type { Database } from "@/lib/supabase/types";
 
-const SAMPLE_EVENTS = [
-  {
-    id: 1,
-    title: "UN High-Level Political Forum on Sustainable Development",
-    date: "July 14–23, 2025",
-    location: "New York, USA",
-    organization: "United Nations DESA",
-    sdgTag: "SDG 17 — Partnerships",
-    sdgColor: "bg-blue-100 text-blue-800",
-  },
-  {
-    id: 2,
-    title: "World Water Forum 2025",
-    date: "June 2–5, 2025",
-    location: "Bali, Indonesia",
-    organization: "World Water Council",
-    sdgTag: "SDG 6 — Clean Water",
-    sdgColor: "bg-cyan-100 text-cyan-800",
-  },
-  {
-    id: 3,
-    title: "Global Food Security Summit",
-    date: "September 10–12, 2025",
-    location: "Rome, Italy",
-    organization: "FAO / WFP",
-    sdgTag: "SDG 2 — Zero Hunger",
-    sdgColor: "bg-yellow-100 text-yellow-800",
-  },
-  {
-    id: 4,
-    title: "COP30 Climate Conference",
-    date: "November 10–21, 2025",
-    location: "Belém, Brazil",
-    organization: "UNFCCC",
-    sdgTag: "SDG 13 — Climate Action",
-    sdgColor: "bg-green-100 text-green-800",
-  },
-  {
-    id: 5,
-    title: "International Conference on Financing for Development",
-    date: "June 30–July 3, 2025",
-    location: "Seville, Spain",
-    organization: "UN / World Bank",
-    sdgTag: "SDG 10 — Reduced Inequalities",
-    sdgColor: "bg-pink-100 text-pink-800",
-  },
-  {
-    id: 6,
-    title: "Global Refugee Forum Side Events",
-    date: "October 15–16, 2025",
-    location: "Geneva, Switzerland",
-    organization: "UNHCR",
-    sdgTag: "SDG 16 — Peace & Justice",
-    sdgColor: "bg-purple-100 text-purple-800",
-  },
-];
+type EventPreview = Pick<
+  Database['public']['Tables']['events']['Row'],
+  'id' | 'title' | 'start_date' | 'end_date' | 'location' | 'organization' | 'sdg_goals' | 'is_featured'
+>;
 
-export default function Home() {
+const SDG_META: Record<number, { label: string; color: string }> = {
+  1:  { label: "SDG 1 — No Poverty",              color: "bg-red-100 text-red-800" },
+  2:  { label: "SDG 2 — Zero Hunger",              color: "bg-yellow-100 text-yellow-800" },
+  3:  { label: "SDG 3 — Good Health",              color: "bg-green-100 text-green-800" },
+  4:  { label: "SDG 4 — Quality Education",        color: "bg-red-100 text-red-800" },
+  5:  { label: "SDG 5 — Gender Equality",          color: "bg-orange-100 text-orange-800" },
+  6:  { label: "SDG 6 — Clean Water",              color: "bg-cyan-100 text-cyan-800" },
+  7:  { label: "SDG 7 — Affordable Energy",        color: "bg-amber-100 text-amber-800" },
+  8:  { label: "SDG 8 — Decent Work",              color: "bg-rose-100 text-rose-800" },
+  9:  { label: "SDG 9 — Industry & Innovation",    color: "bg-orange-100 text-orange-800" },
+  10: { label: "SDG 10 — Reduced Inequalities",    color: "bg-pink-100 text-pink-800" },
+  11: { label: "SDG 11 — Sustainable Cities",      color: "bg-amber-100 text-amber-800" },
+  12: { label: "SDG 12 — Responsible Consumption", color: "bg-lime-100 text-lime-800" },
+  13: { label: "SDG 13 — Climate Action",          color: "bg-green-100 text-green-800" },
+  14: { label: "SDG 14 — Life Below Water",        color: "bg-blue-100 text-blue-800" },
+  15: { label: "SDG 15 — Life on Land",            color: "bg-lime-100 text-lime-800" },
+  16: { label: "SDG 16 — Peace & Justice",         color: "bg-purple-100 text-purple-800" },
+  17: { label: "SDG 17 — Partnerships",            color: "bg-indigo-100 text-indigo-800" },
+};
+
+function formatDateRange(start: string, end: string | null): string {
+  const fmt = (d: string) =>
+    new Date(d).toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      timeZone: "UTC",
+    });
+
+  if (!end) return fmt(start);
+
+  const s = new Date(start);
+  const e = new Date(end);
+
+  if (
+    s.getUTCFullYear() === e.getUTCFullYear() &&
+    s.getUTCMonth() === e.getUTCMonth()
+  ) {
+    return `${s.toLocaleDateString("en-US", { month: "long", timeZone: "UTC" })} ${s.getUTCDate()}–${e.getUTCDate()}, ${s.getUTCFullYear()}`;
+  }
+
+  return `${fmt(start)} – ${fmt(end)}`;
+}
+
+export default async function Home() {
+  const { data } = await supabase
+    .from("events")
+    .select("id, title, start_date, end_date, location, organization, sdg_goals, is_featured")
+    .order("start_date", { ascending: true })
+    .limit(6);
+  const events = data as EventPreview[] | null;
+
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
       {/* Navigation */}
@@ -113,41 +114,60 @@ export default function Home() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {SAMPLE_EVENTS.map((event) => (
-            <div
-              key={event.id}
-              className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-6 flex flex-col gap-4 cursor-pointer group"
-            >
-              {/* SDG tag */}
-              <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full w-fit ${event.sdgColor}`}>
-                <Tag size={11} />
-                {event.sdgTag}
-              </span>
+        {!events || events.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <Calendar size={48} className="text-gray-300 mb-4" />
+            <p className="text-gray-500 text-lg font-medium">Events coming soon.</p>
+            <p className="text-gray-400 text-sm mt-1">Check back shortly.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {events.map((event) => {
+              const primarySdg = event.sdg_goals?.[0];
+              const sdg = primarySdg ? SDG_META[primarySdg] : null;
 
-              {/* Title */}
-              <h3 className="text-[#0f2a4a] font-semibold text-base leading-snug group-hover:text-[#4ea8de] transition-colors">
-                {event.title}
-              </h3>
+              return (
+                <div
+                  key={event.id}
+                  className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-6 flex flex-col gap-4 cursor-pointer group"
+                >
+                  {/* SDG tag */}
+                  {sdg && (
+                    <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full w-fit ${sdg.color}`}>
+                      <Tag size={11} />
+                      {sdg.label}
+                    </span>
+                  )}
 
-              {/* Meta */}
-              <div className="flex flex-col gap-2 mt-auto text-sm text-gray-500">
-                <span className="flex items-center gap-2">
-                  <Calendar size={14} className="shrink-0 text-gray-400" />
-                  {event.date}
-                </span>
-                <span className="flex items-center gap-2">
-                  <MapPin size={14} className="shrink-0 text-gray-400" />
-                  {event.location}
-                </span>
-                <span className="flex items-center gap-2">
-                  <Building2 size={14} className="shrink-0 text-gray-400" />
-                  {event.organization}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
+                  {/* Title */}
+                  <h3 className="text-[#0f2a4a] font-semibold text-base leading-snug group-hover:text-[#4ea8de] transition-colors">
+                    {event.title}
+                  </h3>
+
+                  {/* Meta */}
+                  <div className="flex flex-col gap-2 mt-auto text-sm text-gray-500">
+                    <span className="flex items-center gap-2">
+                      <Calendar size={14} className="shrink-0 text-gray-400" />
+                      {formatDateRange(event.start_date, event.end_date)}
+                    </span>
+                    {event.location && (
+                      <span className="flex items-center gap-2">
+                        <MapPin size={14} className="shrink-0 text-gray-400" />
+                        {event.location}
+                      </span>
+                    )}
+                    {event.organization && (
+                      <span className="flex items-center gap-2">
+                        <Building2 size={14} className="shrink-0 text-gray-400" />
+                        {event.organization}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       {/* Footer */}
