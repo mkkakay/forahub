@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Search, MapPin, Calendar, Building2, Tag } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import type { Database } from "@/lib/supabase/types";
@@ -52,9 +53,11 @@ function formatDateRange(start: string, end: string | null): string {
 }
 
 export default async function Home() {
+  const today = new Date().toISOString().split("T")[0];
   const { data } = await supabase
     .from("events")
     .select("id, title, start_date, end_date, location, organization, sdg_goals, is_featured")
+    .gte("start_date", today)
     .order("start_date", { ascending: true })
     .limit(6);
   const events = data as EventPreview[] | null;
@@ -109,9 +112,9 @@ export default async function Home() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         <div className="flex items-baseline justify-between mb-8">
           <h2 className="text-2xl font-bold text-[#0f2a4a]">Upcoming Events</h2>
-          <button className="text-[#4ea8de] hover:text-[#3a95cc] text-sm font-medium transition-colors">
+          <Link href="/events" className="text-[#4ea8de] hover:text-[#3a95cc] text-sm font-medium transition-colors">
             View all →
-          </button>
+          </Link>
         </div>
 
         {!events || events.length === 0 ? (
