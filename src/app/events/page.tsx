@@ -8,16 +8,14 @@ import Navbar from "@/components/Navbar";
 type EventRow = Database["public"]["Tables"]["events"]["Row"];
 
 export default async function EventsPage() {
-  const today = new Date().toISOString().split("T")[0];
-  const cutoff = new Date();
-  cutoff.setMonth(cutoff.getMonth() + 24);
-  const cutoffDate = cutoff.toISOString().split("T")[0];
+  const today = new Date().toISOString();
+  const twoYearsFromNow = new Date(Date.now() + 2 * 365 * 24 * 60 * 60 * 1000).toISOString();
 
   const { data } = await supabase
     .from("events")
     .select("*")
     .gte("start_date", today)
-    .lte("start_date", cutoffDate)
+    .lte("start_date", twoYearsFromNow)
     .order("start_date", { ascending: true });
 
   const events = (data as EventRow[] | null) ?? [];
