@@ -36,8 +36,8 @@ interface UserPreferencesRow {
 
 export interface Database {
   public: {
-    Views: {}
-    Functions: {}
+    Views: Record<string, never>
+    Functions: Record<string, never>
     Tables: {
       events: {
         Row: EventRow

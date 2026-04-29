@@ -1,4 +1,3 @@
-import { Calendar } from "lucide-react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
 import type { Database } from "@/lib/supabase/types";
