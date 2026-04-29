@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Search, MapPin, Calendar, Building2, Tag } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import type { Database } from "@/lib/supabase/types";
+import Navbar from "@/components/Navbar";
 
 type EventPreview = Pick<
   Database['public']['Tables']['events']['Row'],
@@ -64,24 +65,7 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
-      {/* Navigation */}
-      <nav className="bg-[#0f2a4a] sticky top-0 z-50 shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <span className="text-white text-xl font-bold tracking-tight">
-              Fora<span className="text-[#4ea8de]">Hub</span>
-            </span>
-            <div className="flex items-center gap-3">
-              <button className="text-gray-300 hover:text-white text-sm font-medium px-4 py-2 rounded-md transition-colors">
-                Sign In
-              </button>
-              <button className="bg-[#4ea8de] hover:bg-[#3a95cc] text-white text-sm font-semibold px-4 py-2 rounded-md transition-colors">
-                Get Started
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Hero */}
       <section className="bg-[#0f2a4a] pb-20 pt-16 px-4 sm:px-6 lg:px-8">
@@ -130,9 +114,10 @@ export default async function Home() {
               const sdg = primarySdg ? SDG_META[primarySdg] : null;
 
               return (
-                <div
+                <Link
                   key={event.id}
-                  className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-6 flex flex-col gap-4 cursor-pointer group"
+                  href={`/events/${event.id}`}
+                  className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-6 flex flex-col gap-4 group"
                 >
                   {/* SDG tag */}
                   {sdg && (
@@ -166,7 +151,7 @@ export default async function Home() {
                       </span>
                     )}
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>
