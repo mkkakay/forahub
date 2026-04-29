@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { Search, MapPin, Calendar, Building2, Tag } from "lucide-react";
-import { supabase } from "@/lib/supabase/client";
+import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
 import Navbar from "@/components/Navbar";
 
@@ -56,6 +56,12 @@ function formatDateRange(start: string, end: string | null): string {
 }
 
 export default async function Home() {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { global: { fetch: (url, init) => fetch(url, { ...init, cache: "no-store" }) } }
+  );
+
   const today = new Date().toISOString();
   const twoYearsFromNow = new Date(Date.now() + 2 * 365 * 24 * 60 * 60 * 1000).toISOString();
   const { data } = await supabase
