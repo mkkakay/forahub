@@ -110,6 +110,7 @@ export default function HomeSearchBar({ eventTitles }: { eventTitles: string[] }
             aria-autocomplete="list"
             aria-expanded={open}
             aria-haspopup="listbox"
+            aria-controls="search-suggestions"
           />
           {query && (
             <button
@@ -131,6 +132,7 @@ export default function HomeSearchBar({ eventTitles }: { eventTitles: string[] }
         {/* Autocomplete dropdown */}
         {open && (
           <ul
+            id="search-suggestions"
             role="listbox"
             className="absolute z-50 left-0 right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden"
           >

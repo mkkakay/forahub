@@ -43,6 +43,9 @@ export default function Navbar() {
                 <span className="text-gray-300 text-sm hidden sm:block truncate max-w-[200px]">
                   {user.email}
                 </span>
+                <Link href="/saved" className="text-gray-300 hover:text-white text-sm font-medium px-4 py-2 rounded-md transition-colors">
+                  Saved
+                </Link>
                 <button
                   onClick={handleLogout}
                   className="text-gray-300 hover:text-white text-sm font-medium px-4 py-2 rounded-md transition-colors"

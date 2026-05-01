@@ -1,7 +1,8 @@
 export type EventType = 'conference' | 'side_event' | 'webinar' | 'training'
 export type EventFormat = 'in_person' | 'virtual' | 'hybrid'
+export type AttendanceStatus = 'interested' | 'registered' | 'attended'
 
-interface EventRow {
+export interface EventRow {
   id: string
   title: string
   description: string | null
@@ -15,16 +16,20 @@ interface EventRow {
   registration_url: string | null
   is_featured: boolean
   created_at: string
+  registration_deadline: string | null
 }
 
-interface SavedEventRow {
+export interface SavedEventRow {
   id: string
   user_id: string
   event_id: string
+  status: AttendanceStatus | null
+  notes: string | null
+  reminder_date: string | null
   created_at: string
 }
 
-interface UserPreferencesRow {
+export interface UserPreferencesRow {
   id: string
   user_id: string
   sdg_goals: number[]
@@ -32,6 +37,20 @@ interface UserPreferencesRow {
   regions: string[]
   email_alerts: boolean
   created_at: string
+}
+
+export interface UserCollectionRow {
+  id: string
+  user_id: string
+  name: string
+  created_at: string
+}
+
+export interface CollectionEventRow {
+  id: string
+  collection_id: string
+  event_id: string
+  added_at: string
 }
 
 export interface Database {
@@ -55,6 +74,18 @@ export interface Database {
         Row: UserPreferencesRow
         Insert: Omit<UserPreferencesRow, 'id' | 'created_at'> & { id?: string; created_at?: string }
         Update: Partial<Omit<UserPreferencesRow, 'id' | 'created_at'>>
+        Relationships: []
+      }
+      user_collections: {
+        Row: UserCollectionRow
+        Insert: Omit<UserCollectionRow, 'id' | 'created_at'> & { id?: string; created_at?: string }
+        Update: Partial<Omit<UserCollectionRow, 'id' | 'created_at'>>
+        Relationships: []
+      }
+      collection_events: {
+        Row: CollectionEventRow
+        Insert: Omit<CollectionEventRow, 'id' | 'added_at'> & { id?: string; added_at?: string }
+        Update: Partial<Omit<CollectionEventRow, 'id' | 'added_at'>>
         Relationships: []
       }
     }

@@ -1,9 +1,14 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { MapPin, Calendar, Building2, Tag, Filter, X, Search } from "lucide-react";
 import type { Database } from "@/lib/supabase/types";
 import { matchesSearch } from "@/lib/search";
+import { supabase } from "@/lib/supabase/client";
+import BookmarkButton from "@/components/BookmarkButton";
+import CalendarExportMenu from "@/components/CalendarExportMenu";
+import ShareMenu from "@/components/ShareMenu";
 
 type EventRow = Database["public"]["Tables"]["events"]["Row"];
 
@@ -71,14 +76,46 @@ function formatDateRange(start: string, end: string | null): string {
   return `${fmt(start)} – ${fmt(end)}`;
 }
 
+function getCountdown(event: EventRow): { label: string; urgent: boolean } | null {
+  const now = new Date();
+  const thirtyDays = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+  let target: Date | null = null;
+  let prefix = "";
+  if (event.registration_deadline) {
+    target = new Date(event.registration_deadline);
+    prefix = "Closes";
+  } else {
+    const start = new Date(event.start_date);
+    if (start <= thirtyDays) { target = start; prefix = "Starts"; }
+  }
+  if (!target) return null;
+  const diffDays = Math.ceil((target.getTime() - now.getTime()) / 86400000);
+  if (diffDays < 0) return null;
+  if (diffDays === 0) return { label: `${prefix} today`, urgent: true };
+  if (diffDays === 1) return { label: `${prefix} tomorrow`, urgent: true };
+  return { label: `${prefix} in ${diffDays} days`, urgent: diffDays <= 3 };
+}
+
 const ALL_REGIONS = ["Africa", "Americas", "Asia-Pacific", "Europe", "Middle East", "Online", "Other"];
 
 export default function EventsClient({ events, initialSearch = "" }: { events: EventRow[]; initialSearch?: string }) {
+  const router = useRouter();
   const [search, setSearch] = useState(initialSearch);
   const [sdgFilter, setSdgFilter] = useState<number | null>(null);
   const [formatFilter, setFormatFilter] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const [regionFilter, setRegionFilter] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session?.user) return;
+      setUserId(session.user.id);
+      supabase.from("saved_events").select("event_id").eq("user_id", session.user.id)
+        .then(({ data }) => { if (data) setSavedIds(new Set(data.map(s => s.event_id))); });
+    });
+  }, []);
 
   const activeSearch = search.trim();
 
@@ -223,18 +260,27 @@ export default function EventsClient({ events, initialSearch = "" }: { events: E
             {filtered.map(event => {
               const primarySdg = event.sdg_goals?.[0];
               const sdg = primarySdg ? SDG_META[primarySdg] : null;
+              const countdown = getCountdown(event);
               return (
                 <div
                   key={event.id}
-                  className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-6 flex flex-col gap-4 group"
+                  onClick={() => router.push(`/events/${event.id}`)}
+                  className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-6 flex flex-col gap-4 group cursor-pointer"
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    {sdg && (
-                      <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${sdg.color}`}>
-                        <Tag size={11} />
-                        SDG {primarySdg}
-                      </span>
-                    )}
+                  <div className="flex items-start justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {sdg && (
+                        <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${sdg.color}`}>
+                          <Tag size={11} />
+                          SDG {primarySdg}
+                        </span>
+                      )}
+                      {countdown && (
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${countdown.urgent ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"}`}>
+                          {countdown.label}
+                        </span>
+                      )}
+                    </div>
                     <span className="text-xs text-gray-400 shrink-0">{FORMAT_LABELS[event.format]}</span>
                   </div>
 
@@ -276,6 +322,29 @@ export default function EventsClient({ events, initialSearch = "" }: { events: E
                       Register →
                     </a>
                   )}
+
+                  {/* Action toolbar */}
+                  <div className="flex items-center justify-end gap-0.5 pt-2 border-t border-gray-100">
+                    <BookmarkButton
+                      eventId={event.id}
+                      initialSaved={savedIds.has(event.id)}
+                      userId={userId}
+                      onToggle={(s) => setSavedIds(prev => {
+                        const n = new Set(prev);
+                        if (s) { n.add(event.id); } else { n.delete(event.id); }
+                        return n;
+                      })}
+                    />
+                    <CalendarExportMenu
+                      title={event.title}
+                      startDate={event.start_date}
+                      endDate={event.end_date}
+                      location={event.location}
+                      description={event.description}
+                      registrationUrl={event.registration_url}
+                    />
+                    <ShareMenu eventId={event.id} eventTitle={event.title} />
+                  </div>
                 </div>
               );
             })}
