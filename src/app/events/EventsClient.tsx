@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { MapPin, Calendar, Building2, Tag, Filter, X } from "lucide-react";
+import { MapPin, Calendar, Building2, Tag, Filter, X, Search } from "lucide-react";
 import type { Database } from "@/lib/supabase/types";
 
 type EventRow = Database["public"]["Tables"]["events"]["Row"];
@@ -72,25 +72,35 @@ function formatDateRange(start: string, end: string | null): string {
 
 const ALL_REGIONS = ["Africa", "Americas", "Asia-Pacific", "Europe", "Middle East", "Online", "Other"];
 
-export default function EventsClient({ events }: { events: EventRow[] }) {
+export default function EventsClient({ events, initialSearch = "" }: { events: EventRow[]; initialSearch?: string }) {
+  const [search, setSearch] = useState(initialSearch);
   const [sdgFilter, setSdgFilter] = useState<number | null>(null);
   const [formatFilter, setFormatFilter] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const [regionFilter, setRegionFilter] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
     return events.filter((e) => {
+      if (q) {
+        const matches =
+          e.title.toLowerCase().includes(q) ||
+          (e.description?.toLowerCase().includes(q) ?? false) ||
+          (e.organization?.toLowerCase().includes(q) ?? false);
+        if (!matches) return false;
+      }
       if (sdgFilter !== null && !e.sdg_goals.includes(sdgFilter)) return false;
       if (formatFilter !== null && e.format !== formatFilter) return false;
       if (typeFilter !== null && e.event_type !== typeFilter) return false;
       if (regionFilter !== null && deriveRegion(e.location) !== regionFilter) return false;
       return true;
     });
-  }, [events, sdgFilter, formatFilter, typeFilter, regionFilter]);
+  }, [events, search, sdgFilter, formatFilter, typeFilter, regionFilter]);
 
-  const hasFilters = sdgFilter !== null || formatFilter !== null || typeFilter !== null || regionFilter !== null;
+  const hasFilters = search.trim() !== "" || sdgFilter !== null || formatFilter !== null || typeFilter !== null || regionFilter !== null;
 
   function clearAll() {
+    setSearch("");
     setSdgFilter(null);
     setFormatFilter(null);
     setTypeFilter(null);
@@ -103,6 +113,23 @@ export default function EventsClient({ events }: { events: EventRow[] }) {
       <div className="bg-white border-b border-gray-200 sticky top-16 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap gap-3 items-center">
           <Filter size={16} className="text-gray-400 shrink-0" />
+
+          {/* Search */}
+          <div className="flex items-center border border-gray-200 rounded-lg px-2.5 py-1.5 gap-1.5 focus-within:ring-2 focus-within:ring-[#4ea8de]">
+            <Search size={14} className="text-gray-400 shrink-0" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search events…"
+              className="text-sm text-gray-700 focus:outline-none w-40"
+            />
+            {search && (
+              <button onClick={() => setSearch("")} className="text-gray-400 hover:text-gray-600">
+                <X size={13} />
+              </button>
+            )}
+          </div>
 
           {/* SDG */}
           <select

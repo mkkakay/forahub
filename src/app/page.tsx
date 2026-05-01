@@ -1,10 +1,11 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { Search, MapPin, Calendar, Building2, Tag } from "lucide-react";
+import { MapPin, Calendar, Building2, Tag } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
 import Navbar from "@/components/Navbar";
+import HomeSearchBar from "@/components/HomeSearchBar";
 
 type EventPreview = Pick<
   Database['public']['Tables']['events']['Row'],
@@ -88,17 +89,7 @@ export default async function Home() {
           </p>
 
           {/* Search bar */}
-          <div className="mt-8 flex items-center bg-white rounded-xl shadow-lg overflow-hidden max-w-2xl mx-auto">
-            <Search className="ml-4 text-gray-400 shrink-0" size={20} />
-            <input
-              type="text"
-              placeholder="Search events, organizations, or SDG goals…"
-              className="flex-1 px-4 py-4 text-gray-800 placeholder-gray-400 text-sm focus:outline-none"
-            />
-            <button className="bg-[#4ea8de] hover:bg-[#3a95cc] text-white font-semibold px-6 py-4 text-sm transition-colors shrink-0">
-              Search
-            </button>
-          </div>
+          <HomeSearchBar />
         </div>
       </section>
 

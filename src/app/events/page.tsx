@@ -6,7 +6,11 @@ import Navbar from "@/components/Navbar";
 
 type EventRow = Database["public"]["Tables"]["events"]["Row"];
 
-export default async function EventsPage() {
+export default async function EventsPage({
+  searchParams,
+}: {
+  searchParams: { q?: string };
+}) {
   const today = new Date().toISOString();
   const twoYearsFromNow = new Date(Date.now() + 2 * 365 * 24 * 60 * 60 * 1000).toISOString();
 
@@ -18,6 +22,7 @@ export default async function EventsPage() {
     .order("start_date", { ascending: true });
 
   const events = (data as EventRow[] | null) ?? [];
+  const searchQuery = searchParams.q?.trim() ?? "";
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
@@ -38,7 +43,7 @@ export default async function EventsPage() {
         </div>
       </div>
 
-      <EventsClient events={events} />
+      <EventsClient events={events} initialSearch={searchQuery} />
 
       <footer className="bg-[#0f2a4a] mt-8 py-8 px-4 text-center">
         <p className="text-blue-300 text-sm">
