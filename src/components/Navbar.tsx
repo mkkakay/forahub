@@ -47,13 +47,13 @@ export default function Navbar() {
                   onClick={handleLogout}
                   className="text-gray-300 hover:text-white text-sm font-medium px-4 py-2 rounded-md transition-colors"
                 >
-                  Log out
+                  Sign Out
                 </button>
               </>
             ) : (
               <>
                 <Link
-                  href="/auth/login"
+                  href="/auth/signin"
                   className="text-gray-300 hover:text-white text-sm font-medium px-4 py-2 rounded-md transition-colors"
                 >
                   Sign In
