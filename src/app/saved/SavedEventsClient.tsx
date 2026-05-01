@@ -617,7 +617,7 @@ export default function SavedEventsClient() {
                       description={event.description}
                       registrationUrl={event.registration_url}
                     />
-                    <ShareMenu eventId={event.id} eventTitle={event.title} />
+                    <ShareMenu eventId={event.id} eventTitle={event.title} startDate={event.start_date} location={event.location} />
                   </div>
                 </div>
               );

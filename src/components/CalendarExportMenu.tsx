@@ -151,9 +151,10 @@ export default function CalendarExportMenu({
           </a>
           <button
             onClick={downloadICS}
-            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+            title="Works with Google Calendar, Apple Calendar, Samsung Calendar, Outlook and all other calendar apps"
+            className="flex items-start gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors group"
           >
-            Apple Calendar
+            <span>Download .ics (All Calendars)</span>
           </button>
         </div>
       )}
