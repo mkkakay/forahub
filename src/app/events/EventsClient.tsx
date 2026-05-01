@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { MapPin, Calendar, Building2, Tag, Filter, X, Search } from "lucide-react";
 import type { Database } from "@/lib/supabase/types";
+import { matchesSearch } from "@/lib/search";
 
 type EventRow = Database["public"]["Tables"]["events"]["Row"];
 
@@ -41,8 +42,8 @@ const FORMAT_LABELS: Record<string, string> = {
 
 const REGIONS: Record<string, string[]> = {
   Africa: ["Kenya", "Ethiopia", "Nigeria", "South Africa", "Senegal", "Ghana", "Rwanda", "Congo", "Egypt", "Nairobi", "Addis Ababa", "Johannesburg", "Cairo", "Brazzaville", "Abidjan", "Abuja"],
-  Americas: ["USA", "Brazil", "Colombia", "Peru", "Argentina", "Canada", "Mexico", "Chile", "New York", "Washington", "Geneva" /* not in Europe for our purposes... actually Geneva is Europe */],
-  "Asia-Pacific": ["Japan", "Singapore", "Thailand", "India", "China", "Australia", "New Zealand", "Philippines", "Indonesia", "Bangladesh", "Tokyo", "Bangkok", "Singapore", "Seoul", "Beijing", "Mumbai"],
+  Americas: ["USA", "Brazil", "Colombia", "Peru", "Argentina", "Canada", "Mexico", "Chile", "New York", "Washington"],
+  "Asia-Pacific": ["Japan", "Singapore", "Thailand", "India", "China", "Australia", "New Zealand", "Philippines", "Indonesia", "Bangladesh", "Tokyo", "Bangkok", "Seoul", "Beijing", "Mumbai"],
   Europe: ["France", "Germany", "UK", "Switzerland", "Italy", "Netherlands", "Norway", "Belgium", "Sweden", "Spain", "Austria", "Denmark", "Finland", "Portugal", "Paris", "Berlin", "London", "Geneva", "Rome", "Brussels", "Oslo", "Stockholm", "Barcelona", "Copenhagen", "Rotterdam", "Vienna", "Bonn", "Zurich"],
   "Middle East": ["UAE", "Saudi Arabia", "Qatar", "Jordan", "Lebanon", "Turkey", "Abu Dhabi", "Riyadh", "Dubai", "Istanbul", "Amman"],
   Online: ["Online"],
@@ -53,7 +54,7 @@ function deriveRegion(location: string | null): string {
   const loc = location.toLowerCase();
   if (loc.includes("online")) return "Online";
   for (const [region, keywords] of Object.entries(REGIONS)) {
-    if (keywords.some((k) => loc.includes(k.toLowerCase()))) return region;
+    if (keywords.some(k => loc.includes(k.toLowerCase()))) return region;
   }
   return "Other";
 }
@@ -79,16 +80,11 @@ export default function EventsClient({ events, initialSearch = "" }: { events: E
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const [regionFilter, setRegionFilter] = useState<string | null>(null);
 
+  const activeSearch = search.trim();
+
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return events.filter((e) => {
-      if (q) {
-        const matches =
-          e.title.toLowerCase().includes(q) ||
-          (e.description?.toLowerCase().includes(q) ?? false) ||
-          (e.organization?.toLowerCase().includes(q) ?? false);
-        if (!matches) return false;
-      }
+    return events.filter(e => {
+      if (!matchesSearch(e, search)) return false;
       if (sdgFilter !== null && !e.sdg_goals.includes(sdgFilter)) return false;
       if (formatFilter !== null && e.format !== formatFilter) return false;
       if (typeFilter !== null && e.event_type !== typeFilter) return false;
@@ -97,7 +93,12 @@ export default function EventsClient({ events, initialSearch = "" }: { events: E
     });
   }, [events, search, sdgFilter, formatFilter, typeFilter, regionFilter]);
 
-  const hasFilters = search.trim() !== "" || sdgFilter !== null || formatFilter !== null || typeFilter !== null || regionFilter !== null;
+  const hasFilters =
+    activeSearch.length >= 2 ||
+    sdgFilter !== null ||
+    formatFilter !== null ||
+    typeFilter !== null ||
+    regionFilter !== null;
 
   function clearAll() {
     setSearch("");
@@ -106,6 +107,10 @@ export default function EventsClient({ events, initialSearch = "" }: { events: E
     setTypeFilter(null);
     setRegionFilter(null);
   }
+
+  const countLabel = activeSearch.length >= 2
+    ? `${filtered.length} event${filtered.length !== 1 ? "s" : ""} found for "${activeSearch}"`
+    : `${filtered.length} event${filtered.length !== 1 ? "s" : ""}`;
 
   return (
     <div>
@@ -120,12 +125,12 @@ export default function EventsClient({ events, initialSearch = "" }: { events: E
             <input
               type="text"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={e => setSearch(e.target.value)}
               placeholder="Search events…"
-              className="text-sm text-gray-700 focus:outline-none w-40"
+              className="text-sm text-gray-700 focus:outline-none w-44"
             />
             {search && (
-              <button onClick={() => setSearch("")} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setSearch("")} className="text-gray-400 hover:text-gray-600 transition-colors">
                 <X size={13} />
               </button>
             )}
@@ -134,11 +139,11 @@ export default function EventsClient({ events, initialSearch = "" }: { events: E
           {/* SDG */}
           <select
             value={sdgFilter ?? ""}
-            onChange={(e) => setSdgFilter(e.target.value ? Number(e.target.value) : null)}
+            onChange={e => setSdgFilter(e.target.value ? Number(e.target.value) : null)}
             className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
           >
             <option value="">All SDGs</option>
-            {Array.from({ length: 17 }, (_, i) => i + 1).map((n) => (
+            {Array.from({ length: 17 }, (_, i) => i + 1).map(n => (
               <option key={n} value={n}>SDG {n} — {SDG_META[n].label}</option>
             ))}
           </select>
@@ -146,7 +151,7 @@ export default function EventsClient({ events, initialSearch = "" }: { events: E
           {/* Format */}
           <select
             value={formatFilter ?? ""}
-            onChange={(e) => setFormatFilter(e.target.value || null)}
+            onChange={e => setFormatFilter(e.target.value || null)}
             className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
           >
             <option value="">All Formats</option>
@@ -158,7 +163,7 @@ export default function EventsClient({ events, initialSearch = "" }: { events: E
           {/* Type */}
           <select
             value={typeFilter ?? ""}
-            onChange={(e) => setTypeFilter(e.target.value || null)}
+            onChange={e => setTypeFilter(e.target.value || null)}
             className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
           >
             <option value="">All Types</option>
@@ -170,11 +175,11 @@ export default function EventsClient({ events, initialSearch = "" }: { events: E
           {/* Region */}
           <select
             value={regionFilter ?? ""}
-            onChange={(e) => setRegionFilter(e.target.value || null)}
+            onChange={e => setRegionFilter(e.target.value || null)}
             className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
           >
             <option value="">All Regions</option>
-            {ALL_REGIONS.map((r) => (
+            {ALL_REGIONS.map(r => (
               <option key={r} value={r}>{r}</option>
             ))}
           </select>
@@ -184,13 +189,11 @@ export default function EventsClient({ events, initialSearch = "" }: { events: E
               onClick={clearAll}
               className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors ml-auto"
             >
-              <X size={14} /> Clear filters
+              <X size={14} /> Clear all
             </button>
           )}
 
-          <span className="text-sm text-gray-400 ml-auto">
-            {filtered.length} event{filtered.length !== 1 ? "s" : ""}
-          </span>
+          <span className="text-sm text-gray-400 ml-auto">{countLabel}</span>
         </div>
       </div>
 
@@ -199,18 +202,31 @@ export default function EventsClient({ events, initialSearch = "" }: { events: E
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <Calendar size={48} className="text-gray-300 mb-4" />
-            <p className="text-gray-500 text-lg font-medium">No events match your filters.</p>
-            <button onClick={clearAll} className="mt-3 text-[#4ea8de] text-sm hover:underline">Clear filters</button>
+            {activeSearch.length >= 2 ? (
+              <>
+                <p className="text-gray-500 text-lg font-medium">
+                  No events found for &ldquo;{activeSearch}&rdquo;.
+                </p>
+                <p className="text-gray-400 text-sm mt-2 max-w-sm">
+                  Try broader search terms like health, climate, education, or water.
+                </p>
+              </>
+            ) : (
+              <p className="text-gray-500 text-lg font-medium">No events match your filters.</p>
+            )}
+            <button onClick={clearAll} className="mt-4 text-[#4ea8de] text-sm hover:underline">
+              Clear {activeSearch.length >= 2 ? "search" : "filters"}
+            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filtered.map((event) => {
+            {filtered.map(event => {
               const primarySdg = event.sdg_goals?.[0];
               const sdg = primarySdg ? SDG_META[primarySdg] : null;
               return (
                 <div
                   key={event.id}
-                  className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-6 flex flex-col gap-4 cursor-pointer group"
+                  className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-6 flex flex-col gap-4 group"
                 >
                   <div className="flex items-start justify-between gap-2">
                     {sdg && (
@@ -255,7 +271,7 @@ export default function EventsClient({ events, initialSearch = "" }: { events: E
                       target="_blank"
                       rel="noopener noreferrer"
                       className="mt-1 text-xs font-medium text-[#4ea8de] hover:text-[#3a95cc] transition-colors"
-                      onClick={(ev) => ev.stopPropagation()}
+                      onClick={ev => ev.stopPropagation()}
                     >
                       Register →
                     </a>

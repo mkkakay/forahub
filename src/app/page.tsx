@@ -65,14 +65,25 @@ export default async function Home() {
 
   const today = new Date().toISOString();
   const twoYearsFromNow = new Date(Date.now() + 2 * 365 * 24 * 60 * 60 * 1000).toISOString();
-  const { data } = await supabase
-    .from("events")
-    .select("id, title, start_date, end_date, location, organization, sdg_goals, is_featured")
-    .gte("start_date", today)
-    .lte("start_date", twoYearsFromNow)
-    .order("start_date", { ascending: true })
-    .limit(6);
+
+  const [{ data }, { data: titleData }] = await Promise.all([
+    supabase
+      .from("events")
+      .select("id, title, start_date, end_date, location, organization, sdg_goals, is_featured")
+      .gte("start_date", today)
+      .lte("start_date", twoYearsFromNow)
+      .order("start_date", { ascending: true })
+      .limit(6),
+    supabase
+      .from("events")
+      .select("title")
+      .gte("start_date", today)
+      .lte("start_date", twoYearsFromNow)
+      .order("start_date", { ascending: true }),
+  ]);
+
   const events = data as EventPreview[] | null;
+  const eventTitles = (titleData ?? []).map((e: { title: string }) => e.title);
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
@@ -89,7 +100,7 @@ export default async function Home() {
           </p>
 
           {/* Search bar */}
-          <HomeSearchBar />
+          <HomeSearchBar eventTitles={eventTitles} />
         </div>
       </section>
 
