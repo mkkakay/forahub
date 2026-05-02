@@ -9,9 +9,11 @@ export interface ProfileRow {
   created_at: string
 }
 
-export type EventType = 'conference' | 'side_event' | 'webinar' | 'training'
+export type EventType = 'conference' | 'side_event' | 'webinar' | 'training' | 'consultation' | 'summit'
 export type EventFormat = 'in_person' | 'virtual' | 'hybrid'
+export type EventStatus = 'pending' | 'published' | 'rejected'
 export type AttendanceStatus = 'interested' | 'registered' | 'attended'
+export type AudienceLevel = 'researchers' | 'practitioners' | 'policymakers' | 'donors' | 'all'
 
 export interface EventRow {
   id: string
@@ -28,6 +30,73 @@ export interface EventRow {
   is_featured: boolean
   created_at: string
   registration_deadline: string | null
+  // Scraping metadata
+  status: EventStatus
+  source_url: string | null
+  source_id: string | null
+  confidence_score: number | null
+  quality_score: number | null
+  event_brief: string | null
+  parent_event_id: string | null
+  parent_conference_name: string | null
+  is_side_event: boolean
+  is_recurring: boolean
+  series_name: string | null
+  sdg_inferred: boolean
+  region: string | null
+  cost_type: 'free' | 'paid' | null
+  cost_amount: string | null
+  audience_level: AudienceLevel | null
+  is_public: boolean
+  expected_attendance: string | null
+  speakers: string[] | null
+  language: string
+  title_original: string | null
+  description_original: string | null
+}
+
+export interface EventDeadlineRow {
+  id: string
+  event_id: string
+  deadline_type: 'abstract' | 'early_bird' | 'travel_grant' | 'side_event_proposal' | 'registration'
+  deadline_date: string
+  description: string | null
+  created_at: string
+}
+
+export interface SourceRow {
+  id: string
+  organization: string
+  url: string
+  source_type: string
+  scrape_method: string
+  scrape_frequency: 'hourly' | 'daily' | 'weekly'
+  primary_sdg_goals: number[]
+  region: string | null
+  language: string
+  requires_auth: boolean
+  last_scraped_at: string | null
+  consecutive_failures: number
+  needs_attention: boolean
+  total_events_found: number
+  is_active: boolean
+  created_at: string
+}
+
+export interface ScrapingRunRow {
+  id: string
+  source_id: string | null
+  source_url: string | null
+  started_at: string
+  completed_at: string | null
+  events_found: number
+  events_inserted: number
+  events_updated: number
+  events_rejected: number
+  events_pending_review: number
+  error_message: string | null
+  estimated_api_cost: number
+  created_at: string
 }
 
 export interface SavedEventRow {
