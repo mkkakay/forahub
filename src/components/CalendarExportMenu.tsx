@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { CalendarPlus } from "lucide-react";
+import Link from "next/link";
+import { useSubscription } from "@/context/SubscriptionContext";
 
 interface CalendarExportMenuProps {
   title: string;
@@ -13,7 +15,6 @@ interface CalendarExportMenuProps {
 }
 
 function formatGoogleDate(dateStr: string): string {
-  // Strips dashes and colons: "2026-05-15T00:00:00.000Z" → "20260515T000000Z"
   return dateStr.replace(/[-:]/g, "").replace(/\.\d{3}/, "");
 }
 
@@ -35,13 +36,9 @@ function nextDay(dateStr: string): string {
 }
 
 export default function CalendarExportMenu({
-  title,
-  startDate,
-  endDate,
-  location,
-  description,
-  registrationUrl,
+  title, startDate, endDate, location, description, registrationUrl,
 }: CalendarExportMenuProps) {
+  const { hasFullAccess } = useSubscription();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -84,15 +81,11 @@ export default function CalendarExportMenu({
   function downloadICS() {
     const startFormatted = formatICSDate(startDate);
     const endFormatted = endDate ? formatICSDate(endDate) : nextDay(startDate);
-    const descLine = description
-      ? `DESCRIPTION:${description.replace(/\n/g, "\\n")}`
-      : "";
+    const descLine = description ? `DESCRIPTION:${description.replace(/\n/g, "\\n")}` : "";
     const locLine = location ? `LOCATION:${location}` : "";
     const urlLine = registrationUrl ? `URL:${registrationUrl}` : "";
     const icsLines = [
-      "BEGIN:VCALENDAR",
-      "VERSION:2.0",
-      "PRODID:-//ForaHub//EN",
+      "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//ForaHub//EN",
       "BEGIN:VEVENT",
       `SUMMARY:${title}`,
       `DTSTART;VALUE=DATE:${startFormatted}`,
@@ -100,8 +93,7 @@ export default function CalendarExportMenu({
       ...(locLine ? [locLine] : []),
       ...(descLine ? [descLine] : []),
       ...(urlLine ? [urlLine] : []),
-      "END:VEVENT",
-      "END:VCALENDAR",
+      "END:VEVENT", "END:VCALENDAR",
     ];
     const blob = new Blob([icsLines.join("\r\n")], { type: "text/calendar" });
     const url = URL.createObjectURL(blob);
@@ -130,32 +122,38 @@ export default function CalendarExportMenu({
       </button>
 
       {open && (
-        <div className="absolute bottom-full right-0 mb-2 z-50 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[160px]">
-          <a
-            href={buildGoogleUrl()}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-            onClick={() => setOpen(false)}
-          >
-            Google Calendar
-          </a>
-          <a
-            href={buildOutlookUrl()}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-            onClick={() => setOpen(false)}
-          >
-            Outlook
-          </a>
-          <button
-            onClick={downloadICS}
-            title="Works with Google Calendar, Apple Calendar, Samsung Calendar, Outlook and all other calendar apps"
-            className="flex items-start gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors group"
-          >
-            <span>Download .ics (All Calendars)</span>
-          </button>
+        <div className="absolute bottom-full right-0 mb-2 z-50 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[200px]">
+          {hasFullAccess ? (
+            <>
+              <a href={buildGoogleUrl()} target="_blank" rel="noopener noreferrer"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                onClick={() => setOpen(false)}>
+                Google Calendar
+              </a>
+              <a href={buildOutlookUrl()} target="_blank" rel="noopener noreferrer"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                onClick={() => setOpen(false)}>
+                Outlook
+              </a>
+              <button onClick={downloadICS}
+                title="Works with Google Calendar, Apple Calendar, Samsung Calendar, Outlook and all other calendar apps"
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                Download .ics (All Calendars)
+              </button>
+            </>
+          ) : (
+            <div className="px-4 py-3">
+              <p className="text-sm text-gray-700 font-medium mb-1">Calendar export is a Pro feature</p>
+              <p className="text-xs text-gray-400 mb-2">$9.99/year · cancel anytime</p>
+              <Link
+                href="/pricing"
+                className="text-sm text-[#4ea8de] hover:text-[#3a95cc] font-semibold transition-colors"
+                onClick={() => setOpen(false)}
+              >
+                Unlock with Pro →
+              </Link>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -3,9 +3,11 @@
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { MapPin, Calendar, Building2, Tag, Filter, X, Search } from "lucide-react";
+import Link from "next/link";
 import type { Database } from "@/lib/supabase/types";
 import { matchesSearch } from "@/lib/search";
 import { supabase } from "@/lib/supabase/client";
+import { useSubscription } from "@/context/SubscriptionContext";
 import BookmarkButton from "@/components/BookmarkButton";
 import CalendarExportMenu from "@/components/CalendarExportMenu";
 import ShareMenu from "@/components/ShareMenu";
@@ -100,6 +102,7 @@ const ALL_REGIONS = ["Africa", "Americas", "Asia-Pacific", "Europe", "Middle Eas
 
 export default function EventsClient({ events, initialSearch = "" }: { events: EventRow[]; initialSearch?: string }) {
   const router = useRouter();
+  const { hasFullAccess, userId: ctxUserId } = useSubscription();
   const [search, setSearch] = useState(initialSearch);
   const [sdgFilter, setSdgFilter] = useState<number | null>(null);
   const [formatFilter, setFormatFilter] = useState<string | null>(null);
@@ -109,18 +112,24 @@ export default function EventsClient({ events, initialSearch = "" }: { events: E
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session?.user) return;
-      setUserId(session.user.id);
-      supabase.from("saved_events").select("event_id").eq("user_id", session.user.id)
-        .then(({ data }) => { if (data) setSavedIds(new Set(data.map(s => s.event_id))); });
-    });
-  }, []);
+    if (!ctxUserId) return;
+    setUserId(ctxUserId);
+    supabase.from("saved_events").select("event_id").eq("user_id", ctxUserId)
+      .then(({ data }) => { if (data) setSavedIds(new Set(data.map(s => s.event_id))); });
+  }, [ctxUserId]);
+
+  // Free-tier cutoff: 30 days from now
+  const freeCutoff = useMemo(() => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), []);
+
+  const visibleEvents = useMemo(() => {
+    if (hasFullAccess) return events;
+    return events.filter(e => new Date(e.start_date) <= freeCutoff);
+  }, [events, hasFullAccess, freeCutoff]);
 
   const activeSearch = search.trim();
 
   const filtered = useMemo(() => {
-    return events.filter(e => {
+    return visibleEvents.filter(e => {
       if (!matchesSearch(e, search)) return false;
       if (sdgFilter !== null && !e.sdg_goals.includes(sdgFilter)) return false;
       if (formatFilter !== null && e.format !== formatFilter) return false;
@@ -128,7 +137,22 @@ export default function EventsClient({ events, initialSearch = "" }: { events: E
       if (regionFilter !== null && deriveRegion(e.location) !== regionFilter) return false;
       return true;
     });
-  }, [events, search, sdgFilter, formatFilter, typeFilter, regionFilter]);
+  }, [visibleEvents, search, sdgFilter, formatFilter, typeFilter, regionFilter]);
+
+  // Show upgrade nudge when search/filters match events beyond the free window
+  const hasBeyondFree = useMemo(() => {
+    if (hasFullAccess || filtered.length > 0) return false;
+    return events
+      .filter(e => new Date(e.start_date) > freeCutoff)
+      .some(e => {
+        if (!matchesSearch(e, search)) return false;
+        if (sdgFilter !== null && !e.sdg_goals.includes(sdgFilter)) return false;
+        if (formatFilter !== null && e.format !== formatFilter) return false;
+        if (typeFilter !== null && e.event_type !== typeFilter) return false;
+        if (regionFilter !== null && deriveRegion(e.location) !== regionFilter) return false;
+        return true;
+      });
+  }, [events, filtered.length, hasFullAccess, freeCutoff, search, sdgFilter, formatFilter, typeFilter, regionFilter]);
 
   const hasFilters =
     activeSearch.length >= 2 ||
@@ -145,9 +169,12 @@ export default function EventsClient({ events, initialSearch = "" }: { events: E
     setRegionFilter(null);
   }
 
-  const countLabel = activeSearch.length >= 2
-    ? `${filtered.length} event${filtered.length !== 1 ? "s" : ""} found for "${activeSearch}"`
-    : `${filtered.length} event${filtered.length !== 1 ? "s" : ""}`;
+  const countLabel = (() => {
+    const base = `${filtered.length} event${filtered.length !== 1 ? "s" : ""}`;
+    const scope = hasFullAccess ? "" : " in the next 30 days";
+    if (activeSearch.length >= 2) return `${base} found for "${activeSearch}"${scope}`;
+    return `${base}${scope}`;
+  })();
 
   return (
     <div>
@@ -239,7 +266,22 @@ export default function EventsClient({ events, initialSearch = "" }: { events: E
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <Calendar size={48} className="text-gray-300 mb-4" />
-            {activeSearch.length >= 2 ? (
+            {hasBeyondFree ? (
+              <>
+                <p className="text-gray-600 text-lg font-medium mb-2">
+                  Looking for events further ahead?
+                </p>
+                <p className="text-gray-400 text-sm max-w-sm mb-6">
+                  Pro unlocks the full 24-month calendar for $9.99/year, cancel anytime.
+                </p>
+                <Link
+                  href="/pricing"
+                  className="bg-[#4ea8de] hover:bg-[#3a95cc] text-white font-semibold px-6 py-2.5 rounded-lg text-sm transition-colors"
+                >
+                  See Pro plans →
+                </Link>
+              </>
+            ) : activeSearch.length >= 2 ? (
               <>
                 <p className="text-gray-500 text-lg font-medium">
                   No events found for &ldquo;{activeSearch}&rdquo;.
@@ -251,9 +293,11 @@ export default function EventsClient({ events, initialSearch = "" }: { events: E
             ) : (
               <p className="text-gray-500 text-lg font-medium">No events match your filters.</p>
             )}
-            <button onClick={clearAll} className="mt-4 text-[#4ea8de] text-sm hover:underline">
-              Clear {activeSearch.length >= 2 ? "search" : "filters"}
-            </button>
+            {!hasBeyondFree && (
+              <button onClick={clearAll} className="mt-4 text-[#4ea8de] text-sm hover:underline">
+                Clear {activeSearch.length >= 2 ? "search" : "filters"}
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

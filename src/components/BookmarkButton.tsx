@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Bookmark } from "lucide-react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
+import { useSubscription } from "@/context/SubscriptionContext";
 
 interface BookmarkButtonProps {
   eventId: string;
@@ -13,15 +14,14 @@ interface BookmarkButtonProps {
 }
 
 export default function BookmarkButton({ eventId, initialSaved, userId, onToggle }: BookmarkButtonProps) {
+  const { hasFullAccess, isLoading: subLoading } = useSubscription();
   const [saved, setSaved] = useState(initialSaved);
   const [loading, setLoading] = useState(false);
   const [showPopover, setShowPopover] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    setSaved(initialSaved);
-  }, [initialSaved]);
+  useEffect(() => { setSaved(initialSaved); }, [initialSaved]);
 
   useEffect(() => {
     if (!showPopover) return;
@@ -46,6 +46,11 @@ export default function BookmarkButton({ eventId, initialSaved, userId, onToggle
       return;
     }
 
+    if (!hasFullAccess) {
+      setShowPopover(prev => !prev);
+      return;
+    }
+
     setLoading(true);
     const nextSaved = !saved;
     setSaved(nextSaved);
@@ -60,35 +65,34 @@ export default function BookmarkButton({ eventId, initialSaved, userId, onToggle
     setLoading(false);
   }
 
+  const popoverContent = !userId
+    ? { heading: "Sign in to save events", cta: <Link href="/auth/signin" className="text-[#4ea8de] hover:text-[#3a95cc] font-medium" onClick={() => setShowPopover(false)}>Sign In</Link> }
+    : { heading: "Save events with Pro", cta: <Link href="/pricing" className="text-[#4ea8de] hover:text-[#3a95cc] font-medium" onClick={() => setShowPopover(false)}>Upgrade →</Link> };
+
   return (
     <div className="relative">
       <button
         ref={buttonRef}
         onClick={handleClick}
-        disabled={loading}
+        disabled={loading || subLoading}
         aria-label={saved ? "Unsave event" : "Save event"}
         className="p-1.5 rounded-md text-gray-400 hover:text-[#4ea8de] transition-colors disabled:opacity-50"
       >
-        <Bookmark
-          size={16}
-          className={saved ? "fill-current text-[#4ea8de]" : ""}
-        />
+        <Bookmark size={16} className={saved ? "fill-current text-[#4ea8de]" : ""} />
       </button>
 
       {showPopover && (
         <div
           ref={popoverRef}
-          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 bg-white border border-gray-200 rounded-lg shadow-lg px-3 py-2 text-sm whitespace-nowrap"
+          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 bg-white border border-gray-200 rounded-lg shadow-lg px-3 py-2.5 text-sm min-w-max"
         >
-          <p className="text-gray-700 mb-1">Sign in to save events</p>
-          <Link
-            href="/auth/signin"
-            className="text-[#4ea8de] hover:text-[#3a95cc] font-medium transition-colors"
-            onClick={() => setShowPopover(false)}
-          >
-            Sign In
-          </Link>
-          {/* Arrow */}
+          <p className="text-gray-700 mb-1.5">{popoverContent.heading}</p>
+          {!userId ? popoverContent.cta : (
+            <div>
+              <p className="text-gray-400 text-xs mb-1.5">$9.99/year · cancel anytime</p>
+              {popoverContent.cta}
+            </div>
+          )}
           <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-white border-b border-r border-gray-200 rotate-45 -mt-1" />
         </div>
       )}

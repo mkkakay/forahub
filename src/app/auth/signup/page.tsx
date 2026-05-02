@@ -28,7 +28,13 @@ export default function SignupPage() {
 
     // If session is immediately available, email confirmation is disabled
     if (data.session) {
-      router.push("/");
+      // Send welcome email (best-effort, don't block)
+      fetch("/api/send-welcome", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      }).catch(() => {});
+      router.push("/onboarding");
       router.refresh();
     } else {
       setConfirmed(true);

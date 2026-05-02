@@ -1,3 +1,14 @@
+export type SubscriptionTier = 'free' | 'pro' | 'founding'
+
+export interface ProfileRow {
+  id: string
+  subscription_tier: SubscriptionTier
+  stripe_customer_id: string | null
+  subscription_end_date: string | null
+  trial_end_date: string | null
+  created_at: string
+}
+
 export type EventType = 'conference' | 'side_event' | 'webinar' | 'training'
 export type EventFormat = 'in_person' | 'virtual' | 'hybrid'
 export type AttendanceStatus = 'interested' | 'registered' | 'attended'
@@ -56,8 +67,16 @@ export interface CollectionEventRow {
 export interface Database {
   public: {
     Views: Record<string, never>
-    Functions: Record<string, never>
+    Functions: {
+      get_founding_member_count: { Returns: number }
+    }
     Tables: {
+      profiles: {
+        Row: ProfileRow
+        Insert: Omit<ProfileRow, 'created_at'> & { created_at?: string }
+        Update: Partial<Omit<ProfileRow, 'id' | 'created_at'>>
+        Relationships: []
+      }
       events: {
         Row: EventRow
         Insert: Omit<EventRow, 'id' | 'created_at'> & { id?: string; created_at?: string }
