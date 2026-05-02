@@ -1,5 +1,6 @@
 -- 003_subscription.sql
 -- Profiles table for subscription management
+-- Safe to re-run: all statements are idempotent
 
 create table if not exists profiles (
   id uuid primary key references auth.users(id) on delete cascade,
@@ -13,10 +14,12 @@ create table if not exists profiles (
 
 alter table profiles enable row level security;
 
+drop policy if exists "Users can view own profile" on profiles;
 create policy "Users can view own profile"
   on profiles for select
   using (auth.uid() = id);
 
+drop policy if exists "Users can update own profile" on profiles;
 create policy "Users can update own profile"
   on profiles for update
   using (auth.uid() = id);
