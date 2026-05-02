@@ -62,6 +62,8 @@ export async function POST(req: NextRequest) {
         customer: customerId,
         mode: "subscription",
         line_items: [{ price: priceId, quantity: 1 }],
+        // Omitting payment_method_types lets Stripe dynamically show all enabled
+        // methods from the dashboard, including Apple Pay, Google Pay, and Link.
         success_url: `${baseUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${baseUrl}/payment/cancel`,
         metadata: { supabase_user_id: userId, plan: "pro" },
@@ -82,6 +84,8 @@ export async function POST(req: NextRequest) {
       customer: customerId,
       mode: "payment",
       line_items: [{ price: foundingPriceId, quantity: 1 }],
+      // Omitting payment_method_types lets Stripe dynamically show all enabled
+      // methods from the dashboard, including Apple Pay, Google Pay, and Link.
       success_url: `${baseUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/payment/cancel`,
       metadata: { supabase_user_id: userId, plan: "founding" },
