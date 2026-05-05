@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS push_subscriptions (
   created_at timestamptz DEFAULT now()
 );
 ALTER TABLE push_subscriptions ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users manage own push subs" ON push_subscriptions;
 CREATE POLICY "Users manage own push subs" ON push_subscriptions
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
@@ -60,6 +61,7 @@ CREATE TABLE IF NOT EXISTS abstracts (
   updated_at timestamptz DEFAULT now()
 );
 ALTER TABLE abstracts ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users manage own abstracts" ON abstracts;
 CREATE POLICY "Users manage own abstracts" ON abstracts
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
@@ -74,6 +76,7 @@ CREATE TABLE IF NOT EXISTS event_stats (
   updated_at timestamptz DEFAULT now()
 );
 ALTER TABLE event_stats ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Anyone can read event stats" ON event_stats;
 CREATE POLICY "Anyone can read event stats" ON event_stats FOR SELECT USING (true);
 
 -- conference_guides
@@ -85,6 +88,7 @@ CREATE TABLE IF NOT EXISTS conference_guides (
   created_at timestamptz DEFAULT now()
 );
 ALTER TABLE conference_guides ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Anyone can read guides" ON conference_guides;
 CREATE POLICY "Anyone can read guides" ON conference_guides FOR SELECT USING (true);
 
 -- post_event_resources
@@ -99,8 +103,10 @@ CREATE TABLE IF NOT EXISTS post_event_resources (
   created_at timestamptz DEFAULT now()
 );
 ALTER TABLE post_event_resources ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Anyone can read verified resources" ON post_event_resources;
 CREATE POLICY "Anyone can read verified resources" ON post_event_resources
   FOR SELECT USING (verified = true);
+DROP POLICY IF EXISTS "Users can submit resources" ON post_event_resources;
 CREATE POLICY "Users can submit resources" ON post_event_resources
   FOR INSERT WITH CHECK (auth.uid() = submitted_by);
 
@@ -114,6 +120,7 @@ CREATE TABLE IF NOT EXISTS referrals (
   created_at timestamptz DEFAULT now()
 );
 ALTER TABLE referrals ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users see own referrals" ON referrals;
 CREATE POLICY "Users see own referrals" ON referrals
   USING (auth.uid() = referrer_id);
 
@@ -129,6 +136,7 @@ CREATE TABLE IF NOT EXISTS keyword_alerts (
   created_at timestamptz DEFAULT now()
 );
 ALTER TABLE keyword_alerts ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users manage own alerts" ON keyword_alerts;
 CREATE POLICY "Users manage own alerts" ON keyword_alerts
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
@@ -156,6 +164,7 @@ CREATE TABLE IF NOT EXISTS notifications (
   created_at timestamptz DEFAULT now()
 );
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users manage own notifications" ON notifications;
 CREATE POLICY "Users manage own notifications" ON notifications
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
@@ -174,6 +183,7 @@ CREATE TABLE IF NOT EXISTS organizers (
   created_at timestamptz DEFAULT now()
 );
 ALTER TABLE organizers ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Anyone can read organizers" ON organizers;
 CREATE POLICY "Anyone can read organizers" ON organizers FOR SELECT USING (true);
 
 -- Generate referral codes for existing profiles
