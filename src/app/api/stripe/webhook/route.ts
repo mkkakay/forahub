@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { stripe } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
 import { createClient } from "@supabase/supabase-js";
 import type Stripe from "stripe";
 
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
 
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+    event = getStripe().webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
     console.error("Webhook signature verification failed:", err);
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
           })
           .eq("id", userId);
       } else if (plan === "pro" && session.subscription) {
-        const sub = await stripe.subscriptions.retrieve(session.subscription as string);
+        const sub = await getStripe().subscriptions.retrieve(session.subscription as string);
         // billing_cycle_anchor + 1 year = end of first annual period
         const endDate = new Date((sub.billing_cycle_anchor + 365 * 24 * 60 * 60) * 1000).toISOString();
 

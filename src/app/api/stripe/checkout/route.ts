@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { stripe } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
 import { createClient } from "@supabase/supabase-js";
 
 const serviceSupabase = createClient(
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     let customerId = profile?.stripe_customer_id;
 
     if (!customerId) {
-      const customer = await stripe.customers.create({
+      const customer = await getStripe().customers.create({
         email: userEmail,
         metadata: { supabase_user_id: userId },
       });
@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Pro price not configured" }, { status: 500 });
       }
 
-      const session = await stripe.checkout.sessions.create({
+      const session = await getStripe().checkout.sessions.create({
         customer: customerId,
         mode: "subscription",
         line_items: [{ price: priceId, quantity: 1 }],
@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Founding price not configured" }, { status: 500 });
     }
 
-    const session = await stripe.checkout.sessions.create({
+    const session = await getStripe().checkout.sessions.create({
       customer: customerId,
       mode: "payment",
       line_items: [{ price: foundingPriceId, quantity: 1 }],
