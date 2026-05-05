@@ -1,7 +1,14 @@
 export type ScrapeMethod = 'html' | 'rss' | 'ical' | 'pdf' | 'twitter' | 'linkedin' | 'newsletter' | 'youtube';
 export type SourceType = 'website' | 'rss' | 'ical' | 'pdf' | 'twitter' | 'linkedin' | 'newsletter' | 'youtube';
-export type ScrapeFrequency = 'hourly' | 'daily' | 'weekly';
-export type Region = 'Africa' | 'Americas' | 'Asia-Pacific' | 'Europe' | 'Middle-East' | 'South-Asia' | 'Global' | 'Online';
+export type ScrapeFrequency = 'hourly' | 'daily' | 'weekly' | 'monthly';
+export type Region =
+  | 'Global' | 'Online'
+  | 'Africa' | 'Africa-West' | 'Africa-East' | 'Africa-Central' | 'Africa-Southern' | 'Africa-North'
+  | 'Americas' | 'Americas-North' | 'Americas-Latin' | 'Americas-Caribbean'
+  | 'Asia-Pacific' | 'Asia-South' | 'Asia-Southeast' | 'Asia-East' | 'Asia-Central'
+  | 'Pacific'
+  | 'Europe' | 'Europe-West' | 'Europe-East' | 'Europe-Nordic' | 'Europe-South'
+  | 'Middle-East' | 'South-Asia';
 export type EventFormat = 'in_person' | 'virtual' | 'hybrid';
 export type EventType = 'conference' | 'side_event' | 'webinar' | 'training' | 'consultation' | 'summit';
 export type EventStatus = 'pending' | 'published' | 'rejected';

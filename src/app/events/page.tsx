@@ -44,12 +44,6 @@ export default async function EventsPage({
       </div>
 
       <EventsClient events={events} initialSearch={searchQuery} />
-
-      <footer className="bg-[#0f2a4a] mt-8 py-8 px-4 text-center">
-        <p className="text-blue-300 text-sm">
-          © {new Date().getFullYear()} ForaHub. All rights reserved.
-        </p>
-      </footer>
     </div>
   );
 }
