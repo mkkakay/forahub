@@ -82,8 +82,16 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-6">
-            <Link href="/" className="text-white text-xl font-extrabold tracking-tight shrink-0">
-              Fora<span className="text-[#4ea8de]">Hub</span>
+            <Link href="/" className="flex items-center gap-2 shrink-0 group">
+              <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true" className="shrink-0">
+                <circle cx="13" cy="13" r="11" stroke="#4ea8de" strokeWidth="1.5" />
+                <ellipse cx="13" cy="13" rx="5" ry="11" stroke="#4ea8de" strokeWidth="1.5" />
+                <line x1="2" y1="13" x2="24" y2="13" stroke="#4ea8de" strokeWidth="1.5" />
+                <path d="M13 2c-2.5 3.5-3 6.5-3 11s.5 7.5 3 11" stroke="#4ea8de" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+              <span className="text-white text-xl font-extrabold tracking-tight">
+                Fora<span className="text-[#4ea8de]">Hub</span>
+              </span>
             </Link>
             <div className="hidden md:flex items-center gap-1">
               {navLinks.map(({ href, label }) => (

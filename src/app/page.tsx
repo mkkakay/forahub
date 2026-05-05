@@ -56,12 +56,27 @@ export default async function Home() {
     <div className="min-h-screen">
       <Navbar />
 
-      <section className="bg-[#0f2a4a] pb-20 pt-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm text-blue-200 mb-6">
-            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            1,000+ events across 50+ countries
+      <section className="bg-[#0f2a4a] relative overflow-hidden flex flex-col justify-center pb-20 pt-16 px-4 sm:px-6 lg:px-8 min-h-[600px]">
+        {/* Dot grid overlay */}
+        <div className="absolute inset-0 bg-dot-grid opacity-20 pointer-events-none" aria-hidden="true" />
+        {/* Fade bottom */}
+        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#0f2a4a] to-transparent pointer-events-none" aria-hidden="true" />
+
+        <div className="max-w-3xl mx-auto text-center relative">
+          {/* Trust badge */}
+          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-xs text-blue-100 mb-3">
+            <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full shrink-0" />
+            Trusted by WHO, UNICEF &amp; Gates Foundation professionals
           </div>
+
+          {/* Live indicator */}
+          <div className="flex justify-center mb-6">
+            <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm text-blue-200">
+              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+              1,000+ events across 50+ countries
+            </div>
+          </div>
+
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight tracking-tight">
             Never Miss a Global Development Event
           </h1>
@@ -69,6 +84,16 @@ export default async function Home() {
             Conferences, side events, and convenings across all 17 SDG goals, in one place.
           </p>
           <HomeSearchBar eventTitles={eventTitles} />
+
+          {/* Secondary CTAs */}
+          <div className="mt-6 flex items-center justify-center gap-3 flex-wrap">
+            <a
+              href="/events"
+              className="inline-flex items-center gap-2 border border-white/30 text-white font-semibold px-6 py-2.5 rounded-xl hover:bg-white/10 transition-colors text-sm"
+            >
+              Browse Events →
+            </a>
+          </div>
         </div>
       </section>
 
