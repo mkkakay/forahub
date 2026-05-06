@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Calendar, Flag, MapPin, Flame, ArrowRight, ChevronRight } from "lucide-react";
+import LiveActivityTicker from "@/components/LiveActivityTicker";
 import { supabase } from "@/lib/supabase/client";
 import { useLanguage } from "@/context/LanguageContext";
 import { t } from "@/lib/i18n";
@@ -415,6 +416,9 @@ export default function HomeClient({
           </div>
         </div>
       </section>
+
+      {/* Live Activity Ticker */}
+      <LiveActivityTicker />
 
       {/* Upcoming Events */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
