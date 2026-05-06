@@ -3,8 +3,9 @@ export const dynamic = "force-dynamic";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
 import Navbar from "@/components/Navbar";
-import HeroSection, { type HeroPanelEvent } from "@/components/HeroSection";
+import HeroSection from "@/components/HeroSection";
 import TrustStrip from "@/components/TrustStrip";
+import SubmitEventBanner from "@/components/SubmitEventBanner";
 import HomeClient from "@/components/HomeClient";
 
 type EventPreview = Pick<
@@ -27,7 +28,6 @@ export default async function Home() {
     { data: upcomingData },
     { data: thisWeekData },
     { count: totalCount },
-    { data: featuredHeroData },
   ] = await Promise.all([
     supabase
       .from("events")
@@ -35,7 +35,7 @@ export default async function Home() {
       .gte("start_date", today)
       .lte("start_date", twoYearsOut)
       .order("start_date", { ascending: true })
-      .limit(12),
+      .limit(6),
     supabase
       .from("events")
       .select("id, title, start_date, end_date, location, organization, sdg_goals, is_featured, format, region")
@@ -47,33 +47,19 @@ export default async function Home() {
       .from("events")
       .select("*", { count: "exact", head: true })
       .gte("start_date", today),
-    supabase
-      .from("events")
-      .select("id, title, start_date, location, organization, sdg_goals, region")
-      .eq("is_hero_featured", true)
-      .order("hero_panel_position", { ascending: true, nullsFirst: false })
-      .limit(9),
   ]);
 
   const events = (upcomingData as EventPreview[] | null) ?? [];
   const thisWeekEvents = (thisWeekData as EventPreview[] | null) ?? [];
 
-  // Fill hero panels: featured events first, then upcoming events (up to 9 for 3 rotating sets)
-  const featured = (featuredHeroData as HeroPanelEvent[] | null) ?? [];
-  let heroEvents: HeroPanelEvent[] = [...featured];
-  if (heroEvents.length < 9) {
-    const featuredIds = new Set(heroEvents.map(e => e.id));
-    const fill = (upcomingData as HeroPanelEvent[] | null ?? []).filter(e => !featuredIds.has(e.id));
-    heroEvents = [...heroEvents, ...fill].slice(0, 9);
-  }
-
   return (
     <div className="min-h-screen">
       <Navbar />
-      <HeroSection heroEvents={heroEvents} />
+      <HeroSection />
       {/* Spacer so stats section clears the floating search bar on md+ screens */}
       <div className="hidden md:block h-14" />
       <TrustStrip />
+      <SubmitEventBanner />
       <HomeClient
         events={events}
         thisWeekEvents={thisWeekEvents}

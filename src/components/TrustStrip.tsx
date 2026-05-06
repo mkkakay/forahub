@@ -107,7 +107,7 @@ export default function TrustStrip() {
             <div
               key={`${org.domain}-${i}`}
               title={org.name}
-              className="shrink-0 mx-3 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-300 flex items-center justify-center"
+              className="shrink-0 mx-3 opacity-80 hover:opacity-100 hover:scale-110 transition-all duration-300 flex items-center justify-center"
               style={{ width: 40, height: 40 }}
             >
               {failed.has(org.domain) ? (

@@ -1,11 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Search, X, MapPin, Calendar } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, Keyboard, A11y } from "swiper/modules";
+import type { Swiper as SwiperType } from "swiper";
 import Image from "next/image";
 import Link from "next/link";
+import { ChevronLeft, ChevronRight, Search, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import "swiper/css";
 
+// Keep type export — consumed by any external callers
 export type HeroPanelEvent = {
   id: string;
   title: string;
@@ -16,26 +21,90 @@ export type HeroPanelEvent = {
   region: string | null;
 };
 
-// Fixed photos by panel position — ensures three visually distinct panels every time
-const PANEL_PHOTOS = [
-  "https://images.unsplash.com/photo-1555993539-1732b0258235?w=800&q=85",
-  "https://images.unsplash.com/photo-1591115765373-5207764f72e7?w=800&q=85",
-  "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=800&q=85",
-];
-
-const SDG_COLORS: Record<number, string> = {
-  1: "#E5243B", 2: "#DDA63A", 3: "#4C9F38", 4: "#C5192D", 5: "#FF3A21",
-  6: "#26BDE2", 7: "#FCC30B", 8: "#A21942", 9: "#FD6925", 10: "#DD1367",
-  11: "#FD9D24", 12: "#BF8B2E", 13: "#3F7E44", 14: "#0A97D9", 15: "#56C02B",
-  16: "#00689D", 17: "#19486A",
+type SlideData = {
+  bg: string;
+  badge: { text: string; color: string } | null;
+  org: string | null;
+  headline: string;
+  subtext: string;
+  cta: { text: string; href: string; solid?: boolean };
 };
 
-const MESSAGES = [
-  "Never miss a global development event again",
-  "From Nairobi to Geneva. Every summit. Every side event.",
-  "WHA. COP. UNGA. And 10,000 more events you should know about.",
-  "Built for the global development community. Every region. Every SDG.",
-  "Your AI assistant for global events. Ask anything. Find everything.",
+const SLIDES: SlideData[] = [
+  // — Event slides —
+  {
+    bg: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=1920&q=95",
+    badge: { text: "SDG 3 Good Health", color: "#4C9F38" },
+    org: "WHO",
+    headline: "World Health Assembly 2027",
+    subtext: "The world's highest health policy forum. Geneva, May 2027.",
+    cta: { text: "View Event", href: "/events" },
+  },
+  {
+    bg: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1920&q=95",
+    badge: { text: "SDG 13 Climate Action", color: "#3F7E44" },
+    org: "UNFCCC",
+    headline: "COP31 Climate Conference",
+    subtext: "Global climate action. Belem, Brazil, November 2026.",
+    cta: { text: "View Event", href: "/events" },
+  },
+  {
+    bg: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1920&q=95",
+    badge: { text: "SDG 17 Partnerships", color: "#19486A" },
+    org: "UN DESA",
+    headline: "SDG High Level Political Forum",
+    subtext: "Reviewing progress on the 2030 Agenda. New York, July 2027.",
+    cta: { text: "View Event", href: "/events" },
+  },
+  // — Value proposition slides —
+  {
+    bg: "https://images.unsplash.com/photo-1591115765373-5207764f72e7?w=1920&q=95",
+    badge: null,
+    org: null,
+    headline: "Never Miss a Global Development Event Again",
+    subtext: "From Nairobi to Geneva. Every summit, side event, and convening in one place.",
+    cta: { text: "Explore Events", href: "/events" },
+  },
+  {
+    bg: "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=1920&q=95",
+    badge: null,
+    org: null,
+    headline: "Your AI Assistant for Global Events",
+    subtext: "Ask anything. Find the right conference, deadline, or opportunity instantly.",
+    cta: { text: "Try AI Assistant", href: "/assistant" },
+  },
+  {
+    bg: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=1920&q=95",
+    badge: null,
+    org: null,
+    headline: "Built for Every Region on Earth",
+    subtext: "Africa. Asia. Middle East. Americas. Pacific. 194 countries covered.",
+    cta: { text: "Browse by Region", href: "/events" },
+  },
+  {
+    bg: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1920&q=95",
+    badge: null,
+    org: null,
+    headline: "Track Every WHO, UNICEF, and Gates Foundation Event",
+    subtext: "1,000+ organizations monitored. Every major convening captured automatically.",
+    cta: { text: "Browse Organizations", href: "/events" },
+  },
+  {
+    bg: "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=1920&q=95",
+    badge: null,
+    org: null,
+    headline: "Organizing a Global Development Event?",
+    subtext: "List it on ForaHub and reach 10,000+ professionals across 194 countries.",
+    cta: { text: "Submit Your Event", href: "/events/create", solid: true },
+  },
+  {
+    bg: "https://images.unsplash.com/photo-1536599018102-9f803c140fc1?w=1920&q=95",
+    badge: null,
+    org: null,
+    headline: "Covering All 17 SDG Goals",
+    subtext: "Health. Climate. Education. Gender. Water. Energy. Every goal. Every event.",
+    cta: { text: "Browse by SDG", href: "/events" },
+  },
 ];
 
 const SDG_OPTIONS = Array.from({ length: 17 }, (_, i) => ({ value: String(i + 1), label: `SDG ${i + 1}` }));
@@ -46,49 +115,20 @@ const FORMAT_OPTIONS = [
 ];
 const POPULAR_CHIPS = ["Health", "Climate", "WHA", "SDG 3", "Water"];
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    month: "short", day: "numeric", year: "numeric",
-  });
-}
-
-export default function HeroSection({ heroEvents }: { heroEvents: HeroPanelEvent[] }) {
+export default function HeroSection() {
   const router = useRouter();
+  const swiperRef = useRef<SwiperType | null>(null);
+  const [activeIdx, setActiveIdx] = useState(0);
   const [query, setQuery] = useState("");
   const [sdgFilter, setSdgFilter] = useState("");
   const [formatFilter, setFormatFilter] = useState("");
-  const [msgIdx, setMsgIdx] = useState(0);
-  const [fade, setFade] = useState(true);
-  const [activeSet, setActiveSet] = useState(0);
-  const [panelVisible, setPanelVisible] = useState(true);
 
-  const numSets = Math.max(1, Math.ceil(heroEvents.length / 3));
-  const currentPanels = heroEvents.slice(activeSet * 3, activeSet * 3 + 3);
-
-  // Rotate message every 4 seconds
+  // Stop autoplay for users who prefer reduced motion
   useEffect(() => {
-    const timer = setInterval(() => {
-      setFade(false);
-      setTimeout(() => {
-        setMsgIdx(i => (i + 1) % MESSAGES.length);
-        setFade(true);
-      }, 300);
-    }, 4000);
-    return () => clearInterval(timer);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      swiperRef.current?.autoplay.stop();
+    }
   }, []);
-
-  // Rotate panel set every 8 seconds
-  useEffect(() => {
-    if (numSets <= 1) return;
-    const timer = setInterval(() => {
-      setPanelVisible(false);
-      setTimeout(() => {
-        setActiveSet(s => (s + 1) % numSets);
-        setPanelVisible(true);
-      }, 1000);
-    }, 8000);
-    return () => clearInterval(timer);
-  }, [numSets]);
 
   function buildUrl(q: string) {
     const params = new URLSearchParams();
@@ -105,148 +145,123 @@ export default function HeroSection({ heroEvents }: { heroEvents: HeroPanelEvent
   return (
     <div className="relative">
 
-      {/* ── HERO PANELS ─────────────────────────────────────────────────────── */}
-      <div className="relative h-[45vh] md:h-[55vh] overflow-hidden flex">
-
-        {/* Top gradient for value prop text readability */}
-        <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-black/60 via-black/40 to-transparent z-10 pointer-events-none" />
-
-        {/* Value proposition — large, centered, desktop only */}
-        <div className="absolute inset-0 z-20 hidden md:flex flex-col items-center justify-center pointer-events-none px-4">
-          <p
-            className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white text-center drop-shadow-2xl"
-            style={{ opacity: fade ? 1 : 0, transition: "opacity 300ms ease" }}
-          >
-            {MESSAGES[msgIdx]}
-          </p>
-          <p className="text-base md:text-lg text-white/80 font-medium mt-3 text-center drop-shadow-lg">
-            The global development events platform for every professional everywhere
-          </p>
-        </div>
-
-        {/* Panels — fade between sets */}
-        <div
-          className="flex h-full w-full"
-          style={{ opacity: panelVisible ? 1 : 0, transition: "opacity 1s ease" }}
+      {/* ── SWIPER CAROUSEL ─────────────────────────────────────────────────── */}
+      <div className="relative h-[50vh] sm:h-[55vh] lg:h-[70vh]">
+        <Swiper
+          onSwiper={(swiper) => { swiperRef.current = swiper; }}
+          onSlideChange={(swiper) => setActiveIdx(swiper.realIndex)}
+          modules={[Autoplay, Keyboard, A11y]}
+          autoplay={{ delay: 6000, disableOnInteraction: false, pauseOnMouseEnter: true }}
+          speed={1000}
+          loop
+          keyboard={{ enabled: true }}
+          a11y={{ enabled: true, prevSlideMessage: "Previous slide", nextSlideMessage: "Next slide" }}
+          className="w-full h-full"
         >
-          {currentPanels.map((event, i) => {
-            const photo    = PANEL_PHOTOS[i] ?? PANEL_PHOTOS[0];
-            const sdg      = event.sdg_goals?.[0];
-            const sdgColor = sdg ? (SDG_COLORS[sdg] ?? "#3b82f6") : null;
+          {SLIDES.map((slide, i) => (
+            <SwiperSlide key={i}>
+              <div className="relative w-full h-full overflow-hidden">
+                {/* Background image with Ken Burns */}
+                <div className="hero-kb-image absolute inset-0">
+                  <Image
+                    src={slide.bg}
+                    alt={slide.headline}
+                    fill
+                    priority={i === 0}
+                    sizes="100vw"
+                    className="object-cover object-center"
+                    style={{ filter: "brightness(0.65) saturate(0.9)" }}
+                  />
+                </div>
 
-            return (
-              <Link
-                key={event.id}
-                href={`/events/${event.id}`}
-                className={`group relative overflow-hidden flex-1 ${i > 0 ? "hidden md:block" : "block"}`}
-              >
-                <Image
-                  src={photo}
-                  alt={event.title}
-                  fill
-                  sizes={i === 0 ? "(max-width: 768px) 100vw, 33vw" : "33vw"}
-                  priority={i === 0}
-                  className="object-cover object-center transition-transform duration-[400ms] group-hover:scale-[1.03]"
-                  style={{ filter: "brightness(0.8) saturate(0.85)" }}
+                {/* Cinematic gradient overlay */}
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background:
+                      "linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(15,42,74,0.85) 100%)",
+                  }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/75 pointer-events-none" />
-                <div className="absolute bottom-0 left-0 right-0 p-4 z-10">
-                  {sdgColor && (
+
+                {/* Text content — animates in on slide active */}
+                <div className="hero-slide-text absolute bottom-0 left-0 right-0 pb-20 md:pb-24 pl-6 md:pl-10 pr-6 md:pr-10">
+                  {slide.badge && (
                     <span
-                      className="inline-block text-xs font-bold text-white px-2 py-0.5 rounded-full mb-2"
-                      style={{ backgroundColor: sdgColor }}
+                      className="text-xs font-bold text-white px-3 py-1 rounded-full mb-3 inline-block"
+                      style={{ backgroundColor: slide.badge.color }}
                     >
-                      SDG {sdg}
+                      {slide.badge.text}
                     </span>
                   )}
-                  <h2 className="text-lg font-bold text-white leading-tight line-clamp-2 mb-1">
-                    {event.title}
-                  </h2>
-                  {event.organization && (
-                    <p className="text-xs text-white/70 uppercase tracking-wide mb-1.5">
-                      {event.organization}
+                  {slide.org && (
+                    <p className="text-xs text-white/60 uppercase tracking-widest mb-1 font-medium">
+                      {slide.org}
                     </p>
                   )}
-                  <div className="flex items-center gap-3 text-xs text-white/60">
-                    <span className="flex items-center gap-1 shrink-0">
-                      <Calendar size={10} />
-                      {formatDate(event.start_date)}
-                    </span>
-                    {event.location && (
-                      <span className="flex items-center gap-1 min-w-0">
-                        <MapPin size={10} className="shrink-0" />
-                        <span className="truncate">{event.location}</span>
-                      </span>
-                    )}
-                  </div>
+                  <h2
+                    className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight tracking-tight max-w-3xl"
+                    style={{ textShadow: "0 2px 20px rgba(0,0,0,0.6)" }}
+                  >
+                    {slide.headline}
+                  </h2>
+                  <p className="text-base md:text-lg text-white/80 mt-3 max-w-xl font-medium">
+                    {slide.subtext}
+                  </p>
+                  <Link
+                    href={slide.cta.href}
+                    className={`mt-6 inline-block px-8 py-3 rounded-xl font-semibold transition-all duration-300 ${
+                      slide.cta.solid
+                        ? "bg-white text-[#0f2a4a] hover:bg-gray-100"
+                        : "border-2 border-white text-white hover:bg-white hover:text-[#0f2a4a]"
+                    }`}
+                  >
+                    {slide.cta.text}
+                  </Link>
                 </div>
-              </Link>
-            );
-          })}
+              </div>
+            </SwiperSlide>
+          ))}
+        </Swiper>
 
-          {currentPanels.length === 0 && (
-            <div className="relative flex-1 overflow-hidden">
-              <Image
-                src={PANEL_PHOTOS[0]}
-                alt="Global development events"
-                fill
-                sizes="100vw"
-                priority
-                className="object-cover object-center"
-                style={{ filter: "brightness(0.8) saturate(0.85)" }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/75" />
-            </div>
-          )}
-        </div>
+        {/* Left arrow — desktop only */}
+        <button
+          onClick={() => swiperRef.current?.slidePrev()}
+          aria-label="Previous slide"
+          className="absolute left-4 top-1/2 -translate-y-1/2 z-20 hidden md:flex items-center justify-center w-12 h-12 rounded-full bg-black/20 hover:bg-black/50 text-white transition-all duration-200"
+        >
+          <ChevronLeft size={22} />
+        </button>
 
-        {/* Set dot indicators */}
-        {numSets > 1 && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2.5 z-30">
-            {Array.from({ length: numSets }).map((_, i) => (
-              <button
-                key={i}
-                onClick={() => { setActiveSet(i); setPanelVisible(true); }}
-                aria-label={`Show set ${i + 1}`}
-                className="rounded-full transition-all duration-300 focus:outline-none"
-                style={{
-                  width:  activeSet === i ? 8 : 6,
-                  height: activeSet === i ? 8 : 6,
-                  backgroundColor: activeSet === i ? "rgba(255,255,255,1)" : "rgba(255,255,255,0.35)",
-                }}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+        {/* Right arrow — desktop only */}
+        <button
+          onClick={() => swiperRef.current?.slideNext()}
+          aria-label="Next slide"
+          className="absolute right-4 top-1/2 -translate-y-1/2 z-20 hidden md:flex items-center justify-center w-12 h-12 rounded-full bg-black/20 hover:bg-black/50 text-white transition-all duration-200"
+        >
+          <ChevronRight size={22} />
+        </button>
 
-      {/* ── SUBMIT EVENT BANNER ──────────────────────────────────────────────── */}
-      <div className="w-full bg-gradient-to-r from-[#0f2a4a] to-[#1a3a5c] py-8 px-6">
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h2 className="text-xl md:text-2xl font-bold text-white">
-              Organizing a global development event?
-            </h2>
-            <p className="text-sm md:text-base text-white/70 mt-1">
-              List it on ForaHub and reach 10,000+ professionals across 194 countries and all 17 SDG goals
-            </p>
-          </div>
-          <div className="flex flex-col items-start md:items-end gap-2 shrink-0">
-            <Link
-              href="/events/create"
-              className="w-full md:w-auto bg-white text-[#0f2a4a] rounded-xl px-8 py-3 font-semibold text-base hover:bg-gray-100 transition-colors text-center"
-            >
-              Submit Your Event
-            </Link>
-            <span className="text-white/50 text-xs">Free to list. No account required to browse.</span>
-          </div>
+        {/* Dot indicators — bottom center */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
+          {SLIDES.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => swiperRef.current?.slideTo(i)}
+              aria-label={`Go to slide ${i + 1}`}
+              className={`rounded-full transition-all duration-300 focus:outline-none ${
+                activeIdx === i
+                  ? "w-6 h-2 bg-white"
+                  : "w-2 h-2 bg-white/40 hover:bg-white/70"
+              }`}
+            />
+          ))}
         </div>
       </div>
 
       {/* ── FLOATING SEARCH BAR (md and above) ──────────────────────────────── */}
       <div
         className="hidden md:block absolute bottom-0 translate-y-1/2 left-1/2 -translate-x-1/2 w-full px-4 md:px-6 lg:px-0 lg:max-w-5xl"
-        style={{ zIndex: 20 }}
+        style={{ zIndex: 30 }}
       >
         <div className="bg-white dark:bg-[#1e293b] rounded-2xl shadow-2xl ring-1 ring-black/5 dark:ring-white/5">
           <div className="flex items-center px-6 py-5 gap-3">
@@ -260,7 +275,10 @@ export default function HeroSection({ heroEvents }: { heroEvents: HeroPanelEvent
               className="flex-1 min-w-0 text-base lg:text-lg text-gray-800 dark:text-gray-100 bg-transparent placeholder-gray-400 focus:outline-none"
             />
             {query && (
-              <button onClick={() => setQuery("")} className="text-gray-400 hover:text-gray-600 shrink-0 transition-colors">
+              <button
+                onClick={() => setQuery("")}
+                className="text-gray-400 hover:text-gray-600 shrink-0 transition-colors"
+              >
                 <X size={16} />
               </button>
             )}
