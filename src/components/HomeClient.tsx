@@ -227,6 +227,7 @@ function EventCard({ event }: { event: EventPreview }) {
     event.format === "virtual" ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300" :
     "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300";
 
+  const [coverFailed, setCoverFailed] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportType, setReportType] = useState("");
   const [notes, setNotes] = useState("");
@@ -253,16 +254,34 @@ function EventCard({ event }: { event: EventPreview }) {
         className="block bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-[#334155] shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 group overflow-hidden min-h-[260px] flex flex-col"
       >
         {/* Cover area with contextual image */}
-        <div className="h-[100px] relative shrink-0 overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={getEventCoverImage(event.organization, event.sdg_goals)}
-            alt=""
-            aria-hidden="true"
-            className="w-full h-full object-cover object-center"
-            loading="lazy"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-black/10" />
+        <div
+          className="h-[100px] relative shrink-0 overflow-hidden flex flex-col items-center justify-center"
+          style={coverFailed ? { background: `linear-gradient(135deg, ${color}, ${color}bb)` } : undefined}
+        >
+          {!coverFailed && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={getEventCoverImage(event.organization, event.sdg_goals)}
+              alt=""
+              aria-hidden="true"
+              className="w-full h-full object-cover object-center"
+              loading="lazy"
+              onError={() => setCoverFailed(true)}
+            />
+          )}
+          {coverFailed && (
+            <>
+              <span className="text-white font-extrabold leading-none select-none" style={{ fontSize: 48 }}>
+                {orgInitial}
+              </span>
+              {event.organization && (
+                <span className="text-white/80 text-xs mt-1 font-medium px-4 text-center line-clamp-1 max-w-full">
+                  {event.organization}
+                </span>
+              )}
+            </>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-black/10 pointer-events-none" />
           {/* Org favicon or initial + name */}
           <div className="absolute bottom-2 left-2 flex items-center gap-1.5">
             {domain ? (
