@@ -1,8 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { Calendar, Flag, MapPin, Flame, ArrowRight, ChevronRight } from "lucide-react";
+import { Calendar, Flag, MapPin, Flame, ArrowRight, ChevronRight, Globe, X } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { useLanguage } from "@/context/LanguageContext";
 import { t } from "@/lib/i18n";
@@ -20,6 +21,51 @@ const SDG_LABELS: Record<number, string> = {
   9: "Industry & Innovation", 10: "Reduced Inequalities", 11: "Sustainable Cities",
   12: "Responsible Consumption", 13: "Climate Action", 14: "Life Below Water",
   15: "Life on Land", 16: "Peace & Justice", 17: "Partnerships",
+};
+
+const SDG_ICONS: Record<number, string> = {
+  1:  "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Sustainable_Development_Goal_1.png/200px-Sustainable_Development_Goal_1.png",
+  2:  "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Sustainable_Development_Goal_2.png/200px-Sustainable_Development_Goal_2.png",
+  3:  "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Sustainable_Development_Goal_3.png/200px-Sustainable_Development_Goal_3.png",
+  4:  "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Sustainable_Development_Goal_4.png/200px-Sustainable_Development_Goal_4.png",
+  5:  "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Sustainable_Development_Goal_5.png/200px-Sustainable_Development_Goal_5.png",
+  6:  "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Sustainable_Development_Goal_6.png/200px-Sustainable_Development_Goal_6.png",
+  7:  "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Sustainable_Development_Goal_7.png/200px-Sustainable_Development_Goal_7.png",
+  8:  "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Sustainable_Development_Goal_8.png/200px-Sustainable_Development_Goal_8.png",
+  9:  "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Sustainable_Development_Goal_9.png/200px-Sustainable_Development_Goal_9.png",
+  10: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Sustainable_Development_Goal_10.png/200px-Sustainable_Development_Goal_10.png",
+  11: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Sustainable_Development_Goal_11.png/200px-Sustainable_Development_Goal_11.png",
+  12: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Sustainable_Development_Goal_12.png/200px-Sustainable_Development_Goal_12.png",
+  13: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Sustainable_Development_Goal_13.png/200px-Sustainable_Development_Goal_13.png",
+  14: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Sustainable_Development_Goal_14.png/200px-Sustainable_Development_Goal_14.png",
+  15: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Sustainable_Development_Goal_15.png/200px-Sustainable_Development_Goal_15.png",
+  16: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Sustainable_Development_Goal_16.png/200px-Sustainable_Development_Goal_16.png",
+  17: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Sustainable_Development_Goal_17.png/200px-Sustainable_Development_Goal_17.png",
+};
+
+const ORG_DOMAINS: Record<string, string> = {
+  "WHO": "who.int", "World Health Organization": "who.int",
+  "UNICEF": "unicef.org",
+  "World Bank": "worldbank.org",
+  "UN Women": "unwomen.org",
+  "WFP": "wfp.org", "World Food Programme": "wfp.org",
+  "UNAIDS": "unaids.org",
+  "UNEP": "unep.org",
+  "UNDP": "undp.org",
+  "UNESCO": "unesco.org",
+  "UNHCR": "unhcr.org",
+  "FAO": "fao.org",
+  "ILO": "ilo.org",
+  "UNFCCC": "unfccc.int",
+  "UN DESA": "un.org",
+  "UNDESA": "un.org",
+  "African Union": "au.int",
+  "ECOWAS": "ecowas.int",
+  "ASEAN": "asean.org",
+  "Gates Foundation": "gatesfoundation.org",
+  "Oxfam": "oxfam.org",
+  "CARE": "care.org",
+  "World Vision": "worldvision.org",
 };
 
 const REGIONS = [
@@ -49,6 +95,43 @@ const ACTIVITY_FEED = [
   "A health economist from South Africa found 12 events in Geneva",
   "A student from India discovered travel grants for COP31",
 ];
+
+function getOrgDomain(org: string | null): string | null {
+  if (!org) return null;
+  if (ORG_DOMAINS[org]) return ORG_DOMAINS[org];
+  for (const [key, domain] of Object.entries(ORG_DOMAINS)) {
+    if (org.toLowerCase().includes(key.toLowerCase())) return domain;
+  }
+  return null;
+}
+
+function getEventCoverImage(org: string | null, sdgGoals: number[]): string {
+  const o = (org ?? "").toLowerCase();
+  const sdg = sdgGoals?.[0];
+  if (o.includes("who") || o.includes("world health"))
+    return "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=400&q=80";
+  if (o.includes("unicef"))
+    return "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=400&q=80";
+  if (o.includes("world bank"))
+    return "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=400&q=80";
+  if (o.includes("fao") || o.includes("wfp") || o.includes("food"))
+    return "https://images.unsplash.com/photo-1536304993881-ff86e0c9b5b?w=400&q=80";
+  if (o.includes("unesco") || o.includes("education") || sdg === 4)
+    return "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=400&q=80";
+  if (sdg === 13 || o.includes("climate") || o.includes("cop") || o.includes("unfccc") || o.includes("environment"))
+    return "https://images.unsplash.com/photo-1569163139599-0f4517e36f51?w=400&q=80";
+  if (sdg === 3 || o.includes("health"))
+    return "https://images.unsplash.com/photo-1584982751601-97ddc0082f3b?w=400&q=80";
+  if (sdg === 8 || o.includes("finance") || o.includes("imf") || o.includes("bank"))
+    return "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=400&q=80";
+  if (sdg === 9 || o.includes("tech") || o.includes("digital") || o.includes("itu"))
+    return "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80";
+  if (o.includes("africa") || o.includes("ecowas") || o.includes("sadc") || o.includes("au "))
+    return "https://images.unsplash.com/photo-1489749798305-4fea3ae63d43?w=400&q=80";
+  if (o.includes("asia") || o.includes("asean") || o.includes("adb"))
+    return "https://images.unsplash.com/photo-1535139262971-ab8d1723fab6?w=400&q=80";
+  return "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&q=80";
+}
 
 interface EventPreview {
   id: string;
@@ -105,10 +188,36 @@ function CountUp({ target, suffix = "" }: { target: number; suffix?: string }) {
   return <span ref={ref}>{count.toLocaleString()}{suffix}</span>;
 }
 
+function OrgFavicon({ domain, initial, color }: { domain: string; initial: string; color: string }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) {
+    return (
+      <span
+        className="w-6 h-6 rounded-md flex items-center justify-center text-white text-xs font-bold shrink-0"
+        style={{ backgroundColor: color }}
+      >
+        {initial}
+      </span>
+    );
+  }
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={`https://www.google.com/s2/favicons?domain=${domain}&sz=32`}
+      alt=""
+      width={24}
+      height={24}
+      className="rounded-md shrink-0 bg-white"
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 function EventCard({ event }: { event: EventPreview }) {
   const sdg = event.sdg_goals?.[0];
   const color = sdg ? SDG_COLORS[sdg] : "#3b82f6";
   const orgInitial = event.organization?.trim()[0]?.toUpperCase() ?? "E";
+  const domain = getOrgDomain(event.organization);
   const formatLabel =
     event.format === "in_person" ? "In-Person" :
     event.format === "virtual" ? "Virtual" :
@@ -141,23 +250,39 @@ function EventCard({ event }: { event: EventPreview }) {
     <div className="relative group/card">
       <Link
         href={`/events/${event.id}`}
-        className="block bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-[#334155] shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group overflow-hidden min-h-[260px] flex flex-col"
+        className="block bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-[#334155] shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 group overflow-hidden min-h-[260px] flex flex-col"
       >
-        {/* Cover area */}
-        <div
-          className="h-[100px] flex flex-col items-center justify-center relative shrink-0"
-          style={{ background: `linear-gradient(135deg, ${color}, ${color}bb)` }}
-        >
-          <span className="text-white font-extrabold leading-none select-none" style={{ fontSize: 48 }}>
-            {orgInitial}
-          </span>
-          {event.organization && (
-            <span className="text-white/80 text-xs mt-1 font-medium px-4 text-center line-clamp-1 max-w-full">
-              {event.organization}
-            </span>
-          )}
+        {/* Cover area with contextual image */}
+        <div className="h-[100px] relative shrink-0 overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={getEventCoverImage(event.organization, event.sdg_goals)}
+            alt=""
+            aria-hidden="true"
+            className="w-full h-full object-cover object-center"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-black/10" />
+          {/* Org favicon or initial + name */}
+          <div className="absolute bottom-2 left-2 flex items-center gap-1.5">
+            {domain ? (
+              <OrgFavicon domain={domain} initial={orgInitial} color={color} />
+            ) : (
+              <span
+                className="w-6 h-6 rounded-md flex items-center justify-center text-white text-xs font-bold shrink-0"
+                style={{ backgroundColor: color }}
+              >
+                {orgInitial}
+              </span>
+            )}
+            {event.organization && (
+              <span className="text-white text-xs font-semibold truncate max-w-[130px] drop-shadow-sm">
+                {event.organization}
+              </span>
+            )}
+          </div>
           {sdg && (
-            <span className="absolute top-2 right-2 text-xs font-bold px-2 py-0.5 rounded-full bg-black/25 text-white">
+            <span className="absolute top-2 right-2 text-xs font-bold px-2 py-0.5 rounded-full bg-black/30 backdrop-blur-sm text-white">
               SDG {sdg}
             </span>
           )}
@@ -188,7 +313,7 @@ function EventCard({ event }: { event: EventPreview }) {
         </div>
       </Link>
 
-      {/* Report flag button — visible on card hover */}
+      {/* Report flag button */}
       <button
         onClick={() => setReportOpen(true)}
         aria-label="Report this event"
@@ -273,6 +398,12 @@ export default function HomeClient({
   const [activityVisible, setActivityVisible] = useState(true);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
+  const [suggestOpen, setSuggestOpen] = useState(false);
+  const [suggestName, setSuggestName] = useState("");
+  const [suggestWebsite, setSuggestWebsite] = useState("");
+  const [suggestSubmitting, setSuggestSubmitting] = useState(false);
+  const [suggestDone, setSuggestDone] = useState(false);
+
   useEffect(() => {
     const id = setInterval(() => {
       setActivityVisible(false);
@@ -287,21 +418,35 @@ export default function HomeClient({
     };
   }, []);
 
+  async function handleSuggestSubmit() {
+    if (!suggestName.trim()) return;
+    setSuggestSubmitting(true);
+    try {
+      await fetch("/api/suggest-org", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: suggestName.trim(), website: suggestWebsite.trim() }),
+      });
+    } catch { /* silent */ }
+    setSuggestSubmitting(false);
+    setSuggestDone(true);
+  }
+
   return (
     <main className="flex-1">
       {/* This Week */}
       {thisWeekEvents.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="flex items-center justify-between mb-6">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
+          <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-2">
               <Flame size={20} className="text-orange-500" />
-              <h2 className="text-3xl font-bold text-[#0f2a4a] dark:text-white tracking-tight">{t(lang, "events.thisweek")}</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{t(lang, "events.thisweek")}</h2>
             </div>
             <Link href="/events?filter=thisweek" className="text-sm text-[#4ea8de] hover:underline flex items-center gap-1 font-medium">
               {t(lang, "events.viewall")} <ChevronRight size={14} />
             </Link>
           </div>
-          <div className="flex gap-4 overflow-x-auto pb-3 no-scrollbar">
+          <div className="flex gap-4 overflow-x-auto pb-3 no-scrollbar snap-x snap-mandatory pl-0.5">
             {thisWeekEvents.map(ev => {
               const sdg = ev.sdg_goals?.[0];
               const color = sdg ? SDG_COLORS[sdg] : "#3b82f6";
@@ -309,7 +454,7 @@ export default function HomeClient({
                 <Link
                   key={ev.id}
                   href={`/events/${ev.id}`}
-                  className="shrink-0 w-80 bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-[#334155] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 overflow-hidden group"
+                  className="shrink-0 w-80 snap-start bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-[#334155] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 overflow-hidden group"
                 >
                   {/* Cover strip */}
                   <div
@@ -355,9 +500,9 @@ export default function HomeClient({
       )}
 
       {/* Upcoming Events */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="flex items-baseline justify-between mb-6">
-          <h2 className="text-3xl font-bold text-[#0f2a4a] dark:text-white tracking-tight">{t(lang, "events.upcoming")}</h2>
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
+        <div className="flex items-baseline justify-between mb-5">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{t(lang, "events.upcoming")}</h2>
           <Link href="/events" className="text-[#4ea8de] hover:text-[#3a95cc] text-sm font-medium flex items-center gap-1 transition-colors">
             {t(lang, "events.viewall")} <ArrowRight size={14} />
           </Link>
@@ -375,18 +520,23 @@ export default function HomeClient({
       </section>
 
       {/* Featured Calendars */}
-      <section className="bg-gray-50 dark:bg-[#0f172a] py-16">
+      <section className="bg-gray-50 dark:bg-[#0f172a] py-8 md:py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-6">
-            <h2 className="text-3xl font-bold text-[#0f2a4a] dark:text-white tracking-tight">{t(lang, "calendar.featured")}</h2>
-            <p className="text-base text-gray-500 dark:text-gray-400 mt-1">{t(lang, "calendar.subtitle")}</p>
+          <div className="flex items-baseline justify-between mb-5">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{t(lang, "calendar.featured")}</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{t(lang, "calendar.subtitle")}</p>
+            </div>
+            <Link href="/events" className="text-sm text-[#4ea8de] hover:underline flex items-center gap-1 font-medium shrink-0 ml-4">
+              View All <ChevronRight size={14} />
+            </Link>
           </div>
-          <div className="flex gap-4 overflow-x-auto pb-3 no-scrollbar">
+          <div className="flex gap-4 overflow-x-auto pb-3 no-scrollbar snap-x snap-mandatory pl-0.5">
             {FEATURED_ORGS.map(org => (
               <Link
                 key={org.name}
                 href={`/events?org=${encodeURIComponent(org.full)}`}
-                className="shrink-0 w-52 bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-[#334155] hover:shadow-lg transition-all duration-300 group overflow-hidden flex flex-col"
+                className="shrink-0 w-52 snap-start bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-[#334155] hover:shadow-lg transition-all duration-200 group overflow-hidden flex flex-col"
               >
                 {/* Cover */}
                 <div
@@ -410,24 +560,52 @@ export default function HomeClient({
                 </div>
               </Link>
             ))}
+            {/* Suggest organization CTA card */}
+            <div className="shrink-0 w-52 snap-start rounded-2xl border-2 border-dashed border-gray-300 dark:border-[#334155] bg-white dark:bg-[#1e293b] flex flex-col items-center justify-center p-6 gap-2 text-center">
+              <Globe size={28} className="text-gray-400" />
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300 leading-snug">
+                Can&apos;t find your organization?
+              </p>
+              <button
+                onClick={() => setSuggestOpen(true)}
+                className="text-xs text-blue-600 dark:text-blue-400 underline hover:text-blue-800 transition-colors"
+              >
+                Suggest one
+              </button>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Browse by SDG */}
-      <section className="bg-gray-50 dark:bg-[#0f172a] py-16">
+      <section className="bg-gray-50 dark:bg-[#0f172a] py-8 md:py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-[#0f2a4a] dark:text-white mb-6 tracking-tight">{t(lang, "sdg.browse")}</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          <div className="flex items-baseline justify-between mb-5">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{t(lang, "sdg.browse")}</h2>
+            <Link href="/events" className="text-sm text-[#4ea8de] hover:underline flex items-center gap-1 font-medium">
+              View All <ChevronRight size={14} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
             {Array.from({ length: 17 }, (_, i) => i + 1).map(sdg => (
               <Link
                 key={sdg}
                 href={`/events?sdg=${sdg}`}
-                className="rounded-xl p-3 text-white text-center hover:scale-105 hover:shadow-lg transition-all duration-200 cursor-pointer shadow-sm flex flex-col items-center justify-center min-h-[80px]"
-                style={{ backgroundColor: SDG_COLORS[sdg] }}
+                className="relative group rounded-xl overflow-hidden aspect-square hover:scale-105 hover:shadow-lg transition-all duration-200 shadow-sm"
+                title={`SDG ${sdg}: ${SDG_LABELS[sdg]}`}
               >
-                <div className="text-2xl font-extrabold leading-none">{sdg}</div>
-                <div className="text-[10px] font-semibold mt-1 leading-tight opacity-90">{SDG_LABELS[sdg]}</div>
+                <Image
+                  src={SDG_ICONS[sdg]}
+                  alt={`SDG ${sdg}: ${SDG_LABELS[sdg]}`}
+                  fill
+                  sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, 17vw"
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-white/0 group-hover:bg-white/15 transition-colors duration-200 flex items-end justify-end p-1.5 opacity-0 group-hover:opacity-100">
+                  <span className="text-white text-xs font-bold bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-full">
+                    Browse
+                  </span>
+                </div>
               </Link>
             ))}
           </div>
@@ -435,8 +613,13 @@ export default function HomeClient({
       </section>
 
       {/* Explore by Region */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h2 className="text-3xl font-bold text-[#0f2a4a] dark:text-white mb-6 tracking-tight">{t(lang, "region.explore")}</h2>
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
+        <div className="flex items-baseline justify-between mb-5">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{t(lang, "region.explore")}</h2>
+          <Link href="/events" className="text-sm text-[#4ea8de] hover:underline flex items-center gap-1 font-medium">
+            View All <ChevronRight size={14} />
+          </Link>
+        </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {REGIONS.map(region => (
             <Link
@@ -448,21 +631,18 @@ export default function HomeClient({
               <img
                 src={region.photo}
                 alt={region.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
                 loading="lazy"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-              {/* Event count badge */}
               <div className="absolute top-3 right-3 bg-black/50 backdrop-blur-sm text-white text-xs font-bold px-2.5 py-1 rounded-full">
                 {region.events}+ events
               </div>
-              {/* Arrow icon on hover */}
               <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
                   <ArrowRight size={14} className="text-white" />
                 </div>
               </div>
-              {/* Bottom content */}
               <div className="absolute bottom-3 left-3 right-3">
                 <p className="text-white font-bold text-xl mb-2">{region.name}</p>
                 <div className="flex flex-wrap gap-1">
@@ -480,8 +660,8 @@ export default function HomeClient({
 
       {/* Stats */}
       <section className="bg-white dark:bg-[#1e293b] border-t border-gray-100 border-b border-gray-200 dark:border-[#334155]">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <h2 className="text-2xl md:text-3xl font-bold text-[#0f2a4a] dark:text-white text-center mb-10 tracking-tight">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-8 tracking-tight">
             ForaHub by the numbers
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
@@ -505,10 +685,9 @@ export default function HomeClient({
 
       {/* Submit CTA */}
       <section
-        className="relative py-16 px-4 overflow-hidden"
+        className="relative py-8 md:py-10 px-4 overflow-hidden"
         style={{ background: "linear-gradient(135deg, #0f2a4a 0%, #1a3f6e 50%, #0f2a4a 100%)" }}
       >
-        {/* Decorative SDG color dots */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
           {([1, 3, 5, 7, 13, 16] as const).map((sdg, i) => (
             <div
@@ -548,6 +727,60 @@ export default function HomeClient({
           </p>
         </div>
       </div>
+
+      {/* Suggest organization modal */}
+      {suggestOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+          onClick={() => { setSuggestOpen(false); setSuggestDone(false); setSuggestName(""); setSuggestWebsite(""); }}
+        >
+          <div
+            className="bg-white dark:bg-[#1e293b] rounded-2xl p-6 max-w-sm w-full shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-bold text-[#0f2a4a] dark:text-white">Suggest an organization</h3>
+              <button
+                onClick={() => { setSuggestOpen(false); setSuggestDone(false); setSuggestName(""); setSuggestWebsite(""); }}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            {suggestDone ? (
+              <div className="text-center py-4">
+                <p className="text-green-600 font-semibold text-sm">Thanks! We&apos;ll review your suggestion.</p>
+              </div>
+            ) : (
+              <>
+                <div className="space-y-3 mb-4">
+                  <input
+                    type="text"
+                    value={suggestName}
+                    onChange={e => setSuggestName(e.target.value)}
+                    placeholder="Organization name *"
+                    className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-[#334155] rounded-xl bg-gray-50 dark:bg-[#0f172a] text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#4ea8de]"
+                  />
+                  <input
+                    type="url"
+                    value={suggestWebsite}
+                    onChange={e => setSuggestWebsite(e.target.value)}
+                    placeholder="Website (optional)"
+                    className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-[#334155] rounded-xl bg-gray-50 dark:bg-[#0f172a] text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#4ea8de]"
+                  />
+                </div>
+                <button
+                  onClick={handleSuggestSubmit}
+                  disabled={!suggestName.trim() || suggestSubmitting}
+                  className="w-full py-2.5 rounded-xl bg-[#0f2a4a] hover:bg-[#1a3f6e] disabled:opacity-40 text-white text-sm font-semibold transition-colors"
+                >
+                  {suggestSubmitting ? "Sending…" : "Submit suggestion"}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </main>
   );
 }
