@@ -53,6 +53,9 @@ export interface EventRow {
   language: string
   title_original: string | null
   description_original: string | null
+  is_hero_featured: boolean
+  hero_panel_position: number | null
+  hero_featured_until: string | null
 }
 
 export interface EventDeadlineRow {

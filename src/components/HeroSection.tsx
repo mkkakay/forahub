@@ -1,56 +1,46 @@
 "use client";
 
-// EXPO: Replace hero section with static HeroImage component for React Native
-
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Search, X, MapPin, Calendar } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
-const SLIDES = [
-  {
-    photo: "https://images.unsplash.com/photo-1555993539-1732b0258235?w=1920&q=95",
-    mobilePhoto: "https://images.unsplash.com/photo-1555993539-1732b0258235?w=800&q=80",
-    headline: "Where Global Health Decisions Are Made",
-    subtext: "World Health Assembly · Geneva · May 2026",
-    accent: "#4C9F38",
-  },
-  {
-    photo: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1920&q=95",
-    mobilePhoto: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&q=80",
-    headline: "Driving Climate Action Across Every Nation",
-    subtext: "COP31 · Climate Conference · 2026",
-    accent: "#3F7E44",
-  },
-  {
-    photo: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1920&q=95",
-    mobilePhoto: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&q=80",
-    headline: "Every Side Event. Every Deadline. One Platform.",
-    subtext: "1,000+ Events · 50+ Countries · All 17 SDGs",
-    accent: "#26BDE2",
-  },
-  {
-    photo: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=1920&q=95",
-    mobilePhoto: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=800&q=80",
-    headline: "Built for the Global Development Community",
-    subtext: "WHO · UNICEF · Gates Foundation · and 1,000+ organizations",
-    accent: "#E5243B",
-  },
-  {
-    photo: "https://images.unsplash.com/photo-1591115765373-5207764f72e7?w=1920&q=95",
-    mobilePhoto: "https://images.unsplash.com/photo-1591115765373-5207764f72e7?w=800&q=80",
-    headline: "Representing Every Region on Earth",
-    subtext: "Africa · Asia · Middle East · Americas · Pacific",
-    accent: "#DDA63A",
-  },
-  {
-    photo: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1920&q=95",
-    mobilePhoto: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&q=80",
-    headline: "Find Travel Grants and Funded Opportunities",
-    subtext: "Scholarships · Fellowships · Sponsored Attendance",
-    accent: "#FD6925",
-  },
-] as const;
+export type HeroPanelEvent = {
+  id: string;
+  title: string;
+  organization: string | null;
+  start_date: string;
+  location: string | null;
+  sdg_goals: number[];
+  region: string | null;
+};
+
+const REGION_PHOTOS: [string, string][] = [
+  ["africa",      "https://images.unsplash.com/photo-1591115765373-5207764f72e7?w=800&q=85"],
+  ["asia",        "https://images.unsplash.com/photo-1536599018102-9f803c140fc1?w=800&q=85"],
+  ["middle east", "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&q=85"],
+  ["americas",    "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=800&q=85"],
+  ["europe",      "https://images.unsplash.com/photo-1555993539-1732b0258235?w=800&q=85"],
+  ["ai tech",     "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=800&q=85"],
+  ["climate",     "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&q=85"],
+];
+const DEFAULT_PHOTO = "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&q=85";
+
+const SDG_COLORS: Record<number, string> = {
+  1: "#E5243B", 2: "#DDA63A", 3: "#4C9F38", 4: "#C5192D", 5: "#FF3A21",
+  6: "#26BDE2", 7: "#FCC30B", 8: "#A21942", 9: "#FD6925", 10: "#DD1367",
+  11: "#FD9D24", 12: "#BF8B2E", 13: "#3F7E44", 14: "#0A97D9", 15: "#56C02B",
+  16: "#00689D", 17: "#19486A",
+};
+
+const MESSAGES = [
+  "Never miss a global development event again",
+  "From Nairobi to Geneva. Every summit. Every side event.",
+  "WHA. COP. UNGA. And 10,000 more events you should know about.",
+  "Built for the global development community. Every region. Every SDG.",
+  "Your AI assistant for global events. Ask anything. Find everything.",
+];
 
 const SDG_OPTIONS = Array.from({ length: 17 }, (_, i) => ({ value: String(i + 1), label: `SDG ${i + 1}` }));
 const FORMAT_OPTIONS = [
@@ -60,31 +50,39 @@ const FORMAT_OPTIONS = [
 ];
 const POPULAR_CHIPS = ["Health", "Climate", "WHA", "SDG 3", "Water"];
 
-export default function HeroSection() {
+function getPhoto(region: string | null): string {
+  if (!region) return DEFAULT_PHOTO;
+  const lower = region.toLowerCase();
+  for (const [key, url] of REGION_PHOTOS) {
+    if (lower.includes(key)) return url;
+  }
+  return DEFAULT_PHOTO;
+}
+
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    month: "short", day: "numeric", year: "numeric",
+  });
+}
+
+export default function HeroSection({ heroEvents }: { heroEvents: HeroPanelEvent[] }) {
   const router = useRouter();
-  const [active, setActive] = useState(0);
-  const [textKey, setTextKey] = useState(0);
-  const [paused, setPaused] = useState(false);
   const [query, setQuery] = useState("");
   const [sdgFilter, setSdgFilter] = useState("");
   const [formatFilter, setFormatFilter] = useState("");
-  const intervalRef = useRef<ReturnType<typeof setInterval>>();
-
-  const goTo = useCallback((idx: number) => {
-    setActive(idx);
-    setTextKey(k => k + 1);
-  }, []);
-
-  const advance = useCallback(() => {
-    setActive(a => (a + 1) % SLIDES.length);
-    setTextKey(k => k + 1);
-  }, []);
+  const [msgIdx, setMsgIdx] = useState(0);
+  const [fade, setFade] = useState(true);
 
   useEffect(() => {
-    if (paused) return;
-    intervalRef.current = setInterval(advance, 6000);
-    return () => clearInterval(intervalRef.current);
-  }, [paused, advance]);
+    const timer = setInterval(() => {
+      setFade(false);
+      setTimeout(() => {
+        setMsgIdx(i => (i + 1) % MESSAGES.length);
+        setFade(true);
+      }, 300);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
 
   function buildUrl(q: string) {
     const params = new URLSearchParams();
@@ -98,119 +96,102 @@ export default function HeroSection() {
     router.push(buildUrl(overrideQuery ?? query));
   }
 
-  const slide = SLIDES[active];
+  const panels = heroEvents.slice(0, 3);
 
   return (
-    /* data-hero-mode="slideshow" applies on desktop; data-mobile-hero-mode="static" applies on mobile */
-    <div className="relative" data-hero-mode="slideshow" data-mobile-hero-mode="static">
+    <div className="relative">
 
-      {/* ───────────── DESKTOP + TABLET SLIDESHOW (md and above) ───────────── */}
-      <div
-        className="hidden md:block relative md:h-[65vh] lg:h-screen overflow-hidden"
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
-      >
-        {/* Photo slides — crossfade via opacity */}
-        {SLIDES.map((s, i) => (
-          <div
-            key={i}
-            aria-hidden={active !== i}
-            className="absolute inset-0"
-            style={{
-              opacity: active === i ? 1 : 0,
-              transition: "opacity 1.5s ease",
-              zIndex: active === i ? 1 : 0,
-            }}
-          >
-            {/* Ken Burns applied to this wrapper; opacity on parent keeps them separate */}
-            <div className={`relative w-full h-full ${active === i ? "ken-burns-active" : ""}`}>
-              <Image
-                src={s.photo}
-                alt={s.headline}
-                fill
-                sizes="100vw"
-                priority={i === 0}
-                className="object-cover object-center"
-                style={{ filter: "brightness(0.75) saturate(0.85)" }}
-              />
-            </div>
-          </div>
-        ))}
+      {/* ── HERO PANELS ─────────────────────────────────────────────────────── */}
+      <div className="relative h-[45vh] md:h-[55vh] overflow-hidden flex">
 
-        {/* Cinematic gradient overlay */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: "linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(15,42,74,0.88) 100%)",
-            zIndex: 2,
-          }}
-        />
-
-        {/* Text — bottom-left */}
-        <div
-          className="absolute bottom-0 left-0 right-24 pb-24 md:pb-28 lg:pb-32 pl-8 md:pl-10 lg:pl-14"
-          style={{ zIndex: 3 }}
-        >
-          <div key={textKey} className="hero-text-enter">
-            <div
-              className="rounded-full mb-4"
-              style={{ height: 3, width: 60, backgroundColor: slide.accent }}
-            />
-            <h1
-              className="text-4xl md:text-5xl lg:text-7xl font-extrabold text-white leading-tight tracking-tight max-w-3xl"
-              style={{ textShadow: "0 2px 20px rgba(0,0,0,0.5)" }}
-            >
-              {slide.headline}
-            </h1>
+        {/* Rotating value proposition — desktop only */}
+        <div className="absolute top-4 left-0 right-0 z-20 hidden md:flex justify-center pointer-events-none">
+          <div className="bg-black/50 backdrop-blur-sm rounded-full px-6 py-2">
             <p
-              className="text-sm md:text-base lg:text-lg text-white/70 mt-3 font-medium tracking-widest uppercase"
-              style={{ textShadow: "0 1px 8px rgba(0,0,0,0.4)" }}
+              className="text-lg font-semibold text-white text-center"
+              style={{ opacity: fade ? 1 : 0, transition: "opacity 300ms ease" }}
             >
-              {slide.subtext}
+              {MESSAGES[msgIdx]}
             </p>
           </div>
         </div>
 
-        {/* Dot indicators — bottom center */}
-        <div
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2.5"
-          style={{ zIndex: 3 }}
-        >
-          {SLIDES.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => goTo(i)}
-              aria-label={`Slide ${i + 1}`}
-              className="rounded-full transition-all duration-300 focus:outline-none"
-              style={{
-                width:  active === i ? 8 : 6,
-                height: active === i ? 8 : 6,
-                backgroundColor: active === i ? "rgba(255,255,255,1)" : "rgba(255,255,255,0.35)",
-              }}
-            />
-          ))}
-        </div>
+        {/* Panels */}
+        {panels.map((event, i) => {
+          const photo    = getPhoto(event.region);
+          const sdg      = event.sdg_goals?.[0];
+          const sdgColor = sdg ? (SDG_COLORS[sdg] ?? "#3b82f6") : null;
 
-        {/* Arrow navigation — desktop (lg) only */}
-        <button
-          onClick={() => goTo((active - 1 + SLIDES.length) % SLIDES.length)}
-          aria-label="Previous slide"
-          className="absolute left-5 top-1/2 -translate-y-1/2 hidden lg:flex items-center justify-center w-12 h-12 rounded-full bg-white/20 hover:bg-white/40 text-white transition-colors"
-          style={{ zIndex: 3 }}
-        >
-          <ChevronLeft size={22} />
-        </button>
-        <button
-          onClick={() => goTo((active + 1) % SLIDES.length)}
-          aria-label="Next slide"
-          className="absolute right-5 top-1/2 -translate-y-1/2 hidden lg:flex items-center justify-center w-12 h-12 rounded-full bg-white/20 hover:bg-white/40 text-white transition-colors"
-          style={{ zIndex: 3 }}
-        >
-          <ChevronRight size={22} />
-        </button>
+          return (
+            <Link
+              key={event.id}
+              href={`/events/${event.id}`}
+              className={`group relative overflow-hidden flex-1 ${i > 0 ? "hidden md:block" : "block"}`}
+            >
+              <Image
+                src={photo}
+                alt={event.title}
+                fill
+                sizes={i === 0 ? "(max-width: 768px) 100vw, 33vw" : "33vw"}
+                priority={i === 0}
+                className="object-cover object-center transition-transform duration-[400ms] group-hover:scale-[1.03]"
+                style={{ filter: "brightness(0.8) saturate(0.85)" }}
+              />
+              {/* Gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/75 pointer-events-none" />
+              {/* Content */}
+              <div className="absolute bottom-0 left-0 right-0 p-4 z-10">
+                {sdgColor && (
+                  <span
+                    className="inline-block text-xs font-bold text-white px-2 py-0.5 rounded-full mb-2"
+                    style={{ backgroundColor: sdgColor }}
+                  >
+                    SDG {sdg}
+                  </span>
+                )}
+                <h2 className="text-lg font-bold text-white leading-tight line-clamp-2 mb-1">
+                  {event.title}
+                </h2>
+                {event.organization && (
+                  <p className="text-xs text-white/70 uppercase tracking-wide mb-1.5">
+                    {event.organization}
+                  </p>
+                )}
+                <div className="flex items-center gap-3 text-xs text-white/60">
+                  <span className="flex items-center gap-1 shrink-0">
+                    <Calendar size={10} />
+                    {formatDate(event.start_date)}
+                  </span>
+                  {event.location && (
+                    <span className="flex items-center gap-1 min-w-0">
+                      <MapPin size={10} className="shrink-0" />
+                      <span className="truncate">{event.location}</span>
+                    </span>
+                  )}
+                </div>
+              </div>
+            </Link>
+          );
+        })}
+
+        {/* Fallback when no events available */}
+        {panels.length === 0 && (
+          <div className="relative flex-1 overflow-hidden">
+            <Image
+              src={DEFAULT_PHOTO}
+              alt="Global development events"
+              fill
+              sizes="100vw"
+              priority
+              className="object-cover object-center"
+              style={{ filter: "brightness(0.8) saturate(0.85)" }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/75" />
+          </div>
+        )}
       </div>
 
-      {/* ───────────── FLOATING SEARCH BAR (md and above) ─────────────────── */}
+      {/* ── FLOATING SEARCH BAR (md and above) ──────────────────────────────── */}
       <div
         className="hidden md:block absolute bottom-0 translate-y-1/2 left-1/2 -translate-x-1/2 w-full px-4 md:px-6 lg:px-0 lg:max-w-4xl"
         style={{ zIndex: 20 }}
@@ -263,39 +244,7 @@ export default function HeroSection() {
         </div>
       </div>
 
-      {/* ───────────── MOBILE STATIC HERO (below md) ───────────────────────── */}
-      <div className="md:hidden relative h-[70vh] overflow-hidden">
-        <Image
-          src={SLIDES[0].mobilePhoto}
-          alt={SLIDES[0].headline}
-          fill
-          sizes="100vw"
-          priority
-          className="object-cover object-center"
-          style={{ filter: "brightness(0.75) saturate(0.85)" }}
-        />
-        <div
-          className="absolute inset-0"
-          style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(15,42,74,0.88) 100%)" }}
-        />
-        <div className="absolute bottom-0 left-0 right-0 pb-20 pl-5 pr-5">
-          <div
-            className="rounded-full mb-3"
-            style={{ height: 3, width: 40, backgroundColor: SLIDES[0].accent }}
-          />
-          <h1
-            className="text-3xl font-extrabold text-white max-w-xs leading-tight"
-            style={{ textShadow: "0 2px 12px rgba(0,0,0,0.5)" }}
-          >
-            {SLIDES[0].headline}
-          </h1>
-          <p className="text-xs text-white/70 uppercase tracking-widest mt-2 font-medium">
-            {SLIDES[0].subtext}
-          </p>
-        </div>
-      </div>
-
-      {/* ───────────── MOBILE INLINE SEARCH BAR ────────────────────────────── */}
+      {/* ── MOBILE INLINE SEARCH BAR ─────────────────────────────────────────── */}
       <div
         className="md:hidden mx-4 -mt-5 relative bg-white dark:bg-[#1e293b] rounded-2xl shadow-lg ring-1 ring-black/5 dark:ring-white/5 overflow-hidden"
         style={{ zIndex: 10 }}
