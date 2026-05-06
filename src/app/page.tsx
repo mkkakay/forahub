@@ -61,12 +61,12 @@ export default async function Home() {
       <div className="hidden md:block h-14" />
       <TrustStrip />
       <LiveActivityTicker />
-      <SubmitEventBanner />
       <HomeClient
         events={events}
         thisWeekEvents={thisWeekEvents}
         totalCount={totalCount ?? 0}
       />
+      <SubmitEventBanner />
     </div>
   );
 }

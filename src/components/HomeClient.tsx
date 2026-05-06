@@ -289,31 +289,6 @@ export default function HomeClient({
 
   return (
     <main className="flex-1">
-      {/* Stats */}
-      <section className="bg-white dark:bg-[#1e293b] border-t border-gray-100 border-b border-gray-200 dark:border-[#334155]">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <h2 className="text-2xl md:text-3xl font-bold text-[#0f2a4a] dark:text-white text-center mb-10 tracking-tight">
-            ForaHub by the numbers
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            {[
-              { value: Math.max(totalCount, 1000), suffix: "+", label: t(lang, "home.stats.events"), accent: "#4ea8de" },
-              { value: 50, suffix: "+", label: t(lang, "home.stats.countries"), accent: "#4C9F38" },
-              { value: 17, suffix: "", label: t(lang, "home.stats.sdg"), accent: "#FCC30B" },
-              { value: 1000, suffix: "+", label: t(lang, "home.stats.orgs"), accent: "#FF3A21" },
-            ].map(({ value, suffix, label, accent }) => (
-              <div key={label} className="flex flex-col items-center">
-                <div className="text-4xl font-extrabold text-[#0f2a4a] dark:text-white tracking-tight">
-                  <CountUp target={value} suffix={suffix} />
-                </div>
-                <div className="w-10 h-1 rounded-full mt-2 mb-2" style={{ backgroundColor: accent }} />
-                <div className="text-sm text-gray-500 dark:text-gray-400">{label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* This Week */}
       {thisWeekEvents.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -379,6 +354,26 @@ export default function HomeClient({
         </section>
       )}
 
+      {/* Upcoming Events */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="flex items-baseline justify-between mb-6">
+          <h2 className="text-3xl font-bold text-[#0f2a4a] dark:text-white tracking-tight">{t(lang, "events.upcoming")}</h2>
+          <Link href="/events" className="text-[#4ea8de] hover:text-[#3a95cc] text-sm font-medium flex items-center gap-1 transition-colors">
+            {t(lang, "events.viewall")} <ArrowRight size={14} />
+          </Link>
+        </div>
+        {events.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <Calendar size={48} className="text-gray-300 dark:text-gray-600 mb-4" />
+            <p className="text-gray-500 text-lg font-medium">Events coming soon.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {events.map(event => <EventCard key={event.id} event={event} />)}
+          </div>
+        )}
+      </section>
+
       {/* Featured Calendars */}
       <section className="bg-gray-50 dark:bg-[#0f172a] py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -417,26 +412,6 @@ export default function HomeClient({
             ))}
           </div>
         </div>
-      </section>
-
-      {/* Upcoming Events */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="flex items-baseline justify-between mb-6">
-          <h2 className="text-3xl font-bold text-[#0f2a4a] dark:text-white tracking-tight">{t(lang, "events.upcoming")}</h2>
-          <Link href="/events" className="text-[#4ea8de] hover:text-[#3a95cc] text-sm font-medium flex items-center gap-1 transition-colors">
-            {t(lang, "events.viewall")} <ArrowRight size={14} />
-          </Link>
-        </div>
-        {events.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <Calendar size={48} className="text-gray-300 dark:text-gray-600 mb-4" />
-            <p className="text-gray-500 text-lg font-medium">Events coming soon.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {events.map(event => <EventCard key={event.id} event={event} />)}
-          </div>
-        )}
       </section>
 
       {/* Browse by SDG */}
@@ -500,6 +475,31 @@ export default function HomeClient({
               </div>
             </Link>
           ))}
+        </div>
+      </section>
+
+      {/* Stats */}
+      <section className="bg-white dark:bg-[#1e293b] border-t border-gray-100 border-b border-gray-200 dark:border-[#334155]">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <h2 className="text-2xl md:text-3xl font-bold text-[#0f2a4a] dark:text-white text-center mb-10 tracking-tight">
+            ForaHub by the numbers
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            {[
+              { value: Math.max(totalCount, 1000), suffix: "+", label: t(lang, "home.stats.events"), accent: "#4ea8de" },
+              { value: 50, suffix: "+", label: t(lang, "home.stats.countries"), accent: "#4C9F38" },
+              { value: 17, suffix: "", label: t(lang, "home.stats.sdg"), accent: "#FCC30B" },
+              { value: 1000, suffix: "+", label: t(lang, "home.stats.orgs"), accent: "#FF3A21" },
+            ].map(({ value, suffix, label, accent }) => (
+              <div key={label} className="flex flex-col items-center">
+                <div className="text-4xl font-extrabold text-[#0f2a4a] dark:text-white tracking-tight">
+                  <CountUp target={value} suffix={suffix} />
+                </div>
+                <div className="w-10 h-1 rounded-full mt-2 mb-2" style={{ backgroundColor: accent }} />
+                <div className="text-sm text-gray-500 dark:text-gray-400">{label}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
