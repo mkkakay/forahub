@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
 import Navbar from "@/components/Navbar";
 import HeroSection, { type HeroPanelEvent } from "@/components/HeroSection";
+import TrustStrip from "@/components/TrustStrip";
 import HomeClient from "@/components/HomeClient";
 
 type EventPreview = Pick<
@@ -72,6 +73,7 @@ export default async function Home() {
       <HeroSection heroEvents={heroEvents} />
       {/* Spacer so stats section clears the floating search bar on md+ screens */}
       <div className="hidden md:block h-14" />
+      <TrustStrip />
       <HomeClient
         events={events}
         thisWeekEvents={thisWeekEvents}
