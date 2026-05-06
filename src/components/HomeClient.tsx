@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Calendar, Flag, MapPin, Flame, ArrowRight, ChevronRight } from "lucide-react";
-import LiveActivityTicker from "@/components/LiveActivityTicker";
 import { supabase } from "@/lib/supabase/client";
 import { useLanguage } from "@/context/LanguageContext";
 import { t } from "@/lib/i18n";
@@ -291,8 +290,11 @@ export default function HomeClient({
   return (
     <main className="flex-1">
       {/* Stats */}
-      <section className="bg-white dark:bg-[#1e293b] border-b border-gray-200 dark:border-[#334155]">
+      <section className="bg-white dark:bg-[#1e293b] border-t border-gray-100 border-b border-gray-200 dark:border-[#334155]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <h2 className="text-2xl md:text-3xl font-bold text-[#0f2a4a] dark:text-white text-center mb-10 tracking-tight">
+            ForaHub by the numbers
+          </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
               { value: Math.max(totalCount, 1000), suffix: "+", label: t(lang, "home.stats.events"), accent: "#4ea8de" },
@@ -416,9 +418,6 @@ export default function HomeClient({
           </div>
         </div>
       </section>
-
-      {/* Live Activity Ticker */}
-      <LiveActivityTicker />
 
       {/* Upcoming Events */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">

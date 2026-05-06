@@ -5,6 +5,7 @@ import type { Database } from "@/lib/supabase/types";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import TrustStrip from "@/components/TrustStrip";
+import LiveActivityTicker from "@/components/LiveActivityTicker";
 import SubmitEventBanner from "@/components/SubmitEventBanner";
 import HomeClient from "@/components/HomeClient";
 
@@ -59,6 +60,7 @@ export default async function Home() {
       {/* Spacer so stats section clears the floating search bar on md+ screens */}
       <div className="hidden md:block h-14" />
       <TrustStrip />
+      <LiveActivityTicker />
       <SubmitEventBanner />
       <HomeClient
         events={events}
