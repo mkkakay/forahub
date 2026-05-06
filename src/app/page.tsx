@@ -35,7 +35,7 @@ export default async function Home() {
       .gte("start_date", today)
       .lte("start_date", twoYearsOut)
       .order("start_date", { ascending: true })
-      .limit(6),
+      .limit(12),
     supabase
       .from("events")
       .select("id, title, start_date, end_date, location, organization, sdg_goals, is_featured, format, region")
@@ -52,19 +52,19 @@ export default async function Home() {
       .select("id, title, start_date, location, organization, sdg_goals, region")
       .eq("is_hero_featured", true)
       .order("hero_panel_position", { ascending: true, nullsFirst: false })
-      .limit(3),
+      .limit(9),
   ]);
 
   const events = (upcomingData as EventPreview[] | null) ?? [];
   const thisWeekEvents = (thisWeekData as EventPreview[] | null) ?? [];
 
-  // Fill hero panels: featured events first, then upcoming events
+  // Fill hero panels: featured events first, then upcoming events (up to 9 for 3 rotating sets)
   const featured = (featuredHeroData as HeroPanelEvent[] | null) ?? [];
   let heroEvents: HeroPanelEvent[] = [...featured];
-  if (heroEvents.length < 3) {
+  if (heroEvents.length < 9) {
     const featuredIds = new Set(heroEvents.map(e => e.id));
     const fill = (upcomingData as HeroPanelEvent[] | null ?? []).filter(e => !featuredIds.has(e.id));
-    heroEvents = [...heroEvents, ...fill].slice(0, 3);
+    heroEvents = [...heroEvents, ...fill].slice(0, 9);
   }
 
   return (
