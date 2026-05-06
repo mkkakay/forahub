@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { Calendar, MapPin, Flame, ArrowRight, ChevronRight } from "lucide-react";
+import { Calendar, Flag, MapPin, Flame, ArrowRight, ChevronRight } from "lucide-react";
+import { supabase } from "@/lib/supabase/client";
 import { useLanguage } from "@/context/LanguageContext";
 import { t } from "@/lib/i18n";
 
@@ -117,55 +118,144 @@ function EventCard({ event }: { event: EventPreview }) {
     event.format === "virtual" ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300" :
     "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300";
 
-  return (
-    <Link
-      href={`/events/${event.id}`}
-      className="block bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-[#334155] shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group overflow-hidden min-h-[260px] flex flex-col"
-    >
-      {/* Cover area */}
-      <div
-        className="h-[100px] flex flex-col items-center justify-center relative shrink-0"
-        style={{ background: `linear-gradient(135deg, ${color}, ${color}bb)` }}
-      >
-        <span className="text-white font-extrabold leading-none select-none" style={{ fontSize: 48 }}>
-          {orgInitial}
-        </span>
-        {event.organization && (
-          <span className="text-white/80 text-xs mt-1 font-medium px-4 text-center line-clamp-1 max-w-full">
-            {event.organization}
-          </span>
-        )}
-        {sdg && (
-          <span className="absolute top-2 right-2 text-xs font-bold px-2 py-0.5 rounded-full bg-black/25 text-white">
-            SDG {sdg}
-          </span>
-        )}
-      </div>
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportType, setReportType] = useState("");
+  const [notes, setNotes] = useState("");
+  const [toast, setToast] = useState(false);
 
-      {/* Body */}
-      <div className="p-5 flex flex-col gap-3 flex-1">
-        {formatLabel && (
-          <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full self-start ${formatColor}`}>
-            {formatLabel}
+  async function submitReport() {
+    if (!reportType) return;
+    await supabase.from("reports").insert({
+      event_id: event.id,
+      report_type: reportType,
+      notes: notes.trim() || null,
+    });
+    setReportOpen(false);
+    setReportType("");
+    setNotes("");
+    setToast(true);
+    setTimeout(() => setToast(false), 4000);
+  }
+
+  return (
+    <div className="relative group/card">
+      <Link
+        href={`/events/${event.id}`}
+        className="block bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-[#334155] shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group overflow-hidden min-h-[260px] flex flex-col"
+      >
+        {/* Cover area */}
+        <div
+          className="h-[100px] flex flex-col items-center justify-center relative shrink-0"
+          style={{ background: `linear-gradient(135deg, ${color}, ${color}bb)` }}
+        >
+          <span className="text-white font-extrabold leading-none select-none" style={{ fontSize: 48 }}>
+            {orgInitial}
           </span>
-        )}
-        <h3 className="text-[#0f2a4a] dark:text-white font-semibold text-base leading-snug group-hover:text-[#4ea8de] transition-colors line-clamp-2">
-          {event.title}
-        </h3>
-        <div className="flex flex-col gap-1.5 text-xs text-gray-500 dark:text-gray-400 mt-auto">
-          <span className="flex items-center gap-1.5">
-            <Calendar size={12} className="shrink-0 text-[#4ea8de]" />
-            {formatDate(event.start_date)}
-          </span>
-          {event.location && (
-            <span className="flex items-center gap-1.5">
-              <MapPin size={12} className="shrink-0 text-[#4ea8de]" />
-              <span className="truncate">{event.location}</span>
+          {event.organization && (
+            <span className="text-white/80 text-xs mt-1 font-medium px-4 text-center line-clamp-1 max-w-full">
+              {event.organization}
+            </span>
+          )}
+          {sdg && (
+            <span className="absolute top-2 right-2 text-xs font-bold px-2 py-0.5 rounded-full bg-black/25 text-white">
+              SDG {sdg}
             </span>
           )}
         </div>
-      </div>
-    </Link>
+
+        {/* Body */}
+        <div className="p-5 flex flex-col gap-3 flex-1">
+          {formatLabel && (
+            <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full self-start ${formatColor}`}>
+              {formatLabel}
+            </span>
+          )}
+          <h3 className="text-[#0f2a4a] dark:text-white font-semibold text-base leading-snug group-hover:text-[#4ea8de] transition-colors line-clamp-2">
+            {event.title}
+          </h3>
+          <div className="flex flex-col gap-1.5 text-xs text-gray-500 dark:text-gray-400 mt-auto">
+            <span className="flex items-center gap-1.5">
+              <Calendar size={12} className="shrink-0 text-[#4ea8de]" />
+              {formatDate(event.start_date)}
+            </span>
+            {event.location && (
+              <span className="flex items-center gap-1.5">
+                <MapPin size={12} className="shrink-0 text-[#4ea8de]" />
+                <span className="truncate">{event.location}</span>
+              </span>
+            )}
+          </div>
+        </div>
+      </Link>
+
+      {/* Report flag button — visible on card hover */}
+      <button
+        onClick={() => setReportOpen(true)}
+        aria-label="Report this event"
+        className="absolute bottom-3 right-3 p-1.5 rounded-full text-gray-300 hover:text-red-400 transition-colors opacity-0 group-hover/card:opacity-100"
+      >
+        <Flag size={14} />
+      </button>
+
+      {/* Report modal */}
+      {reportOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+          onClick={() => setReportOpen(false)}
+        >
+          <div
+            className="bg-white dark:bg-[#1e293b] rounded-2xl p-6 max-w-sm w-full shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <h3 className="text-base font-bold text-[#0f2a4a] dark:text-white mb-4">Report this event</h3>
+            <div className="space-y-2 mb-4">
+              {["Wrong date", "Wrong location", "Event cancelled", "Duplicate event", "Other"].map(option => (
+                <label key={option} className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    name={`report-${event.id}`}
+                    value={option}
+                    checked={reportType === option}
+                    onChange={() => setReportType(option)}
+                    className="accent-[#4ea8de]"
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{option}</span>
+                </label>
+              ))}
+            </div>
+            <textarea
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+              placeholder="Additional notes (optional)"
+              rows={3}
+              className="w-full px-3 py-2 mb-4 text-sm border border-gray-200 dark:border-[#334155] rounded-xl bg-gray-50 dark:bg-[#0f172a] text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#4ea8de] resize-none"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={() => setReportOpen(false)}
+                className="flex-1 py-2 rounded-xl border border-gray-200 dark:border-[#334155] text-sm text-gray-500 hover:bg-gray-50 dark:hover:bg-[#334155] transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitReport}
+                disabled={!reportType}
+                className="flex-1 py-2 rounded-xl bg-[#4ea8de] hover:bg-[#3a95cc] disabled:opacity-40 text-white text-sm font-semibold transition-colors"
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div className="absolute bottom-3 left-3 right-3 z-10 bg-[#0f2a4a] text-white text-xs font-medium px-3 py-2 rounded-xl text-center shadow-lg pointer-events-none">
+          Thank you. We will review this event.
+        </div>
+      )}
+    </div>
   );
 }
 
