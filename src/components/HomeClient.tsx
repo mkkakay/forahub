@@ -675,7 +675,7 @@ export default function HomeClient({
               View All <ChevronRight size={14} />
             </Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {Array.from({ length: 17 }, (_, i) => i + 1).map(sdg => (
               <SdgCard key={sdg} sdg={sdg} count={sdgCounts[sdg] ?? 0} />
             ))}
