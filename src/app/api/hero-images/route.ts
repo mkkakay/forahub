@@ -45,21 +45,36 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const res = await fetch(
-      `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&orientation=landscape&size=large&per_page=10`,
-      {
-        headers: { Authorization: apiKey },
-        next: { revalidate: 86400 },
+    let photo: PexelsPhoto | null = null;
+
+    if (query.startsWith("id:")) {
+      const photoId = query.slice(3).trim();
+      const res = await fetch(
+        `https://api.pexels.com/v1/photos/${photoId}`,
+        {
+          headers: { Authorization: apiKey },
+          next: { revalidate: 86400 },
+        }
+      );
+      if (!res.ok) {
+        return NextResponse.json({ url: null, error: `Pexels error ${res.status}` }, { status: 502 });
       }
-    );
-
-    if (!res.ok) {
-      return NextResponse.json({ url: null, error: `Pexels error ${res.status}` }, { status: 502 });
+      photo = await res.json();
+    } else {
+      const res = await fetch(
+        `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&orientation=landscape&size=large&per_page=10`,
+        {
+          headers: { Authorization: apiKey },
+          next: { revalidate: 86400 },
+        }
+      );
+      if (!res.ok) {
+        return NextResponse.json({ url: null, error: `Pexels error ${res.status}` }, { status: 502 });
+      }
+      const data = await res.json();
+      const photos: PexelsPhoto[] = data.photos ?? [];
+      photo = pickBest(photos);
     }
-
-    const data = await res.json();
-    const photos: PexelsPhoto[] = data.photos ?? [];
-    const photo = pickBest(photos);
     const url: string | null =
       photo?.src?.large2x ?? photo?.src?.large ?? photo?.src?.original ?? null;
 

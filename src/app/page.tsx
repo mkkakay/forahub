@@ -12,7 +12,7 @@ import HomeClient from "@/components/HomeClient";
 
 // Search queries aligned to each slide's content — specific enough for accurate Pexels results
 const SLIDE_QUERIES = [
-  "world health assembly WHO Geneva health ministers delegates",        // WHO/WHA
+  "id:16146279",                                                         // WHO/WHA — UN Geneva flags (Allée des Nations)
   "climate action renewable energy solar wind earth environment",       // COP31
   "United Nations general assembly hall delegates sustainability",      // UN HLPF
   "global summit audience international stage diverse crowd",           // Never Miss
