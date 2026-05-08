@@ -121,7 +121,7 @@ const FORMAT_OPTIONS = [
 ];
 const POPULAR_CHIPS = ["Health", "Climate", "WHA", "SDG 3", "Water"];
 
-export default function HeroSection() {
+export default function HeroSection({ slideImages }: { slideImages?: string[] }) {
   const router = useRouter();
   const swiperRef = useRef<SwiperType | null>(null);
   const [activeIdx, setActiveIdx] = useState(0);
@@ -231,13 +231,14 @@ export default function HeroSection() {
                 <div className="relative w-full h-full overflow-hidden">
                   <div className="hero-kb-image absolute inset-0">
                     <Image
-                      src={slide.bg}
+                      src={slideImages?.[i] ?? slide.bg}
                       alt={slide.headline}
                       fill
                       priority={i === 0}
                       sizes="100vw"
                       className="object-cover object-center"
                       style={{ filter: "brightness(0.65) saturate(0.9)" }}
+                      unoptimized={!!(slideImages?.[i]?.startsWith("https://"))}
                     />
                   </div>
                   <div

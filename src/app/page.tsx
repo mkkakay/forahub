@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { unstable_cache } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
 import Navbar from "@/components/Navbar";
@@ -8,6 +9,60 @@ import TrustStrip from "@/components/TrustStrip";
 import LiveActivityTicker from "@/components/LiveActivityTicker";
 import SubmitEventBanner from "@/components/SubmitEventBanner";
 import HomeClient from "@/components/HomeClient";
+
+// Search queries aligned to each slide's content — specific enough for accurate Pexels results
+const SLIDE_QUERIES = [
+  "World Health Assembly Geneva delegates conference",       // WHO/WHA
+  "climate summit negotiation conference delegates",         // COP31
+  "United Nations assembly hall delegates",                  // UN HLPF
+  "Africa development summit conference professionals",      // Never Miss
+  "technology conference innovation summit",                 // AI Assistant
+  "international diverse delegates conference multicultural", // Every Region
+  "global development conference meeting professionals",     // Track Events
+  "conference speaker stage international summit",           // Submit Event
+  "sustainable development community Africa Asia",           // SDG Goals
+];
+
+// Local fallbacks (already downloaded) if Pexels is unavailable
+const SLIDE_FALLBACKS = [
+  "/images/hero/who-wha.jpg",
+  "/images/hero/cop-climate.jpg",
+  "/images/hero/un-hlpf.jpg",
+  "/images/hero/global-events.jpg",
+  "/images/hero/ai-assistant.jpg",
+  "/images/hero/global-regions.jpg",
+  "/images/hero/track-events.jpg",
+  "/images/hero/submit-event.jpg",
+  "/images/hero/sdg-goals.jpg",
+];
+
+async function fetchOnePexelsImage(query: string, fallback: string): Promise<string> {
+  const apiKey = process.env.PEXELS_API_KEY;
+  if (!apiKey) return fallback;
+  try {
+    const res = await fetch(
+      `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&orientation=landscape&size=large&per_page=3`,
+      { headers: { Authorization: apiKey }, next: { revalidate: 86400 } }
+    );
+    if (!res.ok) return fallback;
+    const data = await res.json();
+    const photo = data.photos?.[0];
+    return photo?.src?.large2x ?? photo?.src?.large ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+// Cache the full batch of hero images for 24 hours independently of the page's force-dynamic
+const fetchHeroImages = unstable_cache(
+  async (): Promise<string[]> => {
+    return Promise.all(
+      SLIDE_QUERIES.map((q, i) => fetchOnePexelsImage(q, SLIDE_FALLBACKS[i]))
+    );
+  },
+  ["hero-slide-images"],
+  { revalidate: 86400 }
+);
 
 type EventPreview = Pick<
   Database['public']['Tables']['events']['Row'],
@@ -26,10 +81,11 @@ export default async function Home() {
   const twoYearsOut = new Date(Date.now() + 2 * 365 * 24 * 60 * 60 * 1000).toISOString();
 
   const [
-    { data: upcomingData },
-    { data: thisWeekData },
-    { count: totalCount },
+    slideImages,
+    [{ data: upcomingData }, { data: thisWeekData }, { count: totalCount }],
   ] = await Promise.all([
+    fetchHeroImages(),
+    Promise.all([
     supabase
       .from("events")
       .select("id, title, start_date, end_date, location, organization, sdg_goals, is_featured, format, region")
@@ -48,6 +104,7 @@ export default async function Home() {
       .from("events")
       .select("*", { count: "exact", head: true })
       .gte("start_date", today),
+    ]),
   ]);
 
   const events = (upcomingData as EventPreview[] | null) ?? [];
@@ -56,7 +113,7 @@ export default async function Home() {
   return (
     <div className="min-h-screen">
       <Navbar />
-      <HeroSection />
+      <HeroSection slideImages={slideImages} />
       {/* Spacer so stats section clears the floating search bar on md+ screens */}
       <div className="hidden md:block h-14" />
       <TrustStrip />
