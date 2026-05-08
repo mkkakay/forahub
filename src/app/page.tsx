@@ -12,15 +12,15 @@ import HomeClient from "@/components/HomeClient";
 
 // Search queries aligned to each slide's content — specific enough for accurate Pexels results
 const SLIDE_QUERIES = [
-  "World Health Assembly Geneva delegates conference",       // WHO/WHA
-  "climate summit negotiation conference delegates",         // COP31
-  "United Nations assembly hall delegates",                  // UN HLPF
-  "Africa development summit conference professionals",      // Never Miss
-  "technology conference innovation summit",                 // AI Assistant
-  "international diverse delegates conference multicultural", // Every Region
-  "global development conference meeting professionals",     // Track Events
-  "conference speaker stage international summit",           // Submit Event
-  "sustainable development community Africa Asia",           // SDG Goals
+  "world health assembly WHO Geneva health ministers delegates",        // WHO/WHA
+  "climate action renewable energy solar wind earth environment",       // COP31
+  "United Nations general assembly hall delegates sustainability",      // UN HLPF
+  "global summit audience international stage diverse crowd",           // Never Miss
+  "artificial intelligence digital network technology innovation global", // AI Assistant
+  "diverse people Africa Asia Latin America community global",          // Every Region
+  "international development forum conference hall audience",           // Track Events
+  "conference speaker stage podium global event audience",              // Submit Event
+  "sustainable development goals earth climate forest community action", // SDG Goals
 ];
 
 // Local fallbacks (already downloaded) if Pexels is unavailable
@@ -41,7 +41,7 @@ async function fetchOnePexelsImage(query: string, fallback: string): Promise<str
   if (!apiKey) return fallback;
   try {
     const res = await fetch(
-      `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&orientation=landscape&size=large&per_page=3`,
+      `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&orientation=landscape&size=large&per_page=10`,
       { headers: { Authorization: apiKey }, next: { revalidate: 86400 } }
     );
     if (!res.ok) return fallback;
