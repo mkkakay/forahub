@@ -61,7 +61,7 @@ const fetchHeroImages = unstable_cache(
     );
   },
   ["hero-slide-images"],
-  { revalidate: 1 }
+  { revalidate: 86400 }
 );
 
 type EventPreview = Pick<

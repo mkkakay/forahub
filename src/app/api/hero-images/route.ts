@@ -82,7 +82,7 @@ export async function GET(req: NextRequest) {
       { url },
       {
         headers: {
-          "Cache-Control": "no-cache, no-store, must-revalidate",
+          "Cache-Control": "public, max-age=86400, stale-while-revalidate=3600",
         },
       }
     );
