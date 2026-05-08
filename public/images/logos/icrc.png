@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" prefix="og: https://ogp.me/ns#">
+  <head>
+    <link rel="preconnect" href="https://fonts.gstatic.com/" />
+    <link rel="preconnect" href="https://fonts.googleapis.com/" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/themes/custom/icrc_theme/html/images/favicon/apple-icon-180x180.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="152x152"
+      href="/themes/custom/icrc_theme/html/images/favicon/apple-icon-152x152.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="144x144"
+      href="/themes/custom/icrc_theme/html/images/favicon/apple-icon-144x144.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="120x120"
+      href="/themes/custom/icrc_theme/html/images/favicon/apple-icon-120x120.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="114x114"
+      href="/themes/custom/icrc_theme/html/images/favicon/apple-icon-114x114.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="76x76"
+      href="/themes/custom/icrc_theme/html/images/favicon/apple-icon-76x76.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="72x72"
+      href="/themes/custom/icrc_theme/html/images/favicon/apple-icon-72x72.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="60x60"
+      href="/themes/custom/icrc_theme/html/images/favicon/apple-icon-60x60.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="57x57"
+      href="/themes/custom/icrc_theme/html/images/favicon/apple-icon-57x57.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="/themes/custom/icrc_theme/html/images/favicon/android-icon-192x192.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="96x96"
+      href="/themes/custom/icrc_theme/html/images/favicon/favicon-96x96.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/themes/custom/icrc_theme/html/images/favicon/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/themes/custom/icrc_theme/html/images/favicon/favicon-16x16.png"
+    />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="/themes/custom/icrc_theme/html/images/favicon/favicon.svg"
+    />
+    <link
+      rel="shortcut icon"
+      href="/themes/custom/icrc_theme/html/images/favicon/favicon.ico"
+    />
+    <link
+      rel="manifest"
+      type="application/manifest+json"
+      href="/themes/custom/icrc_theme/html/images/favicon/site.webmanifest"
+    />
+
+    <meta charset="utf-8" />
+    <script
+      src="https://web.cmp.usercentrics.eu/ui/loader.js"
+      type="text/javascript"
+      data-settings-id="idXnVCIXuWZXbG"
+      id="usercentrics-cmp"
+      async="async"
+      data-version="preview"
+      data-disable_tracking=""
+      data-language="en"
+    ></script>
+    <noscript
+      ><meta
+        http-equiv="Refresh"
+        content="0; URL=/en/big_pipe/no-js?destination=/en"
+      />
+    </noscript>
+    <link rel="canonical" href="https://icrcorg.compose.localhost/en" />
+    <link rel="shortlink" href="https://icrcorg.compose.localhost/en" />
+    <meta name="Generator" content="Drupal 10 (https://www.drupal.org)" />
+    <meta name="MobileOptimized" content="width" />
+    <meta name="HandheldFriendly" content="true" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="//web.cmp.usercentrics.eu/ui/loader.js" />
+    <link
+      rel="preload"
+      href="//web.cmp.usercentrics.eu/ui/loader.js"
+      as="script"
+    />
+    <link
+      rel="icon"
+      href="/themes/custom/icrc_theme/favicon.ico"
+      type="image/vnd.microsoft.icon"
+    />
+
+    <title data-translate-key="pageTitle">
+      Page not found | International Committee of the Red Cross
+    </title>
+
+    <link
+      rel="stylesheet"
+      media="all"
+      href="/themes/custom/icrc_theme/html/css/fonts.css?svf8rn"
+    />
+    <link
+      rel="stylesheet"
+      media="all"
+      href="/themes/custom/icrc_theme/html/css/screen.css?svf8rn"
+    />
+    <link
+      rel="stylesheet"
+      media="print"
+      href="/themes/custom/icrc_theme/html/css/print.css?svf8rn"
+    />
+
+    <style>
+      html,
+      body,
+      .wrapper,
+      .dialog-off-canvas-main-canvas {
+        height: 100%;
+      }
+      .wrapper {
+        display: flex;
+        min-height: 100vh;
+        flex-flow: column nowrap;
+      }
+      .main {
+        flex: 1;
+        min-height: auto;
+      }
+    </style>
+
+    <script>
+      const GTM_IDS = {
+        nonprod: "GTM-T7LFTSK6",
+        prod: "GTM-FVTRGQ",
+      };
+      const GTM_HOSTS = {
+        nonprod: "https://gtmtest.icrc.org",
+        prod: "https://www.googletagmanager.com",
+      };
+      const isProd = () => {
+        const host = window.location.hostname.toLowerCase();
+        return !host.includes("icrc10.lndo") && !host.startsWith("www2-");
+      };
+      const gtmId = isProd() ? GTM_IDS.prod : GTM_IDS.nonprod;
+      const gtmHost = isProd() ? GTM_HOSTS.prod : GTM_HOSTS.nonprod;
+
+      (function () {
+        if (!gtmId) return;
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+          "gtm.start": new Date().getTime(),
+          event: "gtm.js",
+        });
+        var gtmScript = document.createElement("script");
+        gtmScript.async = true;
+        gtmScript.src = gtmHost + "/gtm.js?id=" + gtmId;
+        document.head.appendChild(gtmScript);
+      })();
+    </script>
+  </head>
+
+  <body data-ga-slug="en-hjjhhj">
+    <noscript
+      ><iframe
+        src="https://www.googletagmanager.com/ns.html?id=GTM-FVTRGQ"
+        height="0"
+        width="0"
+        style="display: none; visibility: hidden"
+      ></iframe
+    ></noscript>
+
+    <div class="dialog-off-canvas-main-canvas" data-off-canvas-main-canvas>
+      <div class="wrapper">
+        <header class="header header-responsive" id="block-icrc-theme-header">
+          <div class="top-header">
+            <div class="icrc-container">
+              <div class="holder row">
+                <div class="l-side col col-sm-4">
+                  <div class="logo">
+                    <a
+                      data-ga-slug="logo"
+                      href="/en"
+                      data-translate-link="homeLink"
+                    >
+                      <img
+                        src="/themes/custom/icrc_theme/html/images/logo/logo.svg"
+                        alt="Home"
+                        data-translate-attr-alt="logoAltText"
+                        data-translate-attr-src="logoSrc"
+                      />
+                      <span class="slogan" data-translate-key="logoSloganText"
+                        >International Committee of the Red Cross</span
+                      >
+                    </a>
+                  </div>
+                </div>
+                <div class="r-side col">
+                  <div class="btn-container">
+                    <div class="btn-holder">
+                      <a
+                        href="/en/find-help"
+                        class="btn btn-secondary-accent btn-sm"
+                        data-translate-key="findHelpButtonText"
+                        data-translate-link="findHelpLink"
+                        >Find help</a
+                      >
+                      <a
+                        href="/en/donate"
+                        class="btn btn-error btn-sm donate-link"
+                        data-translate-key="donateButtonText"
+                        data-translate-link="donateLink"
+                        data-translate-attr-title="footerMenuDonateTitle"
+                        >Donate</a
+                      >
+                    </div>
+                  </div>
+                  <div class="navbar-expand-lg nav-burger">
+                    <a
+                      class="btn-search navbar-toggler"
+                      href="/en/resource-centre/result"
+                      data-translate-link="searchLink"
+                    >
+                      <span class="svg-icon">
+                        <svg aria-hidden="true">
+                          <use
+                            xlink:href="/themes/custom/icrc_theme/html/svg/sprite.min.svg#icon-search"
+                          ></use>
+                        </svg>
+                      </span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="btn-outside-holder">
+            <div class="icrc-container">
+              <div class="btn-container-outside"></div>
+            </div>
+          </div>
+          <div class="header-top-search-holder">
+            <div class="icrc-container">
+              <div class="header-top-search-container"></div>
+            </div>
+          </div>
+        </header>
+
+        <div class="main">
+          <div class="page-error">
+            <div class="icrc-container">
+              <div class="head">
+                <h1 data-translate-key="errorPageTitle">Page not found.</h1>
+                <p data-translate-key="errorPageSorryText">We're sorry</p>
+                <p data-translate-key="errorPageLostText">
+                  Web pages sometimes get lost and hyperlinks broken.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="manual-highlight-module">
+            <div class="icrc-container">
+              <div class="title-module">
+                <h2 data-translate-key="usefulLinksTitle">Useful links</h2>
+              </div>
+              <div class="manual-highlight-content items-">
+                <div class="item">
+                  <div class="frame">
+                    <div class="text">
+                      <div class="title">
+                        <h2>
+                          <a
+                            href="/en"
+                            data-translate-key="usefulLinkHomepageText"
+                            data-translate-link="usefulLinkHomepageLink"
+                            >Return to our homepage</a
+                          >
+                        </h2>
+                      </div>
+                    </div>
+                    <div class="media">
+                      <picture>
+                        <img
+                          src="/themes/custom/icrc_theme/html/images/img-plaseholder.png"
+                          alt=""
+                          data-translate-attr-alt="usefulLinkHomepageImageAlt"
+                        />
+                      </picture>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="item">
+                  <div class="frame">
+                    <div class="text">
+                      <div class="title">
+                        <h2>
+                          <a
+                            href="https://familylinks.icrc.org/"
+                            rel="nofollow"
+                            target="_blank"
+                            data-translate-key="usefulLinkFamilyLinksText"
+                            >Restoring family links</a
+                          >
+                        </h2>
+                      </div>
+                    </div>
+                    <div class="media">
+                      <picture>
+                        <img
+                          src="/themes/custom/icrc_theme/html/images/img-error-2.jpg"
+                          alt=""
+                          data-translate-attr-alt="usefulLinkFamilyLinksImageAlt"
+                        />
+                      </picture>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <footer class="footer" id="block-icrc-theme-footer">
+          <div class="icrc-container">
+            <div class="footer-top">
+              <div class="icrc-info-box">
+                <p class="title" data-translate-key="footerWebsitesTitle">
+                  Topic-dedicated ICRC websites
+                </p>
+                <p data-translate-key="footerWebsitesText">
+                  Explore our blogs, apps, reviews and other resources dedicated
+                  to humanitarian impact, insight, law and policy.
+                </p>
+                <a
+                  href="/en/icrc-websites"
+                  class="btn btn-secondary-light"
+                  data-translate-key="footerWebsitesButtonText"
+                  data-translate-link="footerWebsitesLink"
+                  >ICRC Websites</a
+                >
+              </div>
+              <nav
+                class="direct-access-box"
+                aria-labelledby="directAccessMenuTitle"
+              >
+                <p
+                  class="title"
+                  id="directAccessMenuTitle"
+                  data-translate-key="footerDirectAccessTitle"
+                >
+                  Direct access
+                </p>
+                <div class="footer-list">
+                  <ul class="direct-access-menu secondary-nav">
+                    <li>
+                      <a
+                        href="/en/find-help"
+                        data-drupal-link-system-path="node/300219"
+                        data-translate-key="footerMenuFindHelp"
+                        data-translate-link="footerMenuFindHelpLink"
+                        >Find help</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        href="/en/donate"
+                        title="Donate"
+                        data-drupal-link-system-path="node/16881"
+                        data-translate-key="footerMenuDonate"
+                        data-translate-link="footerMenuDonateLink"
+                        data-translate-attr-title="footerMenuDonateTitle"
+                        >Donate</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        href="/en/event"
+                        data-drupal-link-system-path="event"
+                        data-translate-key="footerMenuEvents"
+                        data-translate-link="footerMenuEventsLink"
+                        >Events</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        href="/en/resource-centre/result?t=&amp;f%5B0%5D=type%3Anews_release"
+                        data-drupal-link-query='{"f":["type:news_release"],"t":""}'
+                        data-drupal-link-system-path="resource-centre/result"
+                        data-translate-key="footerMenuNewsReleases"
+                        data-translate-link="footerMenuNewsReleasesLink"
+                        >News releases</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        href="/en/contact"
+                        data-drupal-link-system-path="node/300224"
+                        data-translate-key="footerMenuContactUs"
+                        data-translate-link="footerMenuContactUsLink"
+                        >Contact us</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        href="https://icrc.integrityplatform.org/"
+                        data-translate-key="footerMenuReportMisconduct"
+                        data-translate-link="footerMenuReportMisconductLink"
+                        >Report an incident of misconduct</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        href="/en/join-icrc-and-help-protect-lives-and-dignity"
+                        data-drupal-link-system-path="node/300213"
+                        data-translate-key="footerMenuWorkWithUs"
+                        data-translate-link="footerMenuWorkWithUsLink"
+                        >Work with us</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        href="/en/frequently-asked-questions"
+                        data-drupal-link-system-path="node/300215"
+                        data-translate-key="footerMenuFAQ"
+                        data-translate-link="footerMenuFAQLink"
+                        >FAQ</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        href="https://blogs.icrc.org/logistics/"
+                        data-translate-key="footerMenuSupplyChain"
+                        data-translate-link="footerMenuSupplyChainLink"
+                        >ICRC Supply Chain</a
+                      >
+                    </li>
+                  </ul>
+                </div>
+              </nav>
+              <div class="social-box">
+                <ul class="social-list" data-social-list-lang-class>
+                  <li>
+                    <a
+                      href="https://www.instagram.com/ICRC/"
+                      data-ga-slug="instagram"
+                      target="_blank"
+                      title="Instagram"
+                      data-translate-attr-title="socialInstagramTitle"
+                    >
+                      <span class="svg-icon">
+                        <svg aria-hidden="true">
+                          <use
+                            xlink:href="/themes/custom/icrc_theme/html/svg/sprite.min.svg#icon-instagram"
+                          ></use>
+                        </svg>
+                      </span>
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="https://www.facebook.com/icrc"
+                      data-ga-slug="facebook"
+                      target="_blank"
+                      title="Facebook"
+                      data-translate-attr-title="socialFacebookTitle"
+                    >
+                      <span class="svg-icon">
+                        <svg aria-hidden="true">
+                          <use
+                            xlink:href="/themes/custom/icrc_theme/html/svg/sprite.min.svg#icon-facebook"
+                          ></use>
+                        </svg>
+                      </span>
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="https://twitter.com/icrc"
+                      data-ga-slug="x"
+                      target="_blank"
+                      title="X"
+                      data-translate-attr-title="socialXTitle"
+                    >
+                      <span class="svg-icon">
+                        <svg aria-hidden="true">
+                          <use
+                            xlink:href="/themes/custom/icrc_theme/html/svg/sprite.min.svg#icon-x"
+                          ></use>
+                        </svg>
+                      </span>
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="https://www.youtube.com/icrcfilms"
+                      data-ga-slug="youtube"
+                      target="_blank"
+                      title="Youtube"
+                      data-translate-attr-title="socialYoutubeTitle"
+                    >
+                      <span class="svg-icon">
+                        <svg aria-hidden="true">
+                          <use
+                            xlink:href="/themes/custom/icrc_theme/html/svg/sprite.min.svg#icon-youtube"
+                          ></use>
+                        </svg>
+                      </span>
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="https://www.tiktok.com/@icrc"
+                      data-ga-slug="tiktok"
+                      target="_blank"
+                      title="Tiktok"
+                      data-translate-attr-title="socialTiktokTitle"
+                    >
+                      <span class="svg-icon">
+                        <svg aria-hidden="true">
+                          <use
+                            xlink:href="/themes/custom/icrc_theme/html/svg/sprite.min.svg#icon-tiktok"
+                          ></use>
+                        </svg>
+                      </span>
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="https://www.linkedin.com/company/icrc"
+                      data-ga-slug="linkedin"
+                      target="_blank"
+                      title="linkedin"
+                      data-translate-attr-title="socialLinkedinTitle"
+                    >
+                      <span class="svg-icon">
+                        <svg aria-hidden="true">
+                          <use
+                            xlink:href="/themes/custom/icrc_theme/html/svg/sprite.min.svg#icon-linkedin"
+                          ></use>
+                        </svg>
+                      </span>
+                    </a>
+                  </li>
+                  <li style="display: none">
+                    <a
+                      href="#"
+                      data-ga-slug="telegram"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Telegram"
+                      data-translate-attr-title="socialTelegramTitle"
+                    >
+                      <span class="svg-icon">
+                        <svg aria-hidden="true">
+                          <use
+                            xlink:href="/themes/custom/icrc_theme/html/svg/sprite.min.svg#icon-telegram"
+                          ></use>
+                        </svg>
+                      </span>
+                    </a>
+                  </li>
+                  <li style="display: none">
+                    <a
+                      href="#"
+                      data-ga-slug="vkontakte"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="VKontakte"
+                      data-translate-attr-title="socialVkontakteTitle"
+                    >
+                      <span class="svg-icon">
+                        <svg aria-hidden="true">
+                          <use
+                            xlink:href="/themes/custom/icrc_theme/html/svg/sprite.min.svg#icon-vkontakte"
+                          ></use>
+                        </svg>
+                      </span>
+                    </a>
+                  </li>
+                  <li style="display: none">
+                    <a
+                      href="#"
+                      data-ga-slug="wechat"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="WeChat"
+                      data-translate-attr-title="socialWechatTitle"
+                    >
+                      <span class="svg-icon">
+                        <svg aria-hidden="true">
+                          <use
+                            xlink:href="/themes/custom/icrc_theme/html/svg/sprite.min.svg#icon-wechat"
+                          ></use>
+                        </svg>
+                      </span>
+                    </a>
+                  </li>
+                  <li style="display: none">
+                    <a
+                      href="#"
+                      data-ga-slug="weibo"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Weibo"
+                      data-translate-attr-title="socialWeiboTitle"
+                    >
+                      <span class="svg-icon">
+                        <svg aria-hidden="true">
+                          <use
+                            xlink:href="/themes/custom/icrc_theme/html/svg/sprite.min.svg#icon-weibo"
+                          ></use>
+                        </svg>
+                      </span>
+                    </a>
+                  </li>
+                  <li style="display: none">
+                    <a
+                      href="#"
+                      data-ga-slug="youku"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Youku"
+                      data-translate-attr-title="socialYoukuTitle"
+                    >
+                      <span class="svg-icon">
+                        <svg aria-hidden="true">
+                          <use
+                            xlink:href="/themes/custom/icrc_theme/html/svg/sprite.min.svg#icon-youku"
+                          ></use>
+                        </svg>
+                      </span>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div class="footer-bottom">
+              <ul class="footer-menu footer-secondary-nav">
+                <li>
+                  <a
+                    href="/en/accessibility"
+                    data-drupal-link-system-path="node/300205"
+                    data-translate-key="footerBottomAccessibility"
+                    data-translate-link="footerBottomAccessibilityLink"
+                    >Accessibility</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="/en/copyright-and-terms-use"
+                    data-drupal-link-system-path="node/300206"
+                    data-translate-key="footerBottomCopyright"
+                    data-translate-link="footerBottomCopyrightLink"
+                    >Copyright</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="/en/privacy-policy"
+                    data-drupal-link-system-path="node/300207"
+                    data-translate-key="footerBottomPrivacy"
+                    data-translate-link="footerBottomPrivacyLink"
+                    >Privacy policy</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="/en/about-donations-and-tax-deduction"
+                    data-drupal-link-system-path="node/300220"
+                    data-translate-key="footerBottomTaxDeduction"
+                    data-translate-link="footerBottomTaxDeductionLink"
+                    >Tax deduction</a
+                  >
+                </li>
+              </ul>
+
+              <p class="copy">
+                <a
+                  href="/en/copyright-and-terms-use"
+                  data-translate-key="footerCopyrightTermsLinkText"
+                  data-translate-link="footerCopyrightTermsLink"
+                  >Terms and conditions</a
+                >
+                <span data-translate-key="footerCopyrightText">
+                  - ICRC &#169;2025 - All right reserved</span
+                >
+              </p>
+            </div>
+          </div>
+        </footer>
+      </div>
+    </div>
+
+    <script src="/core/assets/vendor/jquery/jquery.min.js?v=3.7.1"></script>
+    <script>
+      $(function () {
+        const localesDir = "/sites/default/404-pages/locales";
+        const supportedLanguages = [
+          "en",
+          "ar",
+          "de",
+          "es",
+          "fr",
+          "pt",
+          "ru",
+          "zh",
+        ];
+        const defaultLanguage = "en";
+        let currentLanguage = defaultLanguage;
+
+        function getBrowserLanguage() {
+          if (navigator.languages && navigator.languages.length > 0) {
+            return navigator.languages[0];
+          } else if (navigator.language) {
+            return navigator.language;
+          } else {
+            return "en";
+          }
+        }
+
+        function getPrimaryLanguageCode(lang) {
+          if (!lang) return "en";
+          return lang.split("-")[0].toLowerCase();
+        }
+
+        function detectLanguage() {
+          const pathSegments = window.location.pathname.split("/");
+          if (
+            pathSegments.length > 1 &&
+            supportedLanguages.includes(pathSegments[1])
+          ) {
+            return pathSegments[1];
+          }
+
+          // If no supported language in URL, try browser
+          const browserLang = getPrimaryLanguageCode(getBrowserLanguage());
+          if (supportedLanguages.includes(browserLang)) {
+            return browserLang;
+          }
+
+          // Fallback
+          return defaultLanguage;
+        }
+
+        async function fetchTranslations(lang) {
+          try {
+            const data = await $.ajax({
+              url: `${localesDir}/${lang}.json`,
+              dataType: "json",
+            });
+            return data;
+          } catch (jqXHR) {
+            console.error(
+              `Could not load translation file for ${lang}. Status: ${jqXHR.status}, TextStatus: ${jqXHR.statusText}`
+            );
+            if (lang !== defaultLanguage) {
+              console.warn(
+                `Falling back to default language (${defaultLanguage}) for translations.`
+              );
+              return fetchTranslations(defaultLanguage);
+            }
+            return null;
+          }
+        }
+
+        function applyTranslations(translations) {
+          if (!translations) return;
+
+          $("[data-translate-key]").each(function () {
+            const key = $(this).attr("data-translate-key");
+            if (translations[key]) {
+              $(this).text(translations[key]);
+            }
+          });
+
+          $("[data-translate-attr-alt]").each(function () {
+            const key = $(this).attr("data-translate-attr-alt");
+            if (translations[key]) {
+              $(this).attr("alt", translations[key]);
+            }
+          });
+
+          $("[data-translate-attr-title]").each(function () {
+            const key = $(this).attr("data-translate-attr-title");
+            if (translations[key]) {
+              $(this).attr("title", translations[key]);
+            }
+          });
+
+          $("[data-translate-attr-src]").each(function () {
+            const key = $(this).attr("data-translate-attr-src");
+            if (translations[key]) {
+              $(this).attr("src", translations[key]);
+            }
+          });
+
+          $("[data-translate-link]").each(function () {
+            const key = $(this).attr("data-translate-link");
+            if (translations[key]) {
+              let newHref = translations[key];
+              if (
+                !newHref.startsWith("http") &&
+                !newHref.startsWith("https") &&
+                !newHref.startsWith("/" + currentLanguage + "/")
+              ) {
+                if (newHref.startsWith("/")) {
+                  newHref = "/" + currentLanguage + newHref;
+                } else {
+                  newHref = "/" + currentLanguage + "/" + newHref;
+                }
+              }
+              $(this).attr("href", newHref);
+            }
+          });
+
+          if (translations.htmlDir) {
+            $("html").attr("dir", translations.htmlDir);
+          } else {
+            $("html").attr("dir", "ltr"); // Default
+          }
+          if (translations.htmlLang) {
+            $("html").attr("lang", translations.htmlLang);
+          }
+
+          const $usercentricsScript = $("#usercentrics-cmp");
+          if ($usercentricsScript.length && translations.htmlLang) {
+            $usercentricsScript.attr("data-language", translations.htmlLang);
+          }
+
+          if (translations.canonicalUrl) {
+            const $canonicalLink = $('link[rel="canonical"]');
+            if ($canonicalLink.length) {
+              $canonicalLink.attr("href", translations.canonicalUrl);
+            }
+          }
+          if (translations.shortlinkUrl) {
+            const $shortlinkLink = $('link[rel="shortlink"]');
+            if ($shortlinkLink.length) {
+              $shortlinkLink.attr("href", translations.shortlinkUrl);
+            }
+          }
+
+          if (translations.bodyGaSlug) {
+            document.body.setAttribute("data-ga-slug", translations.bodyGaSlug);
+          }
+
+          const socialPlatforms = [
+            {
+              slug: "instagram",
+              titleKey: "socialInstagramTitle",
+              linkKey: "socialInstagramLink",
+            },
+            {
+              slug: "facebook",
+              titleKey: "socialFacebookTitle",
+              linkKey: "socialFacebookLink",
+            },
+            { slug: "x", titleKey: "socialXTitle", linkKey: "socialXLink" },
+            {
+              slug: "youtube",
+              titleKey: "socialYoutubeTitle",
+              linkKey: "socialYoutubeLink",
+            },
+            {
+              slug: "tiktok",
+              titleKey: "socialTiktokTitle",
+              linkKey: "socialTiktokLink",
+            },
+            {
+              slug: "linkedin",
+              titleKey: "socialLinkedinTitle",
+              linkKey: "socialLinkedinLink",
+            },
+            {
+              slug: "telegram",
+              titleKey: "socialTelegramTitle",
+              linkKey: "socialTelegramLink",
+            },
+            {
+              slug: "vkontakte",
+              titleKey: "socialVkontakteTitle",
+              linkKey: "socialVkontakteLink",
+            },
+            {
+              slug: "wechat",
+              titleKey: "socialWechatTitle",
+              linkKey: "socialWechatLink",
+            },
+            {
+              slug: "weibo",
+              titleKey: "socialWeiboTitle",
+              linkKey: "socialWeiboLink",
+            },
+            {
+              slug: "youku",
+              titleKey: "socialYoukuTitle",
+              linkKey: "socialYoukuLink",
+            },
+          ];
+
+          const $socialListContainer = $("ul[data-social-list-lang-class]");
+          if ($socialListContainer.length) {
+            const $liElementsMap = new Map();
+            $socialListContainer.find("li").each(function () {
+              const $aTag = $(this).find("a[data-ga-slug]");
+              if ($aTag.length) {
+                const slug = $aTag.attr("data-ga-slug");
+                $liElementsMap.set(slug, $(this).detach());
+              }
+            });
+
+            const slugsToDisplayInOrder =
+              translations.socialPlatformOrder ||
+              socialPlatforms.map((p) => p.slug);
+
+            slugsToDisplayInOrder.forEach((slug) => {
+              const platformConfig = socialPlatforms.find(
+                (p) => p.slug === slug
+              );
+              const $liElement = $liElementsMap.get(slug);
+
+              if (platformConfig && $liElement) {
+                const linkKey = platformConfig.linkKey;
+                const titleKey = platformConfig.titleKey;
+                const $linkElement = $liElement.find("a");
+
+                if (
+                  translations[linkKey] &&
+                  translations[linkKey].trim() !== ""
+                ) {
+                  $linkElement.attr("href", translations[linkKey]);
+                  if (translations[titleKey]) {
+                    $linkElement.attr("title", translations[titleKey]);
+                  } else {
+                    $linkElement.attr("title", platformConfig.slug);
+                  }
+                  $liElement.show();
+                  $socialListContainer.append($liElement);
+                } else {
+                  $liElement.hide();
+                }
+              }
+            });
+          }
+
+          const $socialListElement = $("[data-social-list-lang-class]");
+          if ($socialListElement.length) {
+            if (translations.socialMenuLangSuffix) {
+              $socialListElement.attr(
+                "class",
+                "social-list social_" +
+                  translations.socialMenuLangSuffix +
+                  "-menu"
+              );
+            } else {
+              $socialListElement.attr("class", "social-list");
+            }
+          }
+        }
+
+        async function init() {
+          currentLanguage = detectLanguage();
+
+          const translations = await fetchTranslations(currentLanguage);
+          if (translations) {
+            applyTranslations(translations);
+          } else {
+            console.warn(
+              "No translations applied. Displaying default content."
+            );
+          }
+        }
+
+        init();
+      });
+    </script>
+  </body>
+</html>

@@ -1,73 +1,71 @@
 "use client";
 
-import { useState } from "react";
+import OrgLogo from "@/components/OrgLogo";
 
-const ORGS: { name: string; logo: string }[] = [
+const ORGS: { name: string; color: string }[] = [
   // UN agencies
-  { name: "WHO",               logo: "https://ui-avatars.com/api/?name=WHO&background=0093D5&color=fff&size=128&bold=true" },
-  { name: "UNICEF",            logo: "https://ui-avatars.com/api/?name=UNICEF&background=00AEEF&color=fff&size=128&bold=true" },
-  { name: "UNDP",              logo: "https://ui-avatars.com/api/?name=UNDP&background=009FDA&color=fff&size=128&bold=true" },
-  { name: "UNFPA",             logo: "https://ui-avatars.com/api/?name=UNFPA&background=009FDA&color=fff&size=128&bold=true" },
-  { name: "UN Women",          logo: "https://ui-avatars.com/api/?name=UNW&background=4C9F38&color=fff&size=128&bold=true" },
-  { name: "UNESCO",            logo: "https://ui-avatars.com/api/?name=UNESCO&background=0093D5&color=fff&size=128&bold=true" },
-  { name: "FAO",               logo: "https://ui-avatars.com/api/?name=FAO&background=009A44&color=fff&size=128&bold=true" },
-  { name: "WFP",               logo: "https://ui-avatars.com/api/?name=WFP&background=009FE3&color=fff&size=128&bold=true" },
-  { name: "IOM",               logo: "https://ui-avatars.com/api/?name=IOM&background=003B6F&color=fff&size=128&bold=true" },
-  { name: "UNHCR",             logo: "https://ui-avatars.com/api/?name=UNHCR&background=00B398&color=fff&size=128&bold=true" },
-  { name: "UNAIDS",            logo: "https://ui-avatars.com/api/?name=UNAIDS&background=E2001A&color=fff&size=128&bold=true" },
-  { name: "UNEP",              logo: "https://ui-avatars.com/api/?name=UNEP&background=009A44&color=fff&size=128&bold=true" },
-  { name: "ILO",               logo: "https://ui-avatars.com/api/?name=ILO&background=003B6F&color=fff&size=128&bold=true" },
-  { name: "UN-Habitat",        logo: "https://ui-avatars.com/api/?name=UNH&background=0093D5&color=fff&size=128&bold=true" },
+  { name: "WHO",               color: "0093D5" },
+  { name: "UNICEF",            color: "00AEEF" },
+  { name: "UNDP",              color: "009FDA" },
+  { name: "UNFPA",             color: "009FDA" },
+  { name: "UN Women",          color: "4C9F38" },
+  { name: "UNESCO",            color: "0093D5" },
+  { name: "FAO",               color: "009A44" },
+  { name: "WFP",               color: "009FE3" },
+  { name: "IOM",               color: "003B6F" },
+  { name: "UNHCR",             color: "00B398" },
+  { name: "UNAIDS",            color: "E2001A" },
+  { name: "UNEP",              color: "009A44" },
+  { name: "ILO",               color: "003B6F" },
+  { name: "UN-Habitat",        color: "0093D5" },
   // Major foundations
-  { name: "Gates Foundation",  logo: "https://ui-avatars.com/api/?name=Gates&background=E8192C&color=fff&size=128&bold=true" },
-  { name: "Wellcome",          logo: "https://ui-avatars.com/api/?name=Wellcome&background=E7157B&color=fff&size=128&bold=true" },
-  { name: "Rockefeller Fdn",   logo: "https://ui-avatars.com/api/?name=RF&background=003B6F&color=fff&size=128&bold=true" },
-  { name: "Ford Foundation",   logo: "https://ui-avatars.com/api/?name=Ford&background=003B6F&color=fff&size=128&bold=true" },
+  { name: "Gates Foundation",  color: "E8192C" },
+  { name: "Wellcome",          color: "E7157B" },
+  { name: "Rockefeller Fdn",   color: "003B6F" },
+  { name: "Ford Foundation",   color: "003B6F" },
   // Development banks
-  { name: "World Bank",        logo: "https://cdn.simpleicons.org/worldbank" },
-  { name: "African Dev Bank",  logo: "https://ui-avatars.com/api/?name=AfDB&background=006B3F&color=fff&size=128&bold=true" },
-  { name: "IDB",               logo: "https://ui-avatars.com/api/?name=IDB&background=003B6F&color=fff&size=128&bold=true" },
-  { name: "Asian Dev Bank",    logo: "https://ui-avatars.com/api/?name=ADB&background=003B6F&color=fff&size=128&bold=true" },
-  { name: "IsDB",              logo: "https://ui-avatars.com/api/?name=IsDB&background=009A44&color=fff&size=128&bold=true" },
+  { name: "World Bank",        color: "003087" },
+  { name: "African Dev Bank",  color: "006B3F" },
+  { name: "IDB",               color: "003B6F" },
+  { name: "Asian Dev Bank",    color: "003B6F" },
+  { name: "IsDB",              color: "009A44" },
   // Global health
-  { name: "Gavi",              logo: "https://ui-avatars.com/api/?name=Gavi&background=0066CC&color=fff&size=128&bold=true" },
-  { name: "The Global Fund",   logo: "https://ui-avatars.com/api/?name=GF&background=EF3340&color=fff&size=128&bold=true" },
-  { name: "PAHO",              logo: "https://ui-avatars.com/api/?name=PAHO&background=0093D5&color=fff&size=128&bold=true" },
-  { name: "Africa CDC",        logo: "https://ui-avatars.com/api/?name=ACDC&background=006B3F&color=fff&size=128&bold=true" },
+  { name: "Gavi",              color: "0066CC" },
+  { name: "The Global Fund",   color: "EF3340" },
+  { name: "PAHO",              color: "0093D5" },
+  { name: "Africa CDC",        color: "006B3F" },
   // Major INGOs
-  { name: "MSF",               logo: "https://ui-avatars.com/api/?name=MSF&background=E30613&color=fff&size=128&bold=true" },
-  { name: "Save the Children", logo: "https://ui-avatars.com/api/?name=STC&background=E2001A&color=fff&size=128&bold=true" },
-  { name: "Oxfam",             logo: "https://ui-avatars.com/api/?name=Oxfam&background=E70052&color=fff&size=128&bold=true" },
-  { name: "CARE",              logo: "https://ui-avatars.com/api/?name=CARE&background=E2001A&color=fff&size=128&bold=true" },
-  { name: "PATH",              logo: "https://ui-avatars.com/api/?name=PATH&background=003B6F&color=fff&size=128&bold=true" },
+  { name: "MSF",               color: "E30613" },
+  { name: "Save the Children", color: "E2001A" },
+  { name: "Oxfam",             color: "E70052" },
+  { name: "CARE",              color: "E2001A" },
+  { name: "PATH",              color: "003B6F" },
   // South-South donors
-  { name: "JICA",              logo: "https://ui-avatars.com/api/?name=JICA&background=003B6F&color=fff&size=128&bold=true" },
-  { name: "KOICA",             logo: "https://ui-avatars.com/api/?name=KOICA&background=003B6F&color=fff&size=128&bold=true" },
-  { name: "ABC Brazil",        logo: "https://ui-avatars.com/api/?name=ABC&background=009A44&color=fff&size=128&bold=true" },
+  { name: "JICA",              color: "003B6F" },
+  { name: "KOICA",             color: "003B6F" },
+  { name: "ABC Brazil",        color: "009A44" },
   // African regional
-  { name: "African Union",     logo: "https://ui-avatars.com/api/?name=AU&background=009A44&color=fff&size=128&bold=true" },
-  { name: "ECOWAS",            logo: "https://ui-avatars.com/api/?name=ECOWAS&background=009A44&color=fff&size=128&bold=true" },
-  { name: "SADC",              logo: "https://ui-avatars.com/api/?name=SADC&background=009A44&color=fff&size=128&bold=true" },
-  { name: "EAC",               logo: "https://ui-avatars.com/api/?name=EAC&background=009A44&color=fff&size=128&bold=true" },
+  { name: "African Union",     color: "009A44" },
+  { name: "ECOWAS",            color: "009A44" },
+  { name: "SADC",              color: "009A44" },
+  { name: "EAC",               color: "009A44" },
   // Asian regional
-  { name: "ASEAN",             logo: "https://ui-avatars.com/api/?name=ASEAN&background=003087&color=fff&size=128&bold=true" },
-  { name: "SAARC",             logo: "https://ui-avatars.com/api/?name=SAARC&background=003B6F&color=fff&size=128&bold=true" },
+  { name: "ASEAN",             color: "003087" },
+  { name: "SAARC",             color: "003B6F" },
   // Research & think tanks
-  { name: "Brookings",         logo: "https://ui-avatars.com/api/?name=Brookings&background=003974&color=fff&size=128&bold=true" },
-  { name: "Chatham House",     logo: "https://ui-avatars.com/api/?name=CH&background=003B6F&color=fff&size=128&bold=true" },
-  { name: "ODI",               logo: "https://ui-avatars.com/api/?name=ODI&background=003B6F&color=fff&size=128&bold=true" },
+  { name: "Brookings",         color: "003974" },
+  { name: "Chatham House",     color: "003B6F" },
+  { name: "ODI",               color: "003B6F" },
   // Global South universities
-  { name: "Makerere",          logo: "https://ui-avatars.com/api/?name=MAK&background=003B6F&color=fff&size=128&bold=true" },
-  { name: "Univ. of Nairobi",  logo: "https://ui-avatars.com/api/?name=UoN&background=003B6F&color=fff&size=128&bold=true" },
-  { name: "UCT",               logo: "https://ui-avatars.com/api/?name=UCT&background=003B6F&color=fff&size=128&bold=true" },
-  { name: "Aga Khan Univ.",    logo: "https://ui-avatars.com/api/?name=AKU&background=003B6F&color=fff&size=128&bold=true" },
+  { name: "Makerere",          color: "003B6F" },
+  { name: "Univ. of Nairobi",  color: "003B6F" },
+  { name: "UCT",               color: "003B6F" },
+  { name: "Aga Khan Univ.",    color: "003B6F" },
 ];
 
+const doubled = [...ORGS, ...ORGS];
+
 export default function TrustStrip() {
-  const [failed, setFailed] = useState<Set<string>>(new Set());
-
-  const doubled = [...ORGS, ...ORGS];
-
   return (
     <div className="w-full bg-white py-6 px-4">
       <p className="text-xs text-gray-400 uppercase tracking-widest text-center mb-4">
@@ -81,26 +79,7 @@ export default function TrustStrip() {
               title={org.name}
               className="shrink-0 mx-4 flex items-center justify-center"
             >
-              {failed.has(org.name) ? (
-                <span className="text-xs text-gray-500 font-medium whitespace-nowrap">
-                  {org.name}
-                </span>
-              ) : (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={org.logo}
-                  alt={org.name}
-                  className="h-8 w-8 rounded-lg object-contain"
-                  style={{ imageRendering: "crisp-edges" }}
-                  onError={() =>
-                    setFailed(prev => {
-                      const next = new Set(prev);
-                      next.add(org.name);
-                      return next;
-                    })
-                  }
-                />
-              )}
+              <OrgLogo name={org.name} color={org.color} size="sm" />
             </div>
           ))}
         </div>

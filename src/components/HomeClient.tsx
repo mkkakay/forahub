@@ -6,6 +6,7 @@ import { Calendar, Flag, MapPin, Flame, ArrowRight, ChevronRight, Globe, X } fro
 import { supabase } from "@/lib/supabase/client";
 import { useLanguage } from "@/context/LanguageContext";
 import { t } from "@/lib/i18n";
+import OrgLogo from "@/components/OrgLogo";
 
 const SDG_COLORS: Record<number, string> = {
   1: "#E5243B", 2: "#DDA63A", 3: "#4C9F38", 4: "#C5192D", 5: "#FF3A21",
@@ -195,29 +196,6 @@ function OrgFavicon({ initial, color }: { domain: string; initial: string; color
   );
 }
 
-function FeaturedOrgLogo({ name, color }: { name: string; color: string }) {
-  const [failed, setFailed] = useState(false);
-  const logoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${color.replace("#", "")}&color=fff&size=128&bold=true`;
-  if (failed) {
-    return (
-      <div
-        className="w-10 h-10 rounded-lg flex items-center justify-center text-white text-sm font-bold"
-        style={{ backgroundColor: color }}
-      >
-        {name[0]}
-      </div>
-    );
-  }
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={logoUrl}
-      alt={name}
-      className="w-10 h-10 rounded-lg object-contain"
-      onError={() => setFailed(true)}
-    />
-  );
-}
 
 function SdgCard({ sdg, count }: { sdg: number; count: number }) {
   const [bgFailed, setBgFailed] = useState(false);
@@ -633,7 +611,7 @@ export default function HomeClient({
                   className="relative h-28 flex items-center justify-center"
                   style={{ background: `linear-gradient(135deg, ${org.color}, ${org.color}bb)` }}
                 >
-                  <FeaturedOrgLogo name={org.name} color={org.color} />
+                  <OrgLogo name={org.name} color={org.color} size="md" />
                   <span className="absolute top-2 right-2 bg-black/30 backdrop-blur-sm text-white text-xs font-bold px-2 py-0.5 rounded-full">
                     {org.events}
                   </span>

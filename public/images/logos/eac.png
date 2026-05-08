@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en-gb" dir="ltr">
+    <head>
+        <meta charset="utf-8">
+	<base href="https://www.eac.int/">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="generator" content="Joomla! - Open Source Content Management">
+	<title>404 - Page not found</title>
+	<link href="images/favicon.png" rel="icon" sizes="any">
+	<link href="images/apple-touch-icon.png" rel="apple-touch-icon">
+
+        <link href="/media/system/css/joomla-fontawesome.min.css?5.0.18" rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'">
+	<link href="/templates/yootheme/css/theme.12.css?1772136821" rel="stylesheet">
+
+        <script type="application/json" class="joomla-script-options new">{"system.paths":{"root":"","rootFull":"https:\/\/www.eac.int\/","base":"","baseFull":"https:\/\/www.eac.int\/"}}</script>
+	<script src="/media/system/js/core.min.js?a3d8f8"></script>
+	<script src="/templates/yootheme/vendor/assets/uikit/dist/js/uikit.min.js?5.0.18"></script>
+	<script src="/templates/yootheme/vendor/assets/uikit/dist/js/uikit-icons-paladin.min.js?5.0.18"></script>
+	<script src="/templates/yootheme/assets/site/js/theme.js?5.0.18"></script>
+	<script>window.yootheme ||= {}; yootheme.theme = {"i18n":{"close":{"label":"Close"},"totop":{"label":"Back to top"},"marker":{"label":"Open"},"navbarToggleIcon":{"label":"Open Menu"},"paginationPrevious":{"label":"Previous page"},"paginationNext":{"label":"Next Page"},"searchIcon":{"toggle":"Open Search","submit":"Submit Search"},"slider":{"next":"Next slide","previous":"Previous slide","slideX":"Slide %s","slideLabel":"%s of %s"},"slideshow":{"next":"Next slide","previous":"Previous slide","slideX":"Slide %s","slideLabel":"%s of %s"},"lightboxPanel":{"next":"Next slide","previous":"Previous slide","slideLabel":"%s of %s","close":"Close"}}};</script>
+
+    </head>
+    <body>
+
+        <div class="tm-page">
+            <main id="tm-main">
+
+                
+                <div class="uk-section uk-section-default uk-flex uk-flex-center uk-flex-middle uk-text-center" uk-height-viewport>
+                    <div>
+                        <h1 class="uk-heading-xlarge">404</h1>
+                        <p class="uk-h3">Page not found</p>
+                        <a class="uk-button uk-button-primary" href="/index.php">Home Page</a>
+
+                        
+                    </div>
+                </div>
+
+                
+            </main>
+        </div>
+
+    </body>
+</html>

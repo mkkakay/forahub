@@ -1,0 +1,76 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
+
+<head>
+  <title>Error | African Union</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="Generator" content="Drupal 7 (http://drupal.org)" />
+<link rel="shortcut icon" href="https://au.int/favicon.ico" type="image/vnd.microsoft.icon" />
+  <style type="text/css" media="all">
+@import url("https://au.int/modules/system/system.base.css?tdx3x9");
+@import url("https://au.int/modules/system/system.admin.css?tdx3x9");
+@import url("https://au.int/modules/system/system.menus.css?tdx3x9");
+@import url("https://au.int/modules/system/system.messages.css?tdx3x9");
+@import url("https://au.int/modules/system/system.theme.css?tdx3x9");
+@import url("https://au.int/modules/system/system.maintenance.css?tdx3x9");
+</style>
+  <script type="text/javascript" src="https://au.int/misc/jquery.js?v=1.4.4"></script>
+<script type="text/javascript" src="https://au.int/misc/jquery-extend-3.4.0.js?v=1.4.4"></script>
+<script type="text/javascript" src="https://au.int/misc/jquery-html-prefilter-3.5.0-backport.js?v=1.4.4"></script>
+<script type="text/javascript" src="https://au.int/misc/jquery.once.js?v=1.2"></script>
+<script type="text/javascript" src="https://au.int/misc/drupal.js?tdx3x9"></script>
+<script type="text/javascript" src="https://au.int/sites/all/themes/au/js/au.js?tdx3x9"></script>
+<script type="text/javascript" src="https://au.int/sites/all/themes/au/js/ResizeSensor.min.js?tdx3x9"></script>
+<script type="text/javascript" src="https://au.int/sites/all/themes/au/js/theia-sticky-sidebar.min.js?tdx3x9"></script>
+<script type="text/javascript">
+<!--//--><![CDATA[//><!--
+jQuery.extend(Drupal.settings, {"basePath":"\/","pathPrefix":"","ajaxPageState":{"css":{"modules\/system\/system.base.css":1,"modules\/system\/system.admin.css":1,"modules\/system\/system.menus.css":1,"modules\/system\/system.messages.css":1,"modules\/system\/system.theme.css":1,"modules\/system\/system.maintenance.css":1},"js":{"misc\/jquery.js":1,"misc\/jquery-extend-3.4.0.js":1,"misc\/jquery-html-prefilter-3.5.0-backport.js":1,"misc\/jquery.once.js":1,"misc\/drupal.js":1,"sites\/all\/themes\/au\/js\/au.js":1,"sites\/all\/themes\/au\/js\/ResizeSensor.min.js":1,"sites\/all\/themes\/au\/js\/theia-sticky-sidebar.min.js":1}}});
+//--><!]]>
+</script>
+</head>
+<body class="maintenance-page in-maintenance db-offline no-sidebars">
+  <div id="page">
+    <div id="header">
+      <div id="logo-title">
+
+                  <a href="/" title="Home" rel="home" id="logo">
+            <img src="https://au.int/sites/default/files/auweblogo-en.png" alt="Home" />
+          </a>
+        
+        <div id="name-and-slogan">
+                      <h1 id="site-name">
+              <a href="/" title="Home" rel="home"><span>African Union</span></a>
+            </h1>
+          
+                      <div id="site-slogan">An Integrated, Prosperous and Peaceful Africa.</div>
+                  </div> <!-- /name-and-slogan -->
+      </div> <!-- /logo-title -->
+
+      
+    </div> <!-- /header -->
+
+    <div id="container" class="clearfix">
+
+      
+      <div id="main" class="column"><div id="main-squeeze">
+
+        <div id="content">
+          <h1 class="title" id="page-title">Error</h1>                    <div id="content-content" class="clearfix">
+            The website encountered an unexpected error. Please try again later.          </div> <!-- /content-content -->
+        </div> <!-- /content -->
+
+      </div></div> <!-- /main-squeeze /main -->
+
+      
+    </div> <!-- /container -->
+
+    <div id="footer-wrapper">
+      <div id="footer">
+              </div> <!-- /footer -->
+    </div> <!-- /footer-wrapper -->
+
+  </div> <!-- /page -->
+
+</body>
+</html>

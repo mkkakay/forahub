@@ -1,0 +1,1095 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="profile" href="https://gmpg.org/xfn/11" />
+	<title>Page not found &#8211; Home</title>
+<meta name='robots' content='max-image-preview:large' />
+<noscript><style>#preloader{display:none;}</style></noscript><link rel='dns-prefetch' href='//maxcdn.bootstrapcdn.com' />
+<link rel='dns-prefetch' href='//fonts.googleapis.com' />
+<link rel='preconnect' href='https://fonts.gstatic.com' crossorigin />
+<link rel="alternate" type="application/rss+xml" title="Home &raquo; Feed" href="https://ju.edu.et/feed/" />
+		<!-- This site uses the Google Analytics by MonsterInsights plugin v9.0.1 - Using Analytics tracking - https://www.monsterinsights.com/ -->
+							<script src="//www.googletagmanager.com/gtag/js?id=G-80Y313020X"  data-cfasync="false" data-wpfc-render="false" type="text/javascript" async></script>
+			<script data-cfasync="false" data-wpfc-render="false" type="text/javascript">
+				var mi_version = '9.0.1';
+				var mi_track_user = true;
+				var mi_no_track_reason = '';
+								var MonsterInsightsDefaultLocations = {"page_location":"https:\/\/ju.edu.et\/sites\/default\/files\/ju-logo.png\/"};
+				if ( typeof MonsterInsightsPrivacyGuardFilter === 'function' ) {
+					var MonsterInsightsLocations = (typeof MonsterInsightsExcludeQuery === 'object') ? MonsterInsightsPrivacyGuardFilter( MonsterInsightsExcludeQuery ) : MonsterInsightsPrivacyGuardFilter( MonsterInsightsDefaultLocations );
+				} else {
+					var MonsterInsightsLocations = (typeof MonsterInsightsExcludeQuery === 'object') ? MonsterInsightsExcludeQuery : MonsterInsightsDefaultLocations;
+				}
+
+								var disableStrs = [
+										'ga-disable-G-80Y313020X',
+									];
+
+				/* Function to detect opted out users */
+				function __gtagTrackerIsOptedOut() {
+					for (var index = 0; index < disableStrs.length; index++) {
+						if (document.cookie.indexOf(disableStrs[index] + '=true') > -1) {
+							return true;
+						}
+					}
+
+					return false;
+				}
+
+				/* Disable tracking if the opt-out cookie exists. */
+				if (__gtagTrackerIsOptedOut()) {
+					for (var index = 0; index < disableStrs.length; index++) {
+						window[disableStrs[index]] = true;
+					}
+				}
+
+				/* Opt-out function */
+				function __gtagTrackerOptout() {
+					for (var index = 0; index < disableStrs.length; index++) {
+						document.cookie = disableStrs[index] + '=true; expires=Thu, 31 Dec 2099 23:59:59 UTC; path=/';
+						window[disableStrs[index]] = true;
+					}
+				}
+
+				if ('undefined' === typeof gaOptout) {
+					function gaOptout() {
+						__gtagTrackerOptout();
+					}
+				}
+								window.dataLayer = window.dataLayer || [];
+
+				window.MonsterInsightsDualTracker = {
+					helpers: {},
+					trackers: {},
+				};
+				if (mi_track_user) {
+					function __gtagDataLayer() {
+						dataLayer.push(arguments);
+					}
+
+					function __gtagTracker(type, name, parameters) {
+						if (!parameters) {
+							parameters = {};
+						}
+
+						if (parameters.send_to) {
+							__gtagDataLayer.apply(null, arguments);
+							return;
+						}
+
+						if (type === 'event') {
+														parameters.send_to = monsterinsights_frontend.v4_id;
+							var hookName = name;
+							if (typeof parameters['event_category'] !== 'undefined') {
+								hookName = parameters['event_category'] + ':' + name;
+							}
+
+							if (typeof MonsterInsightsDualTracker.trackers[hookName] !== 'undefined') {
+								MonsterInsightsDualTracker.trackers[hookName](parameters);
+							} else {
+								__gtagDataLayer('event', name, parameters);
+							}
+							
+						} else {
+							__gtagDataLayer.apply(null, arguments);
+						}
+					}
+
+					__gtagTracker('js', new Date());
+					__gtagTracker('set', {
+						'developer_id.dZGIzZG': true,
+											});
+					if ( MonsterInsightsLocations.page_location ) {
+						__gtagTracker('set', MonsterInsightsLocations);
+					}
+										__gtagTracker('config', 'G-80Y313020X', {"forceSSL":"true","link_attribution":"true","page_path":'\/404.html?page=' + document.location.pathname + document.location.search + '&from=' + document.referrer} );
+															window.gtag = __gtagTracker;										(function () {
+						/* https://developers.google.com/analytics/devguides/collection/analyticsjs/ */
+						/* ga and __gaTracker compatibility shim. */
+						var noopfn = function () {
+							return null;
+						};
+						var newtracker = function () {
+							return new Tracker();
+						};
+						var Tracker = function () {
+							return null;
+						};
+						var p = Tracker.prototype;
+						p.get = noopfn;
+						p.set = noopfn;
+						p.send = function () {
+							var args = Array.prototype.slice.call(arguments);
+							args.unshift('send');
+							__gaTracker.apply(null, args);
+						};
+						var __gaTracker = function () {
+							var len = arguments.length;
+							if (len === 0) {
+								return;
+							}
+							var f = arguments[len - 1];
+							if (typeof f !== 'object' || f === null || typeof f.hitCallback !== 'function') {
+								if ('send' === arguments[0]) {
+									var hitConverted, hitObject = false, action;
+									if ('event' === arguments[1]) {
+										if ('undefined' !== typeof arguments[3]) {
+											hitObject = {
+												'eventAction': arguments[3],
+												'eventCategory': arguments[2],
+												'eventLabel': arguments[4],
+												'value': arguments[5] ? arguments[5] : 1,
+											}
+										}
+									}
+									if ('pageview' === arguments[1]) {
+										if ('undefined' !== typeof arguments[2]) {
+											hitObject = {
+												'eventAction': 'page_view',
+												'page_path': arguments[2],
+											}
+										}
+									}
+									if (typeof arguments[2] === 'object') {
+										hitObject = arguments[2];
+									}
+									if (typeof arguments[5] === 'object') {
+										Object.assign(hitObject, arguments[5]);
+									}
+									if ('undefined' !== typeof arguments[1].hitType) {
+										hitObject = arguments[1];
+										if ('pageview' === hitObject.hitType) {
+											hitObject.eventAction = 'page_view';
+										}
+									}
+									if (hitObject) {
+										action = 'timing' === arguments[1].hitType ? 'timing_complete' : hitObject.eventAction;
+										hitConverted = mapArgs(hitObject);
+										__gtagTracker('event', action, hitConverted);
+									}
+								}
+								return;
+							}
+
+							function mapArgs(args) {
+								var arg, hit = {};
+								var gaMap = {
+									'eventCategory': 'event_category',
+									'eventAction': 'event_action',
+									'eventLabel': 'event_label',
+									'eventValue': 'event_value',
+									'nonInteraction': 'non_interaction',
+									'timingCategory': 'event_category',
+									'timingVar': 'name',
+									'timingValue': 'value',
+									'timingLabel': 'event_label',
+									'page': 'page_path',
+									'location': 'page_location',
+									'title': 'page_title',
+									'referrer' : 'page_referrer',
+								};
+								for (arg in args) {
+																		if (!(!args.hasOwnProperty(arg) || !gaMap.hasOwnProperty(arg))) {
+										hit[gaMap[arg]] = args[arg];
+									} else {
+										hit[arg] = args[arg];
+									}
+								}
+								return hit;
+							}
+
+							try {
+								f.hitCallback();
+							} catch (ex) {
+							}
+						};
+						__gaTracker.create = newtracker;
+						__gaTracker.getByName = newtracker;
+						__gaTracker.getAll = function () {
+							return [];
+						};
+						__gaTracker.remove = noopfn;
+						__gaTracker.loaded = true;
+						window['__gaTracker'] = __gaTracker;
+					})();
+									} else {
+										console.log("");
+					(function () {
+						function __gtagTracker() {
+							return null;
+						}
+
+						window['__gtagTracker'] = __gtagTracker;
+						window['gtag'] = __gtagTracker;
+					})();
+									}
+			</script>
+				<!-- / Google Analytics by MonsterInsights -->
+		<script type="text/javascript">
+/* <![CDATA[ */
+window._wpemojiSettings = {"baseUrl":"https:\/\/s.w.org\/images\/core\/emoji\/14.0.0\/72x72\/","ext":".png","svgUrl":"https:\/\/s.w.org\/images\/core\/emoji\/14.0.0\/svg\/","svgExt":".svg","source":{"concatemoji":"https:\/\/ju.edu.et\/wp-includes\/js\/wp-emoji-release.min.js?ver=6.4.1"}};
+/*! This file is auto-generated */
+!function(i,n){var o,s,e;function c(e){try{var t={supportTests:e,timestamp:(new Date).valueOf()};sessionStorage.setItem(o,JSON.stringify(t))}catch(e){}}function p(e,t,n){e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(t,0,0);var t=new Uint32Array(e.getImageData(0,0,e.canvas.width,e.canvas.height).data),r=(e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(n,0,0),new Uint32Array(e.getImageData(0,0,e.canvas.width,e.canvas.height).data));return t.every(function(e,t){return e===r[t]})}function u(e,t,n){switch(t){case"flag":return n(e,"\ud83c\udff3\ufe0f\u200d\u26a7\ufe0f","\ud83c\udff3\ufe0f\u200b\u26a7\ufe0f")?!1:!n(e,"\ud83c\uddfa\ud83c\uddf3","\ud83c\uddfa\u200b\ud83c\uddf3")&&!n(e,"\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f","\ud83c\udff4\u200b\udb40\udc67\u200b\udb40\udc62\u200b\udb40\udc65\u200b\udb40\udc6e\u200b\udb40\udc67\u200b\udb40\udc7f");case"emoji":return!n(e,"\ud83e\udef1\ud83c\udffb\u200d\ud83e\udef2\ud83c\udfff","\ud83e\udef1\ud83c\udffb\u200b\ud83e\udef2\ud83c\udfff")}return!1}function f(e,t,n){var r="undefined"!=typeof WorkerGlobalScope&&self instanceof WorkerGlobalScope?new OffscreenCanvas(300,150):i.createElement("canvas"),a=r.getContext("2d",{willReadFrequently:!0}),o=(a.textBaseline="top",a.font="600 32px Arial",{});return e.forEach(function(e){o[e]=t(a,e,n)}),o}function t(e){var t=i.createElement("script");t.src=e,t.defer=!0,i.head.appendChild(t)}"undefined"!=typeof Promise&&(o="wpEmojiSettingsSupports",s=["flag","emoji"],n.supports={everything:!0,everythingExceptFlag:!0},e=new Promise(function(e){i.addEventListener("DOMContentLoaded",e,{once:!0})}),new Promise(function(t){var n=function(){try{var e=JSON.parse(sessionStorage.getItem(o));if("object"==typeof e&&"number"==typeof e.timestamp&&(new Date).valueOf()<e.timestamp+604800&&"object"==typeof e.supportTests)return e.supportTests}catch(e){}return null}();if(!n){if("undefined"!=typeof Worker&&"undefined"!=typeof OffscreenCanvas&&"undefined"!=typeof URL&&URL.createObjectURL&&"undefined"!=typeof Blob)try{var e="postMessage("+f.toString()+"("+[JSON.stringify(s),u.toString(),p.toString()].join(",")+"));",r=new Blob([e],{type:"text/javascript"}),a=new Worker(URL.createObjectURL(r),{name:"wpTestEmojiSupports"});return void(a.onmessage=function(e){c(n=e.data),a.terminate(),t(n)})}catch(e){}c(n=f(s,u,p))}t(n)}).then(function(e){for(var t in e)n.supports[t]=e[t],n.supports.everything=n.supports.everything&&n.supports[t],"flag"!==t&&(n.supports.everythingExceptFlag=n.supports.everythingExceptFlag&&n.supports[t]);n.supports.everythingExceptFlag=n.supports.everythingExceptFlag&&!n.supports.flag,n.DOMReady=!1,n.readyCallback=function(){n.DOMReady=!0}}).then(function(){return e}).then(function(){var e;n.supports.everything||(n.readyCallback(),(e=n.source||{}).concatemoji?t(e.concatemoji):e.wpemoji&&e.twemoji&&(t(e.twemoji),t(e.wpemoji)))}))}((window,document),window._wpemojiSettings);
+/* ]]> */
+</script>
+<link rel='stylesheet' id='formidable-css' href='https://ju.edu.et/wp-content/plugins/formidable/css/formidableforms1.css?ver=511643' type='text/css' media='all' />
+<link rel='stylesheet' id='pt-cv-public-style-css' href='https://ju.edu.et/wp-content/plugins/content-views-query-and-display-post-page/public/assets/css/cv.css?ver=3.7.2' type='text/css' media='all' />
+<link rel='stylesheet' id='layerslider-css' href='https://ju.edu.et/wp-content/plugins/LayerSlider/assets/static/layerslider/css/layerslider.css?ver=6.11.8' type='text/css' media='all' />
+<link rel='stylesheet' id='ls-user-css' href='https://ju.edu.et/wp-content/uploads/layerslider.custom.css?ver=6.11.8' type='text/css' media='all' />
+<style id='wp-emoji-styles-inline-css' type='text/css'>
+
+	img.wp-smiley, img.emoji {
+		display: inline !important;
+		border: none !important;
+		box-shadow: none !important;
+		height: 1em !important;
+		width: 1em !important;
+		margin: 0 0.07em !important;
+		vertical-align: -0.1em !important;
+		background: none !important;
+		padding: 0 !important;
+	}
+</style>
+<link rel='stylesheet' id='wp-block-library-css' href='https://ju.edu.et/wp-includes/css/dist/block-library/style.min.css?ver=6.4.1' type='text/css' media='all' />
+<style id='wp-block-library-theme-inline-css' type='text/css'>
+.wp-block-audio figcaption{color:#555;font-size:13px;text-align:center}.is-dark-theme .wp-block-audio figcaption{color:hsla(0,0%,100%,.65)}.wp-block-audio{margin:0 0 1em}.wp-block-code{border:1px solid #ccc;border-radius:4px;font-family:Menlo,Consolas,monaco,monospace;padding:.8em 1em}.wp-block-embed figcaption{color:#555;font-size:13px;text-align:center}.is-dark-theme .wp-block-embed figcaption{color:hsla(0,0%,100%,.65)}.wp-block-embed{margin:0 0 1em}.blocks-gallery-caption{color:#555;font-size:13px;text-align:center}.is-dark-theme .blocks-gallery-caption{color:hsla(0,0%,100%,.65)}.wp-block-image figcaption{color:#555;font-size:13px;text-align:center}.is-dark-theme .wp-block-image figcaption{color:hsla(0,0%,100%,.65)}.wp-block-image{margin:0 0 1em}.wp-block-pullquote{border-bottom:4px solid;border-top:4px solid;color:currentColor;margin-bottom:1.75em}.wp-block-pullquote cite,.wp-block-pullquote footer,.wp-block-pullquote__citation{color:currentColor;font-size:.8125em;font-style:normal;text-transform:uppercase}.wp-block-quote{border-left:.25em solid;margin:0 0 1.75em;padding-left:1em}.wp-block-quote cite,.wp-block-quote footer{color:currentColor;font-size:.8125em;font-style:normal;position:relative}.wp-block-quote.has-text-align-right{border-left:none;border-right:.25em solid;padding-left:0;padding-right:1em}.wp-block-quote.has-text-align-center{border:none;padding-left:0}.wp-block-quote.is-large,.wp-block-quote.is-style-large,.wp-block-quote.is-style-plain{border:none}.wp-block-search .wp-block-search__label{font-weight:700}.wp-block-search__button{border:1px solid #ccc;padding:.375em .625em}:where(.wp-block-group.has-background){padding:1.25em 2.375em}.wp-block-separator.has-css-opacity{opacity:.4}.wp-block-separator{border:none;border-bottom:2px solid;margin-left:auto;margin-right:auto}.wp-block-separator.has-alpha-channel-opacity{opacity:1}.wp-block-separator:not(.is-style-wide):not(.is-style-dots){width:100px}.wp-block-separator.has-background:not(.is-style-dots){border-bottom:none;height:1px}.wp-block-separator.has-background:not(.is-style-wide):not(.is-style-dots){height:2px}.wp-block-table{margin:0 0 1em}.wp-block-table td,.wp-block-table th{word-break:normal}.wp-block-table figcaption{color:#555;font-size:13px;text-align:center}.is-dark-theme .wp-block-table figcaption{color:hsla(0,0%,100%,.65)}.wp-block-video figcaption{color:#555;font-size:13px;text-align:center}.is-dark-theme .wp-block-video figcaption{color:hsla(0,0%,100%,.65)}.wp-block-video{margin:0 0 1em}.wp-block-template-part.has-background{margin-bottom:0;margin-top:0;padding:1.25em 2.375em}
+</style>
+<link rel='stylesheet' id='single-staff-block-css' href='https://ju.edu.et/wp-content/plugins/staff-directory-pro/blocks/single-staff/style.css?ver=1711051057' type='text/css' media='all' />
+<link rel='stylesheet' id='staff-list-block-css' href='https://ju.edu.et/wp-content/plugins/staff-directory-pro/blocks/staff-list/style.css?ver=1711051057' type='text/css' media='all' />
+<link rel='stylesheet' id='search-staff-block-css' href='https://ju.edu.et/wp-content/plugins/staff-directory-pro/blocks/search-staff/style.css?ver=1711051057' type='text/css' media='all' />
+<link rel='stylesheet' id='a-z-listing-block-css' href='https://ju.edu.et/wp-content/plugins/a-z-listing/css/a-z-listing-default.css?ver=4.3.1' type='text/css' media='all' />
+<style id='classic-theme-styles-inline-css' type='text/css'>
+/*! This file is auto-generated */
+.wp-block-button__link{color:#fff;background-color:#32373c;border-radius:9999px;box-shadow:none;text-decoration:none;padding:calc(.667em + 2px) calc(1.333em + 2px);font-size:1.125em}.wp-block-file__button{background:#32373c;color:#fff;text-decoration:none}
+</style>
+<style id='global-styles-inline-css' type='text/css'>
+body{--wp--preset--color--black: #000000;--wp--preset--color--cyan-bluish-gray: #abb8c3;--wp--preset--color--white: #ffffff;--wp--preset--color--pale-pink: #f78da7;--wp--preset--color--vivid-red: #cf2e2e;--wp--preset--color--luminous-vivid-orange: #ff6900;--wp--preset--color--luminous-vivid-amber: #fcb900;--wp--preset--color--light-green-cyan: #7bdcb5;--wp--preset--color--vivid-green-cyan: #00d084;--wp--preset--color--pale-cyan-blue: #8ed1fc;--wp--preset--color--vivid-cyan-blue: #0693e3;--wp--preset--color--vivid-purple: #9b51e0;--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple: linear-gradient(135deg,rgba(6,147,227,1) 0%,rgb(155,81,224) 100%);--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan: linear-gradient(135deg,rgb(122,220,180) 0%,rgb(0,208,130) 100%);--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange: linear-gradient(135deg,rgba(252,185,0,1) 0%,rgba(255,105,0,1) 100%);--wp--preset--gradient--luminous-vivid-orange-to-vivid-red: linear-gradient(135deg,rgba(255,105,0,1) 0%,rgb(207,46,46) 100%);--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray: linear-gradient(135deg,rgb(238,238,238) 0%,rgb(169,184,195) 100%);--wp--preset--gradient--cool-to-warm-spectrum: linear-gradient(135deg,rgb(74,234,220) 0%,rgb(151,120,209) 20%,rgb(207,42,186) 40%,rgb(238,44,130) 60%,rgb(251,105,98) 80%,rgb(254,248,76) 100%);--wp--preset--gradient--blush-light-purple: linear-gradient(135deg,rgb(255,206,236) 0%,rgb(152,150,240) 100%);--wp--preset--gradient--blush-bordeaux: linear-gradient(135deg,rgb(254,205,165) 0%,rgb(254,45,45) 50%,rgb(107,0,62) 100%);--wp--preset--gradient--luminous-dusk: linear-gradient(135deg,rgb(255,203,112) 0%,rgb(199,81,192) 50%,rgb(65,88,208) 100%);--wp--preset--gradient--pale-ocean: linear-gradient(135deg,rgb(255,245,203) 0%,rgb(182,227,212) 50%,rgb(51,167,181) 100%);--wp--preset--gradient--electric-grass: linear-gradient(135deg,rgb(202,248,128) 0%,rgb(113,206,126) 100%);--wp--preset--gradient--midnight: linear-gradient(135deg,rgb(2,3,129) 0%,rgb(40,116,252) 100%);--wp--preset--font-size--small: 13px;--wp--preset--font-size--medium: 20px;--wp--preset--font-size--large: 36px;--wp--preset--font-size--x-large: 42px;--wp--preset--spacing--20: 0.44rem;--wp--preset--spacing--30: 0.67rem;--wp--preset--spacing--40: 1rem;--wp--preset--spacing--50: 1.5rem;--wp--preset--spacing--60: 2.25rem;--wp--preset--spacing--70: 3.38rem;--wp--preset--spacing--80: 5.06rem;--wp--preset--shadow--natural: 6px 6px 9px rgba(0, 0, 0, 0.2);--wp--preset--shadow--deep: 12px 12px 50px rgba(0, 0, 0, 0.4);--wp--preset--shadow--sharp: 6px 6px 0px rgba(0, 0, 0, 0.2);--wp--preset--shadow--outlined: 6px 6px 0px -3px rgba(255, 255, 255, 1), 6px 6px rgba(0, 0, 0, 1);--wp--preset--shadow--crisp: 6px 6px 0px rgba(0, 0, 0, 1);}:where(.is-layout-flex){gap: 0.5em;}:where(.is-layout-grid){gap: 0.5em;}body .is-layout-flow > .alignleft{float: left;margin-inline-start: 0;margin-inline-end: 2em;}body .is-layout-flow > .alignright{float: right;margin-inline-start: 2em;margin-inline-end: 0;}body .is-layout-flow > .aligncenter{margin-left: auto !important;margin-right: auto !important;}body .is-layout-constrained > .alignleft{float: left;margin-inline-start: 0;margin-inline-end: 2em;}body .is-layout-constrained > .alignright{float: right;margin-inline-start: 2em;margin-inline-end: 0;}body .is-layout-constrained > .aligncenter{margin-left: auto !important;margin-right: auto !important;}body .is-layout-constrained > :where(:not(.alignleft):not(.alignright):not(.alignfull)){max-width: var(--wp--style--global--content-size);margin-left: auto !important;margin-right: auto !important;}body .is-layout-constrained > .alignwide{max-width: var(--wp--style--global--wide-size);}body .is-layout-flex{display: flex;}body .is-layout-flex{flex-wrap: wrap;align-items: center;}body .is-layout-flex > *{margin: 0;}body .is-layout-grid{display: grid;}body .is-layout-grid > *{margin: 0;}:where(.wp-block-columns.is-layout-flex){gap: 2em;}:where(.wp-block-columns.is-layout-grid){gap: 2em;}:where(.wp-block-post-template.is-layout-flex){gap: 1.25em;}:where(.wp-block-post-template.is-layout-grid){gap: 1.25em;}.has-black-color{color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-color{color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-color{color: var(--wp--preset--color--white) !important;}.has-pale-pink-color{color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-color{color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-color{color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-color{color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-color{color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-color{color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-color{color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-color{color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-color{color: var(--wp--preset--color--vivid-purple) !important;}.has-black-background-color{background-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-background-color{background-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-background-color{background-color: var(--wp--preset--color--white) !important;}.has-pale-pink-background-color{background-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-background-color{background-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-background-color{background-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-background-color{background-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-background-color{background-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-background-color{background-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-background-color{background-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-background-color{background-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-background-color{background-color: var(--wp--preset--color--vivid-purple) !important;}.has-black-border-color{border-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-border-color{border-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-border-color{border-color: var(--wp--preset--color--white) !important;}.has-pale-pink-border-color{border-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-border-color{border-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-border-color{border-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-border-color{border-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-border-color{border-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-border-color{border-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-border-color{border-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-border-color{border-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-border-color{border-color: var(--wp--preset--color--vivid-purple) !important;}.has-vivid-cyan-blue-to-vivid-purple-gradient-background{background: var(--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple) !important;}.has-light-green-cyan-to-vivid-green-cyan-gradient-background{background: var(--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan) !important;}.has-luminous-vivid-amber-to-luminous-vivid-orange-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange) !important;}.has-luminous-vivid-orange-to-vivid-red-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-orange-to-vivid-red) !important;}.has-very-light-gray-to-cyan-bluish-gray-gradient-background{background: var(--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray) !important;}.has-cool-to-warm-spectrum-gradient-background{background: var(--wp--preset--gradient--cool-to-warm-spectrum) !important;}.has-blush-light-purple-gradient-background{background: var(--wp--preset--gradient--blush-light-purple) !important;}.has-blush-bordeaux-gradient-background{background: var(--wp--preset--gradient--blush-bordeaux) !important;}.has-luminous-dusk-gradient-background{background: var(--wp--preset--gradient--luminous-dusk) !important;}.has-pale-ocean-gradient-background{background: var(--wp--preset--gradient--pale-ocean) !important;}.has-electric-grass-gradient-background{background: var(--wp--preset--gradient--electric-grass) !important;}.has-midnight-gradient-background{background: var(--wp--preset--gradient--midnight) !important;}.has-small-font-size{font-size: var(--wp--preset--font-size--small) !important;}.has-medium-font-size{font-size: var(--wp--preset--font-size--medium) !important;}.has-large-font-size{font-size: var(--wp--preset--font-size--large) !important;}.has-x-large-font-size{font-size: var(--wp--preset--font-size--x-large) !important;}
+.is-style-outline.is-style-outline.wp-block-button .wp-block-button__link{background: transparent none;border-color: currentColor;border-width: 2px;border-style: solid;color: currentColor;padding-top: 0.667em;padding-right: 1.33em;padding-bottom: 0.667em;padding-left: 1.33em;}
+.is-style-rounded.is-style-rounded.wp-block-site-logo{border-radius: 9999px;}
+.wp-block-navigation a:where(:not(.wp-element-button)){color: inherit;}
+:where(.wp-block-post-template.is-layout-flex){gap: 1.25em;}:where(.wp-block-post-template.is-layout-grid){gap: 1.25em;}
+:where(.wp-block-columns.is-layout-flex){gap: 2em;}:where(.wp-block-columns.is-layout-grid){gap: 2em;}
+.wp-block-pullquote{font-size: 1.5em;line-height: 1.6;}
+</style>
+<link rel='stylesheet' id='contact-form-7-css' href='https://ju.edu.et/wp-content/plugins/contact-form-7/includes/css/styles.css?ver=5.9.4' type='text/css' media='all' />
+<link rel='stylesheet' id='ctf_styles-css' href='https://ju.edu.et/wp-content/plugins/custom-twitter-feeds/css/ctf-styles.min.css?ver=2.2.2' type='text/css' media='all' />
+<link rel='stylesheet' id='gdc-css' href='https://ju.edu.et/wp-content/plugins/grid-shortcodes/css/gdc_custom_style.css?ver=6.4.1' type='text/css' media='all' />
+<link rel='stylesheet' id='staff-directory-css-css' href='https://ju.edu.et/wp-content/plugins/staff-directory-pro/assets/css/staff-directory.css?ver=6.4.1' type='text/css' media='all' />
+<link rel='stylesheet' id='theme-my-login-css' href='https://ju.edu.et/wp-content/plugins/theme-my-login/assets/styles/theme-my-login.min.css?ver=7.1.7' type='text/css' media='all' />
+<link rel='stylesheet' id='wp-job-manager-job-listings-css' href='https://ju.edu.et/wp-content/plugins/wp-job-manager/assets/dist/css/job-listings.css?ver=598383a28ac5f9f156e4' type='text/css' media='all' />
+<link rel='stylesheet' id='sticky-social-icons-css' href='https://ju.edu.et/wp-content/plugins/sticky-social-icons/public/assets/build/css/sticky-social-icons-public.css?ver=1.2.1' type='text/css' media='all' />
+<link rel='stylesheet' id='font-awesome-css' href='https://ju.edu.et/wp-content/themes/eikra/assets/css/font-awesome.min.css?ver=4.4.1' type='text/css' media='all' />
+<link rel='stylesheet' id='cff-css' href='https://ju.edu.et/wp-content/plugins/custom-facebook-feed/assets/css/cff-style.min.css?ver=4.2.4' type='text/css' media='all' />
+<link rel='stylesheet' id='sb-font-awesome-css' href='https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css?ver=6.4.1' type='text/css' media='all' />
+<link rel='stylesheet' id='meks-flickr-widget-css' href='https://ju.edu.et/wp-content/plugins/meks-simple-flickr-widget/css/style.css?ver=1.3' type='text/css' media='all' />
+<link rel='stylesheet' id='dashicons-css' href='https://ju.edu.et/wp-includes/css/dashicons.min.css?ver=6.4.1' type='text/css' media='all' />
+<link rel='stylesheet' id='a-z-listing-css' href='https://ju.edu.et/wp-content/plugins/a-z-listing/css/a-z-listing-default.css?ver=4.3.1' type='text/css' media='all' />
+<link rel='stylesheet' id='eikra-gfonts-css' href='//fonts.googleapis.com/css?family=Roboto%3A400%2C400i%2C500%2C500i%2C700%2C700i%26subset%3Dlatin%2Clatin-ext&#038;ver=4.4.1' type='text/css' media='all' />
+<link rel='stylesheet' id='bootstrap-css' href='https://ju.edu.et/wp-content/themes/eikra/assets/css/bootstrap.min.css?ver=4.4.1' type='text/css' media='all' />
+<link rel='stylesheet' id='eikra-default-css' href='https://ju.edu.et/wp-content/themes/eikra/assets/css/default.css?ver=4.4.1' type='text/css' media='all' />
+<link rel='stylesheet' id='eikra-style-css' href='https://ju.edu.et/wp-content/themes/eikra/assets/css/style.css?ver=4.4.1' type='text/css' media='all' />
+<style id='eikra-style-inline-css' type='text/css'>
+    .entry-banner {
+	        background: url(https://ju.edu.et/wp-content/uploads/2022/02/Blue-Pixel-Call-To-Action-Banner-Background-1.jpg) no-repeat scroll center center / cover;
+	    }
+    .content-area {
+    padding-top: 100px;
+    padding-bottom: 100px;
+    }
+	        .rt-course-box .rtin-thumbnail .rtin-price,
+        .rt-course-box-2 .rtin-meta .rtin-price,
+        .rt-course-box-3 .rtin-thumbnail .rtin-price {
+        display: none;
+        }
+		
+</style>
+<link rel='stylesheet' id='eikra-vc-css' href='https://ju.edu.et/wp-content/themes/eikra/assets/css/vc.css?ver=4.4.1' type='text/css' media='all' />
+<link rel='stylesheet' id='wpsc-widget-css' href='https://ju.edu.et/wp-content/plugins/wp-school-calendar-lite/assets/css/widget.css?ver=6.4.1' type='text/css' media='all' />
+<link rel='stylesheet' id='wpsc-frontend-css' href='https://ju.edu.et/wp-content/plugins/wp-school-calendar-lite/assets/css/frontend.css?ver=6.4.1' type='text/css' media='all' />
+<style id='wpsc-frontend-inline-css' type='text/css'>
+#wpsc-block-calendar .wpsc-important-date-category-4472, .wpsc-important-date-category-4472 {background:#006680;color:#fff;}
+
+</style>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css?family=Roboto:500,400&#038;display=swap&#038;ver=1776077855" /><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:500,400&#038;display=swap&#038;ver=1776077855" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:500,400&#038;display=swap&#038;ver=1776077855" /></noscript><link rel='stylesheet' id='eikra-learnpress-css' href='https://ju.edu.et/wp-content/themes/eikra/assets/css/learnpress.css?ver=4.4.1' type='text/css' media='all' />
+<style id='eikra-learnpress-inline-css' type='text/css'>
+@media all and (max-width: 767px) {	html #wpadminbar {position: fixed;} }
+</style>
+<style id='eikra-dynamic-inline-css' type='text/css'>
+ body, gtnbg_root, p { font-family: Roboto, sans-serif;; font-size: 15px; line-height: 26px; font-weight : 400; font-style: normal; } h1 { font-family: Roboto; font-size: 30px; line-height: 44px; font-weight : 500; font-style: normal; } h2 { font-family: Roboto, sans-serif;; font-size: 28px; line-height: 31px; font-weight : 500; font-style: normal; } h3 { font-family: Roboto, sans-serif;; font-size: 20px; line-height: 26px; font-weight : 500; font-style: normal; } h4 { font-family: Roboto, sans-serif;; font-size: 16px; line-height: 18px; font-weight : 500; font-style: normal; } h5 { font-family: Roboto, sans-serif;; font-size: 14px; line-height: 16px; font-weight : 500; font-style: normal; } h6 { font-family: Roboto, sans-serif;; font-size: 12px; line-height: 14px; font-weight : 500; font-style: normal; } a,a:link,a:visited { color: #1e73be; } a:hover, a:focus, a:active { color: #fdc800; } .wp-block-quote::before { background-color: #1e73be; } .wp-block-pullquote {   border-color: #1e73be; } :root{ --rt-primary-color: #1e73be; --rt-secondary-color: #fdc800; --rt-primary-rgb: 30, 115, 190; --rt-secondary-rgb: 253, 200, 0; } .primary-color { color: #1e73be; } .secondery-color { color: #fdc800; } .primary-bgcolor { background-color: #1e73be; } .secondery-bgcolor { background-color: #fdc800; } #tophead { background-color: #095692; } #tophead, #tophead a, #tophead .tophead-social li a, #tophead .tophead-social li a:hover { color: #ffffff; } #tophead .tophead-contact i[class^="fa"], #tophead .tophead-address i[class^="fa"] { color: #ffffff; } .trheader #tophead, .trheader #tophead a, .trheader #tophead .tophead-social li a, .trheader #tophead .tophead-social li a:hover { color: #d0d6dd; } .topbar-style-4 #tophead a.topbar-btn { background-color: #fdc800; border-color: #fdc800; color: #1e73be; } .topbar-style-5 #tophead .widget ul li i { color: #ffffff; } .site-header .main-navigation ul li a { font-family: Roboto, sans-serif; font-size : 12px; font-weight : 500; line-height : 24px; color: #0067b8; text-transform : uppercase; font-style: normal; } .site-header .main-navigation ul.menu > li > a:hover, .site-header .main-navigation ul.menu > li.current-menu-item > a, .site-header .main-navigation ul.menu > li.current > a { color: #fdc800; } .site-header .main-navigation ul li a.active { color: #fdc800 !important; } .trheader #masthead .main-navigation ul.menu > li > a, .trheader #masthead .main-navigation ul.menu > li > a:hover, .trheader #masthead .main-navigation ul.menu > li.current-menu-item > a, .trheader #masthead .main-navigation ul.menu > li.current > a, .trheader #masthead .search-box .search-button i, .trheader #masthead .header-icon-seperator, .trheader #masthead .header-icon-area .cart-icon-area > a, .trheader #masthead .additional-menu-area a.side-menu-trigger { color: #ffffff; } .site-header .main-navigation ul li ul li { background-color: #095692; } .site-header .main-navigation ul li ul li:hover { background-color: #1A3B61; } .site-header .main-navigation ul li ul li a { font-family: Roboto, sans-serif; font-size : 12px; font-weight : 400; line-height : 21px; color: #ffffff; text-transform : capitalize; font-style: normal; } .site-header .main-navigation ul li ul li:hover > a { color: #FDC800; } #sticky-header-wrapper .site-header { border-color: #1e73be} .site-header .main-navigation ul li.mega-menu > ul.sub-menu { background-color: #095692} .site-header .main-navigation ul li.mega-menu ul.sub-menu li a { color: #ffffff} .site-header .main-navigation ul li.mega-menu ul.sub-menu li a:hover { background-color: #1A3B61; color: #FDC800; } .mean-container a.meanmenu-reveal, .mean-container .mean-nav ul li a.mean-expand { color: #fdc800; } .mean-container a.meanmenu-reveal span { background-color: #fdc800; } .mean-container .mean-bar { border-color: #fdc800; } .mean-container .mean-nav ul li a { font-family: Roboto, sans-serif; font-size : 14px; font-weight : 400; line-height : 21px; color: #0067b8; text-transform : uppercase; font-style: normal; } .mean-container .mean-nav ul li a:hover, .mean-container .mean-nav > ul > li.current-menu-item > a { color: #fdc800; } body .mean-container .mean-nav ul li.mean-append-area .rtin-append-inner a.header-menu-btn { background-color: #fdc800; border-color: #fdc800; color: #1e73be; } .header-icon-area .cart-icon-area .cart-icon-num { background-color: #fdc800; } .mean-container .mean-bar .cart-icon-num { background-color: #fdc800; } .site-header .search-box .search-text { border-color: #fdc800; } .header-style-3 .header-social li a:hover, .header-style-3.trheader .header-social li a:hover { color: #fdc800; } .header-style-3.trheader .header-contact li a, .header-style-3.trheader .header-social li a { color: #ffffff; } .header-style-4 .header-social li a:hover { color: #fdc800; } .header-style-4.trheader .header-contact li a, .header-style-4.trheader .header-social li a { color: #ffffff; } .header-style-5 .header-menu-btn { background-color: #1e73be; } .trheader.header-style-5 .header-menu-btn { color: #ffffff; } .header-style-6 .site-header, .header-style-6 #sticky-header-wrapper .site-header { background-color: #1e73be; } .header-style-6 .site-header a.header-menu-btn { background-color: #fdc800; border-color: #fdc800; color: #1e73be; } .header-style-6 .site-header .main-navigation ul.menu > li > a { color: #ffffff; } .header-style-7 .header-social a:hover { color: #1e73be; } .header-style-7 a.header-menu-btn { background-color: #fdc800; } .header-style-7.trheader .header-social li a:hover { color: #fdc800; } .entry-banner .entry-banner-content h1 { color: #ffffff; } .breadcrumb-area .entry-breadcrumb span a, .breadcrumb-area .entry-breadcrumb span a span { color: #fdc800; } .breadcrumb-area .entry-breadcrumb span a:hover, .breadcrumb-area .entry-breadcrumb span a:hover span { color: #ffffff; } .breadcrumb-area .entry-breadcrumb { color: #ffffff; } .breadcrumb-area .entry-breadcrumb > span { color: #ffffff; } #preloader { background-color: #1e73be; } .scrollToTop { background-color: #fdc800; } .footer-top-area { background-color: #0067b8; } .footer-top-area .widget > h3 { color: #ffffff; } .mc4wp-form-fields input[type="email"], .footer-top-area, .footer-top-area .widget { color: #f5f5f5; } .widget.widget_rdtheme_info ul li a, .footer-top-area a:link, .footer-top-area a:visited, .footer-top-area widget_nav_menu ul.menu li:before { color: #f5f5f5; } .footer-top-area .widget a:hover, .footer-top-area .widget a:active { color: #fdc800; } .footer-top-area .search-form input.search-submit { color: #1e73be; } .footer-top-area .widget_nav_menu ul.menu li:before { color: #fdc800; } .footer-bottom-area { background-color: #0a5794; color: #ffffff; } .search-form input.search-submit { background-color: #1e73be; border-color: #1e73be; } .search-form input.search-submit a:hover { color: #1e73be; } .widget ul li a:hover { color: #fdc800; } .sidebar-widget-area .widget > h3 { color: #1e73be; } .sidebar-widget-area .widget > h3:after { background-color: #fdc800; } .sidebar-widget-area .widget_tag_cloud a { color: #1e73be; } .sidebar-widget-area .widget_tag_cloud a:hover { background-color: #1e73be; } .widget.widget_rdtheme_about ul li a:hover { background-color: #fdc800; border-color: #fdc800; color: #1e73be; } .widget.widget_rdtheme_info ul li i { color: #fdc800; } .pagination-area ul li a, .learn-press-pagination ul li a { background-color: #1e73be !important; } .pagination-area ul li.active a, .pagination-area ul li a:hover, .pagination-area ul li span.current, .pagination-area ul li .current, .learn-press-pagination ul li.active a, .learn-press-pagination ul li a:hover, .learn-press-pagination ul li span.current, .learn-press-pagination ul li .current { background-color: #fdc800 !important; } .error-page-area { background-color: #0a3966; } .error-page-area .error-page h3 { color: #ffffff; } .error-page-area .error-page p { color: #ffffff; } body .rdtheme-button-1, body .rdtheme-button-1:link { color: #1e73be; } body .rdtheme-button-1:hover { background-color: #1e73be; } body a.rdtheme-button-2, body .rdtheme-button-2 { background-color: #1e73be; } body a.rdtheme-button-2:hover, body .rdtheme-button-2:hover { color: #1e73be; background-color: #fdc800; } body a.rdtheme-button-3, body .rdtheme-button-3 { background-color: #1e73be; } body a.rdtheme-button-3:hover, body .rdtheme-button-4:hover { color: #1e73be; background-color: #fdc800; } .comments-area h3.comment-title { color: #1e73be; } .comments-area h3.comment-title:after { background-color: #fdc800; } .comments-area .main-comments .comment-meta .comment-author-name, .comments-area .main-comments .comment-meta .comment-author-name a { color: #1e73be; } .comments-area .main-comments .reply-area a { background-color: #1e73be; } .comments-area .main-comments .reply-area a:hover { background-color: #fdc800; } #respond .comment-reply-title { color: #1e73be; } #respond .comment-reply-title:after { background-color: #fdc800; } #respond form .btn-send { background-color: #1e73be; } #respond form .btn-send:hover { background-color: #fdc800; } .entry-header h2.entry-title a, .entry-header .entry-meta ul li a:hover, .entry-footer .tags a:hover, .event-single .event-meta li, .event-single ul li span i, .event-single .event-info h3, .event-single .event-social h3 { color: #1e73be; } button, input[type="button"], input[type="reset"], input[type="submit"], .entry-header .entry-thumbnail-area .post-date li:nth-child(odd), .event-single .event-thumbnail-area #event-countdown .event-countdown-each:nth-child(odd), .event-single .event-social ul li a, .instructor-single .rtin-content ul.rtin-social li a:hover { background-color: #1e73be; } .entry-header h2.entry-title a:hover, .entry-header h2.entry-title a:hover, .entry-header .entry-meta ul li i, .event-single .event-meta li i { color: #fdc800; } .bar1::after, .bar2::after, .hvr-bounce-to-right:before, .hvr-bounce-to-bottom:before, .entry-header .entry-thumbnail-area .post-date li:nth-child(even), .event-single .event-thumbnail-area #event-countdown .event-countdown-each:nth-child(even), .event-single .event-social ul li a:hover { background-color: #fdc800; } .ls-bar-timer { background-color: #fdc800; border-bottom-color: #fdc800; } .instructor-single .rtin-content ul.rtin-social li a:hover { border-color: #1e73be; } .list-style-1 li { color: #1e73be; } .list-style-1 li::before { color: #fdc800; } .woocommerce .widget_price_filter .ui-slider .ui-slider-range, .woocommerce .widget_price_filter .ui-slider .ui-slider-handle, .rt-woo-nav .owl-custom-nav-title::after, .rt-woo-nav .owl-custom-nav .owl-prev:hover, .rt-woo-nav .owl-custom-nav .owl-next:hover, .woocommerce ul.products li.product .onsale, .woocommerce span.onsale, .woocommerce a.added_to_cart, .woocommerce div.product form.cart .button, .woocommerce #respond input#submit, .woocommerce a.button, .woocommerce button.button, .woocommerce input.button, p.demo_store, .woocommerce #respond input#submit.disabled:hover, .woocommerce #respond input#submit:disabled:hover, .woocommerce #respond input#submit[disabled]:disabled:hover, .woocommerce a.button.disabled:hover, .woocommerce a.button:disabled:hover, .woocommerce a.button[disabled]:disabled:hover, .woocommerce button.button.disabled:hover, .woocommerce button.button:disabled:hover, .woocommerce button.button[disabled]:disabled:hover, .woocommerce input.button.disabled:hover, .woocommerce input.button:disabled:hover, .woocommerce input.button[disabled]:disabled:hover, .woocommerce #respond input#submit.alt, .woocommerce a.button.alt, .woocommerce button.button.alt, .woocommerce input.button.alt { background-color: #1e73be; } .product-grid-view .view-mode ul li.grid-view-nav a, .product-list-view .view-mode ul li.list-view-nav a, .woocommerce ul.products li.product h3 a:hover, .woocommerce ul.products li.product .price, .woocommerce div.product p.price, .woocommerce div.product span.price, .woocommerce div.product .product-meta a:hover, .woocommerce div.product .woocommerce-tabs ul.tabs li.active a, .woocommerce a.woocommerce-review-link:hover, .woocommerce-message::before, .woocommerce-info::before { color: #1e73be; } .woocommerce-message, .woocommerce-info { border-color: #1e73be; } .woocommerce .product-thumb-area .overlay { background-color: rgba(30, 115, 190, 0.8); } .woocommerce .product-thumb-area .product-info ul li a { border-color: #fdc800; } .woocommerce .product-thumb-area .product-info ul li a:hover { color: #1e73be; background-color: #fdc800; } .contact-us-form .wpcf7-submit:hover { background-color: #fdc800; } .contact-form-2 h3, .contact-form-2 input[type="submit"]:hover { background-color: #fdc800; } .rt-vc-pagination .pagination-area ul li a, .rt-vc-pagination .pagination-area ul li span {   background-color: #1e73be; } .rt-vc-pagination .pagination-area ul li.active a, .rt-vc-pagination .pagination-area ul li a:hover, .rt-vc-pagination .pagination-area ul li .current {   background-color: #fdc800; } body .entry-content .rdtheme-button-5, body .rdtheme-button-5 {   border-color: #fdc800; } body .entry-content .rdtheme-button-5:hover, body .rdtheme-button-5:hover{   background-color: #fdc800;   color: #1e73be; } body .entry-content .rdtheme-button-6, body .rdtheme-button-6 { background-color: #1e73be; } body .entry-content .rdtheme-button-6:hover, body .rdtheme-button-6:hover {   background-color: #fdc800;   color: #1e73be; } body .rdtheme-button-7, body a.rdtheme-button-7 {   background-color: #1e73be; } body .rdtheme-button-7:hover, body a.rdtheme-button-7:hover {   color: #1e73be;   background-color: #fdc800; } .entry-content .isotop-btn a:hover, .entry-content .isotop-btn .current {   border-color: #1e73be !important;   background-color: #1e73be !important; } .rt-owl-nav-1 .section-title .owl-custom-nav-title {   color: #1e73be; } .rt-owl-nav-1 .section-title .owl-custom-nav .owl-prev, .rt-owl-nav-1 .section-title .owl-custom-nav .owl-next {   background-color: #fdc800; } .rt-owl-nav-1 .section-title .owl-custom-nav .owl-prev:hover, .rt-owl-nav-1 .section-title .owl-custom-nav .owl-next:hover {   background-color: #1e73be; } .rt-vc-title-left {   color: #1e73be; } .rt-vc-title h2 {   color: #1e73be; } .rt-info-box .media-heading, .rt-info-box .media-heading a, .rt-info-box.layout2 i, .rt-info-box.layout3 i, .rt-info-box.layout4:hover .rtin-icon i { color: #1e73be; } .rt-info-box .media-heading a:hover, .rt-info-box.layout2:hover i, .rt-info-box.layout5 .rtin-icon i, .rt-info-box.layout5:hover .media-heading, .rt-info-box.layout6:hover .media-heading a { color: #fdc800; } .rt-info-box.layout4::before, .rt-info-box.layout4:hover { background-color: #1e73be; } .rt-info-box.layout5 { background-color: rgba( 30, 115, 190, 0.8 ); } .rt-info-box.layout3:hover i, .rt-info-box.layout4 .rtin-icon i {   background-color: #fdc800; } .rt-vc-infobox-6 .rtin-item .rtin-left .rtin-icon i {   color: #fdc800; } .rt-vc-imagetext-2 .rtin-img:before {   background-color: rgba(30, 115, 190, 0.6); } .rt-vc-imagetext-2 .rtin-img a {   border-color: #fdc800; } .rt-vc-imagetext-2 .rtin-title a:hover {   color: #1e73be; } .rt-vc-text-title .rtin-title { color: #1e73be; } .rt-vc-text-title.style2 .rtin-title::after { background-color: #fdc800; } .rt-vc-text-title.style3 .rtin-btn a {   background-color: #fdc800; } .rt-vc-text-title.style4 .rtin-btn a {   border-color: #fdc800; } .rt-vc-text-title.style4 .rtin-btn a:hover {   background-color: #fdc800; } .rt-vc-text-button .rtin-btn a {   background-color: #fdc800; } .rt-vc-cta .rtin-right {   background-color: #1e73be; } .rt-vc-cta .rtin-right .rtin-btn {   background-color: #fdc800;   border-color: #fdc800;   color: #1e73be; } .rt-vc-cta.style2 .rtin-right {   background-color: #fdc800; } .rt-vc-cta.style2 .rtin-right .rtin-btn {   background-color: #1e73be;   border-color: #1e73be; } .rt-vc-cta.style2 .rtin-right .rtin-btn:hover {   color: #1e73be; } .rt-vc-posts .rtin-item .media-list .rtin-content-area h3 a {   color: #1e73be; } .rt-vc-posts .rtin-item .media-list .rtin-content-area h3 a:hover {   color: #fdc800; } .rt-vc-posts .rtin-item .media-list .rtin-content-area .rtin-date {   color: #fdc800; } .rt-vc-posts-2 {   background-color: #1e73be; } .rt-vc-posts-2 .rtin-item .rtin-date {   color: #fdc800; } .rt-vc-posts-2 .rtin-btn:hover {   color: #fdc800; } .rt-vc-posts-2 .rtin-btn i {   color: #fdc800; } .rt-vc-posts-2 .rtin-item .rtin-title a:hover {   color: #fdc800; } .rt-vc-research-1 .rtin-item .rtin-title::after, .rt-vc-research-2 .rtin-item .rtin-title::after, .rt-vc-research-3 .rtin-item .rtin-holder .rtin-title a:hover {   background-color: #fdc800; } .rt-vc-research-1 .rtin-item .rtin-title a, .rt-vc-research-2 .rtin-item .rtin-title a, .rt-vc-research-3 .rtin-item .rtin-holder .rtin-title a:hover, .rt-vc-research-3 .rtin-item .rtin-holder .rtin-title a:hover i {   color: #1e73be; } .rt-vc-research-1 .rtin-item .rtin-title a:hover, .rt-vc-research-2 .rtin-item .rtin-title a:hover, .rt-vc-research-3 .rtin-item .rtin-holder .rtin-title a i {   color: #fdc800; } .rt-vc-research-3 .rtin-item .rtin-holder .rtin-title a {   background-color: #1e73be; } .rt-vc-event .rtin-item .rtin-calender-holder .rtin-calender {   background-color:#fdc800; } .rt-vc-event .rtin-item .rtin-calender-holder .rtin-calender:before, .rt-vc-event .rtin-item .rtin-calender-holder .rtin-calender:after, .rt-vc-event .rtin-item .rtin-calender-holder .rtin-calender h3, .rt-vc-event .rtin-item .rtin-calender-holder .rtin-calender h3 p, .rt-vc-event .rtin-item .rtin-calender-holder .rtin-calender h3 span, .rt-vc-event .rtin-item .rtin-right h3 a, .rt-vc-event .rtin-item .rtin-right ul li, .rt-vc-event .rtin-btn a:hover {   color: #1e73be; } .rt-vc-event .rtin-item .rtin-right h3 a:hover {   color: #fdc800; } .rt-vc-event-box .rtin-item .rtin-meta i {   color: #fdc800; } .rt-vc-event-box .rtin-item .rtin-btn a {   background-color: #fdc800;   border-color: #fdc800; } .rt-vc-counter .rtin-left .rtin-counter {   border-bottom-color: #fdc800; } .rt-vc-counter .rtin-right .rtin-title {   color: #1e73be; } .rt-vc-testimonial .rt-item .rt-item-content-holder .rt-item-title {   color: #1e73be; } .rt-vc-testimonial .owl-theme .owl-dots .owl-dot.active span {   background-color: #1e73be; } .rt-vc-testimonial-2 .rtin-item .rtin-item-designation {   color:#fdc800; } .rt-vc-testimonial-2 .owl-theme .owl-dots .owl-dot:hover span, .rt-vc-testimonial-2 .owl-theme .owl-dots .owl-dot.active span {   background-color: #fdc800;   border-color: #fdc800; } .rt-vc-testimonial-3 .rtin-item .rtin-content-area .rtin-title {   color: #1e73be; } .rt-countdown .rt-date .rt-countdown-section-2 {   border-color: #fdc800; } .rt-event-countdown .rt-content h2, .rt-event-countdown .rt-content h3, .rt-event-countdown .rt-date .rt-countdown-section .rt-countdown-text .rtin-count, .rt-event-countdown .rt-date .rt-countdown-section .rt-countdown-text .rtin-text { color: #1e73be; } .rt-event-countdown .rt-date .rt-countdown-section .countdown-colon, .rt-event-countdown.rt-dark .rt-date .rt-countdown-section .rt-countdown-text .rtin-count { color: #fdc800; } .rt-price-table-box1 span {   color: #1e73be; } .rt-price-table-box1 .rtin-price {   background-color: #1e73be; } .rt-price-table-box1 .rtin-btn {   background-color: #fdc800;   border-color: #fdc800;   color: #1e73be; } .rt-price-table-box1:hover {   background-color: #1e73be; } .rt-price-table-box1:hover .rtin-price {   background-color: #fdc800; } .rt-pricing-box2 .rtin-title, .rt-pricing-box2 ul li {   color: #1e73be; } .rt-pricing-box2 .rtin-price {   color: #fdc800; } .rt-price-table-box3 .rtin-title, .rt-price-table-box3 .rtin-price {   color: #1e73be; } .rt-price-table-box3 .rtin-btn {   background-color: #fdc800; } .rt-price-table-box3.rtin-featured, .rt-price-table-box3:hover {   background-color: #1e73be; } .rt-gallery-1 .rt-gallery-wrapper .rt-gallery-box:before {   background-color: rgba( 253, 200, 0, 0.8 ); } .rt-gallery-1 .rt-gallery-wrapper .rt-gallery-box .rt-gallery-content a {   background-color: #1e73be; } .rt-vc-video .rtin-item .rtin-btn {   color: #fdc800; } .rt-vc-video .rtin-item .rtin-btn:hover {   border-color: #fdc800; } .rt-vc-video.rt-light .rtin-item .rtin-title {   color: #1e73be; } .rt-vc-video.rt-light .rtin-item .rtin-btn {   color: #1e73be;   border-color: #fdc800; } .rt-vc-contact-1 ul.rtin-item > li > i {   color: #1e73be; } .rt-vc-contact-1 ul.rtin-item > li .contact-social li a {   color: #1e73be;   border-color: #1e73be; } .rt-vc-contact-1 ul.rtin-item > li .contact-social li a:hover {   background-color: #1e73be; } .rt-vc-contact-2 ul.rtin-item > li {   color: #1e73be; } .rt-vc-contact-2 ul.rtin-item > li > i {   color: #fdc800; } .rt-vc-contact-2 ul.rtin-item > li.rtin-social-wrap .rtin-social li a {   background-color: #fdc800; } .rt-vc-contact-2 ul.rtin-item > li.rtin-social-wrap .rtin-social li a:hover {   background-color: #1e73be; } .rt-vc-instructor-1 .rtin-item .rtin-content .rtin-title a {   color: #1e73be; } .rt-vc-instructor-1 .rtin-item .rtin-content .rtin-title a:hover {   color: #fdc800; } .rt-vc-instructor-1 .rtin-item .rtin-content .rtin-social li a {   background-color: #fdc800; } .rt-vc-instructor-1 .rtin-item .rtin-content .rtin-social li a:hover {   background-color: #1e73be; } .rt-vc-instructor-2 .rtin-item .rtin-content .rtin-title a, .rt-vc-instructor-2 .rtin-item .rtin-content .rtin-social li a {   color: #fdc800; } .rt-vc-instructor-2 .rtin-item .rtin-content .rtin-social li a:hover {   border-color: #fdc800;   background-color: #fdc800; } .rt-vc-instructor-2 .rtin-item:before {   background: linear-gradient(to bottom, rgba(125, 185, 232, 0) 55%, #1e73be); } .rt-vc-instructor-2 .rtin-item:hover:after {   background-color: rgba( 30, 115, 190 , 0.7 ); } .rt-vc-instructor-3 .rtin-item .rtin-meta span {   color: #fdc800; } .rt-vc-instructor-3 .rtin-btn a {   color: #1e73be;   border-color: #1e73be; } .rt-vc-instructor-3 .rtin-btn a:hover {   background-color: #1e73be; } .rt-vc-instructor-4 .rtin-item .rtin-content:after {   background-color: #fdc800; } .rt-vc-instructor-5 .rtin-item {   background-color: #fdc800; } .rt-vc-instructor-5 .rtin-item .rtin-content .rtin-social li a:hover {   background-color: #1e73be; } .rt-vc-course-search .form-group .input-group .input-group-addon.rtin-submit-btn-wrap .rtin-submit-btn {   background-color: #fdc800; } .rt-vc-course-slider.style-4.rt-owl-nav-1 .section-title .owl-custom-nav .owl-prev:hover, .rt-vc-course-slider.style-4.rt-owl-nav-1 .section-title .owl-custom-nav .owl-next:hover {   background-color: #fdc800; } .rt-vc-course-featured .rtin-sec-title {   color: #1e73be; } .rt-vc-course-featured .rt-course-box .rtin-thumbnail::before {   background-color: rgba( 253, 200, 0 , 0.8 ); } .rt-vc-course-featured .rt-course-box .rtin-thumbnail a {   background-color: #1e73be;   border-color: #1e73be; } .rt-vc-course-isotope.style-2 .isotop-btn a {   border-color: #1e73be; } .rt-vc-course-isotope.style-2 .rtin-btn a {   color: #1e73be;   border-color: #1e73be; } .rt-vc-course-isotope.style-2 .rtin-btn a:hover {   background-color: #1e73be; } .wpb_gallery .wpb_flexslider .flex-direction-nav a {   background-color: #fdc800; } .wpb-js-composer .vc_tta.vc_tta-o-no-fill .vc_tta-panels .vc_tta-panel-body {  background-color: #1e73be !important; } .wpb-js-composer .vc_tta-style-classic .vc_tta-panel .vc_tta-panel-title > a, .wpb-js-composer .vc_tta-style-classic .vc_tta-panel.vc_active .vc_tta-panel-title > a {  color: #1e73be !important; } .wpb-js-composer .vc_tta-style-classic .vc_tta-controls-icon:after, .wpb-js-composer .vc_tta-style-classic .vc_tta-controls-icon:before {  border-color: #1e73be !important; } .wpb-js-composer .vc_tta-container .vc_tta-panel span.faq-box-count {   background-color: #fdc800;   color: #1e73be; }
+</style>
+<!--n2css--><script type="text/javascript" src="https://ju.edu.et/wp-includes/js/jquery/jquery.min.js?ver=3.7.1" id="jquery-core-js"></script>
+<script type="text/javascript" src="https://ju.edu.et/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.4.1" id="jquery-migrate-js"></script>
+<script type="text/javascript" id="layerslider-utils-js-extra">
+/* <![CDATA[ */
+var LS_Meta = {"v":"6.11.8","fixGSAP":"1"};
+/* ]]> */
+</script>
+<script type="text/javascript" src="https://ju.edu.et/wp-content/plugins/LayerSlider/assets/static/layerslider/js/layerslider.utils.js?ver=6.11.8" id="layerslider-utils-js"></script>
+<script type="text/javascript" src="https://ju.edu.et/wp-content/plugins/LayerSlider/assets/static/layerslider/js/layerslider.kreaturamedia.jquery.js?ver=6.11.8" id="layerslider-js"></script>
+<script type="text/javascript" src="https://ju.edu.et/wp-content/plugins/LayerSlider/assets/static/layerslider/js/layerslider.transitions.js?ver=6.11.8" id="layerslider-transitions-js"></script>
+<script type="text/javascript" src="https://ju.edu.et/wp-content/plugins/google-analytics-for-wordpress/assets/js/frontend-gtag.min.js?ver=9.0.1" id="monsterinsights-frontend-script-js"></script>
+<script data-cfasync="false" data-wpfc-render="false" type="text/javascript" id='monsterinsights-frontend-script-js-extra'>/* <![CDATA[ */
+var monsterinsights_frontend = {"js_events_tracking":"true","download_extensions":"doc,pdf,ppt,zip,xls,docx,pptx,xlsx","inbound_paths":"[{\"path\":\"\\\/go\\\/\",\"label\":\"affiliate\"},{\"path\":\"\\\/recommend\\\/\",\"label\":\"affiliate\"}]","home_url":"https:\/\/ju.edu.et","hash_tracking":"false","v4_id":"G-80Y313020X"};/* ]]> */
+</script>
+<script type="text/javascript" id="wpm-6310-ajax-script-js-extra">
+/* <![CDATA[ */
+var my_ajax_object = {"ajax_url":"https:\/\/ju.edu.et\/wp-admin\/admin-ajax.php"};
+/* ]]> */
+</script>
+<script type="text/javascript" src="https://ju.edu.et/wp-content/plugins/team-showcase-supreme/assets/js/ajaxdata.js?ver=6.4.1" id="wpm-6310-ajax-script-js"></script>
+<meta name="generator" content="Powered by LayerSlider 6.11.8 - Multi-Purpose, Responsive, Parallax, Mobile-Friendly Slider Plugin for WordPress." />
+<!-- LayerSlider updates and docs at: https://layerslider.kreaturamedia.com -->
+<link rel="https://api.w.org/" href="https://ju.edu.et/wp-json/" /><link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://ju.edu.et/xmlrpc.php?rsd" />
+<meta name="generator" content="WordPress 6.4.1" />
+<meta name="generator" content="Redux 4.4.16" /><style type="text/css" media="screen"></style><style id="sticky-social-icons-styles">#sticky-social-icons-container{top: 160px}#sticky-social-icons-container li a{font-size: 16px; width: 54px; height:54px; }#sticky-social-icons-container.with-animation li a:hover{width: 64px; }#sticky-social-icons-container li a.fa-brands-fa-facebook-f{color: #fff; background: #1e73be; }#sticky-social-icons-container li a.fa-brands-fa-facebook-f:hover{color: #fff; background: #194da8; }#sticky-social-icons-container li a.fa-brands-fa-x-twitter{color: #fff; background: #000000; }#sticky-social-icons-container li a.fa-brands-fa-x-twitter:hover{color: #fff; background: #000000; }#sticky-social-icons-container li a.fa-brands-fa-telegram-plane{color: #000; background: #fff; }#sticky-social-icons-container li a.fa-brands-fa-telegram-plane:hover{color: #fff; background: #000; }#sticky-social-icons-container li a.fa-brands-fa-linkedin-in{color: #fff; background: #2f82d6; }#sticky-social-icons-container li a.fa-brands-fa-linkedin-in:hover{color: #fff; background: #4665a3; }#sticky-social-icons-container li a.fa-brands-fa-youtube{color: #fff; background: #e51b1b; }#sticky-social-icons-container li a.fa-brands-fa-youtube:hover{color: #fff; background: #c41717; }#sticky-social-icons-container li a.fa-solid-fa-envelope{color: #fff; background: #ea8a35; }#sticky-social-icons-container li a.fa-solid-fa-envelope:hover{color: #fff; background: #d17030; }@media( max-width: 415px ){#sticky-social-icons-container li a{font-size: 13.6px; width: 45.9px; height:45.9px; }}</style>		<script>
+			document.documentElement.className = document.documentElement.className.replace('no-js', 'js');
+		</script>
+				<style>
+			.no-js img.lazyload {
+				display: none;
+			}
+
+			figure.wp-block-image img.lazyloading {
+				min-width: 150px;
+			}
+
+						.lazyload {
+				opacity: 0;
+			}
+
+			.lazyloading {
+				border: 0 !important;
+				opacity: 1;
+				background: rgba(255, 255, 255, 0) url('https://ju.edu.et/wp-content/plugins/wp-smushit/app/assets/images/smush-lazyloader-2.gif') no-repeat center !important;
+				background-size: 16px auto !important;
+				min-width: 16px;
+			}
+
+			.lazyload,
+			.lazyloading {
+				--smush-placeholder-width: 100px;
+				--smush-placeholder-aspect-ratio: 1/1;
+				width: var(--smush-placeholder-width) !important;
+				aspect-ratio: var(--smush-placeholder-aspect-ratio) !important;
+			}
+
+					</style>
+		<meta name="generator" content="Elementor 3.21.5; features: e_optimized_assets_loading, e_optimized_css_loading, additional_custom_breakpoints; settings: css_print_method-external, google_font-enabled, font_display-auto">
+<meta name="generator" content="Powered by WPBakery Page Builder - drag and drop page builder for WordPress."/>
+<link rel="icon" href="https://ju.edu.et/wp-content/uploads/2021/12/cropped-ju-bannerrrr-1-32x32.png" sizes="32x32" />
+<link rel="icon" href="https://ju.edu.et/wp-content/uploads/2021/12/cropped-ju-bannerrrr-1-192x192.png" sizes="192x192" />
+<link rel="apple-touch-icon" href="https://ju.edu.et/wp-content/uploads/2021/12/cropped-ju-bannerrrr-1-180x180.png" />
+<meta name="msapplication-TileImage" content="https://ju.edu.et/wp-content/uploads/2021/12/cropped-ju-bannerrrr-1-270x270.png" />
+<noscript><style> .wpb_animate_when_almost_visible { opacity: 1; }</style></noscript></head>
+<body class="error404 wp-embed-responsive fpt-template-eikra header-style-1 footer-style-1 has-topbar topbar-style-5 no-sidebar rt-course-grid-view product-grid-view eikra wpb-js-composer js-comp-ver-6.7.0 vc_responsive elementor-default elementor-kit-3002">
+			<div id="page" class="site">
+		<a class="skip-link screen-reader-text" href="#content">Skip to content</a>
+		<header id="masthead" class="site-header">
+			<div id="tophead">
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				<div class="tophead-left">
+					<div id="custom_html-1" class="widget_text widget widget_custom_html"><div class="textwidget custom-html-widget"><ul>
+	
+	
+	
+		<li>
+		<i class="fa fa-phone" aria-hidden="true"></i>&nbsp;&nbsp; Jimma University, Ethiopia 
+	</li>
+	|
+	<li>
+		<i class="fa fa-envelope" aria-hidden="true"></i>&nbsp;<a href="mailto:ero@ju.edu.et"> ero@ju.edu.et </a>
+	</li>
+</ul></div></div>				</div>
+				<div class="tophead-right">
+					<div id="nav_menu-1" class="widget widget_nav_menu"><div class="menu-top-bar-links-container"><ul id="menu-top-bar-links" class="menu"><li id="menu-item-3684" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3684"><a href="/a-to-z-list/">A-Z List</a></li>
+<li id="menu-item-4191" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4191"><a href="https://ju.edu.et/contact-us-3/">Contact Us</a></li>
+<li id="menu-item-4212" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4212"><a href="https://ju.edu.et/almuni-asoociation/">Almuni</a></li>
+<li id="menu-item-4187" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4187"><a href="http://ndl.ethernet.edu.et/">NADLE</a></li>
+<li id="menu-item-4188" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4188"><a href="#">Home</a></li>
+<li id="menu-item-4189" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4189"><a href="/jobs/">Vacancy</a></li>
+<li id="menu-item-4190" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4190"><a href="https://elearning.ju.edu.et/">E-Learing</a></li>
+<li id="menu-item-4629" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4629"><a href="/covid-19-updates-2/">COVID-19 Updates</a></li>
+<li id="menu-item-4909" class="menu-item menu-item-type-tml_action menu-item-object-login menu-item-4909"><a href="https://ju.edu.et/login_access/">Log In</a></li>
+</ul></div></div>				</div>
+				<div class="clear"></div>
+			</div>
+		</div>
+	</div>
+</div><div class="container masthead-container">
+	<div class="row align-items-center">
+		<div class="col-sm-3 col-xs-12">
+			<div class="site-branding">
+				<a class="dark-logo" href="https://ju.edu.et/"><img src="https://ju.edu.et/wp-content/uploads/2022/12/main-logo.png" alt="Home"></a>
+				<a class="light-logo" href="https://ju.edu.et/"><img src="https://ju.edu.et/wp-content/uploads/2022/12/main-logo.png" alt="Home"></a>
+			</div>
+		</div>
+		<div class="col-sm-9 col-xs-12">
+			<div class="header-icon-area">
+	<div class="search-box-area">
+	<div class="search-box">
+		<form role="search" method="get" action="https://ju.edu.et/">
+			<a href="#" class="search-close">
+                <i class="fas fa-times"></i>
+            </a>
+			<input type="text" name="s" class="search-text" placeholder="Search Here..." required>
+			<a href="#" class="search-button">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10.5831 0.0288696C4.74765 0.0288696 0 4.76354 0 10.5831C0 16.4027 4.7477 21.1374 10.5831 21.1374C16.4186 21.1374 21.1663 16.4027 21.1663 10.5831C21.1663 4.76354 16.4186 0.0288696 10.5831 0.0288696ZM10.5831 19.4024C5.70418 19.4024 1.73494 15.4459 1.73494 10.5831C1.73494 5.72002 5.70418 1.76376 10.5831 1.76376C15.4621 1.76376 19.4313 5.72002 19.4313 10.5831C19.4314 15.4459 15.4621 19.4024 10.5831 19.4024Z" fill="#676767"/>
+                    <path d="M23.7444 22.4886L18.048 16.8211C17.7083 16.4834 17.1591 16.4848 16.8211 16.8243C16.4834 17.1641 16.4848 17.7131 16.8243 18.0512L22.5207 23.7187C22.6902 23.887 22.9111 23.9711 23.1326 23.9711C23.3555 23.9711 23.5782 23.8858 23.7476 23.7155C24.0854 23.3757 24.0839 22.8266 23.7444 22.4886Z" fill="#676767"/>
+                </svg>
+            </a>
+		</form>
+	</div>
+</div>	<div class="clear"></div>								
+</div>			<div id="site-navigation" class="main-navigation">
+				<nav class="menu-main-menu-container"><ul id="menu-main-menu" class="menu"><li id="menu-item-3903" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-3903"><a href="http://ju.edu.et/">HOME</a></li>
+<li id="menu-item-4406" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-4406"><a href="https://ju.edu.et/about-ju/">ABOUT US</a>
+<ul class="sub-menu">
+	<li id="menu-item-3650" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3650"><a href="https://ju.edu.et/vision-and-mission/">Vision and Mission</a></li>
+	<li id="menu-item-24195" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-24195"><a href="#">Boards and Leaders</a>
+	<ul class="sub-menu">
+		<li id="menu-item-5985" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-5985"><a href="https://ju.edu.et/university-board/">University Board</a></li>
+		<li id="menu-item-24196" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-24196"><a href="https://ju.edu.et/board-chairs/">Board Chairs</a></li>
+		<li id="menu-item-3647" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3647"><a href="https://ju.edu.et/presidents-message/">President’s message</a></li>
+		<li id="menu-item-24197" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-24197"><a href="https://ju.edu.et/presidents-at-ju/">Presidents at JU</a></li>
+	</ul>
+</li>
+	<li id="menu-item-6194" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-6194"><a href="https://ju.edu.et/senate-member/">Senate</a>
+	<ul class="sub-menu">
+		<li id="menu-item-5932" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5932"><a href="/senate-member/">Senate Member</a></li>
+		<li id="menu-item-5933" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5933"><a href="/senate-legislation/">Senate Legislation</a></li>
+	</ul>
+</li>
+	<li id="menu-item-4145" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-4145"><a href="/background-of-collaboration/">Internationalization</a>
+	<ul class="sub-menu">
+		<li id="menu-item-4664" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4664"><a href="https://ju.edu.et/background-of-collaboration/">Background of Collaboration</a></li>
+		<li id="menu-item-4149" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-4149"><a href="https://ju.edu.et/partnerships-and-projects-ju/">Partnerships and projects at JU</a>
+		<ul class="sub-menu">
+			<li id="menu-item-4853" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4853"><a href="/ndmeet/">INDMEET</a></li>
+			<li id="menu-item-5450" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-5450"><a href="https://ju.edu.et/gostar-foundation/">Gostar foundation</a></li>
+			<li id="menu-item-6887" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-6887"><a href="https://ju.edu.et/center-of-excellence-jit/">Center of Excellence (JIT)</a></li>
+			<li id="menu-item-22441" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-22441"><a href="https://ju.edu.et/metodic/">METODIC</a></li>
+			<li id="menu-item-7261" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-7261"><a href="https://ju.edu.et/about-the-center/">JUCOH</a></li>
+			<li id="menu-item-7911" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-7911"><a href="https://ju.edu.et/about-fatima-college-of-health-science-fchs/">FCHS</a></li>
+			<li id="menu-item-8371" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-8371"><a href="https://ju.edu.et/cih-ju/">CIH-JU</a></li>
+		</ul>
+</li>
+		<li id="menu-item-4147" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4147"><a href="https://ju.edu.et/international-faculty-and-students/">International faculty &#038; students</a></li>
+		<li id="menu-item-4148" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4148"><a href="https://ju.edu.et/internationalization-strategy/">Internationalization strategy</a></li>
+		<li id="menu-item-4152" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4152"><a href="https://ju.edu.et/internationalization-and-institutional-collaboration/">Internationalization and Institutional Collaboration</a></li>
+		<li id="menu-item-4150" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4150"><a href="https://ju.edu.et/internationalization-ju/">Internationalization at JU</a></li>
+		<li id="menu-item-4151" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4151"><a href="https://ju.edu.et/why-study-and-teach-ju/">Why study and teach at JU?</a></li>
+		<li id="menu-item-4153" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4153"><a href="https://ju.edu.et/what-international-partners-gain-collaborating-jimma-university/">What International Partners Gain from Collaborating with Jimma University</a></li>
+		<li id="menu-item-3652" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3652"><a href="https://ju.edu.et/jimma-university-location/">Jimma University Location</a></li>
+	</ul>
+</li>
+	<li id="menu-item-23183" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-23183"><a href="#">Documents</a>
+	<ul class="sub-menu">
+		<li id="menu-item-6423" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-6423"><a href="/child-care/">Child Care</a></li>
+		<li id="menu-item-5926" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5926"><a href="/civil-servant-proclamation-policy">Civil Servant Proclamation Policy</a></li>
+		<li id="menu-item-6495" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-6495"><a href="/budget-utilization/">Budget Utilization</a></li>
+		<li id="menu-item-6157" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-6157"><a href="https://ju.edu.et/anti-corruption/">ANTI-CORRUPTION</a></li>
+	</ul>
+</li>
+	<li id="menu-item-7397" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-7397"><a href="https://ju.edu.et/contact-us/">Contact Us</a></li>
+</ul>
+</li>
+<li id="menu-item-2110" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-2110"><a href="https://ju.edu.et/about-academics/">ACADEMICS</a>
+<ul class="sub-menu">
+	<li id="menu-item-4403" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4403"><a href="https://ju.edu.et/about-academics/">About Academics</a></li>
+	<li id="menu-item-2114" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-2114"><a href="#">Colleges</a>
+	<ul class="sub-menu">
+		<li id="menu-item-3966" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3966"><a href="/law-and-governance/">College of Law &#038; Governance</a></li>
+		<li id="menu-item-3961" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3961"><a href="/college-of-business-and-conomics/">College of Business &#038; Economics</a></li>
+		<li id="menu-item-3959" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3959"><a href="/education-and-behavioral-science/">College of Education &#038; Behavioral Science</a></li>
+		<li id="menu-item-3960" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3960"><a href="/agri/">College of Agriculture and Veterinary Medicine</a></li>
+		<li id="menu-item-3958" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3958"><a href="/natural-sciences/">College of Natural Sciences</a></li>
+		<li id="menu-item-2164" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-2164"><a href="/social-sciences-and-humanities/">College of Social Sciences &#038; Humanities</a></li>
+		<li id="menu-item-5912" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5912"><a href="/sport-academy">Sport Academy</a></li>
+		<li id="menu-item-23389" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-23389"><a href="https://ju.edu.et/agaro-campus/">Agaro Campus</a></li>
+	</ul>
+</li>
+	<li id="menu-item-2122" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-2122"><a href="#">Institute &#038; Schools</a>
+	<ul class="sub-menu">
+		<li id="menu-item-3962" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3962"><a href="/health-institute/">Institute of Health</a></li>
+		<li id="menu-item-3963" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3963"><a href="/jit/">Jimma Institute of Technology</a></li>
+		<li id="menu-item-4012" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-4012"><a href="#">School of Graduate Studies</a>
+		<ul class="sub-menu">
+			<li id="menu-item-4009" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4009"><a href="http://ju.edu.et/school-of-graduate-studies/">About Graduate studies</a></li>
+			<li id="menu-item-4010" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4010"><a href="http://ju.edu.et/programmes-2/">Programs</a></li>
+			<li id="menu-item-4011" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4011"><a href="http://ju.edu.et/general-admission-provisions/">Admission Requirements</a></li>
+			<li id="menu-item-4013" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4013"><a href="http://ju.edu.et/contact-us-3/">Contact us</a></li>
+		</ul>
+</li>
+	</ul>
+</li>
+	<li id="menu-item-2112" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-2112"><a href="#">Registrar</a>
+	<ul class="sub-menu">
+		<li id="menu-item-3913" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3913"><a href="https://ju.edu.et/registrar-office/">Registrar Office</a></li>
+		<li id="menu-item-4035" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4035"><a href="https://ju.edu.et/list-all-programmes-jimma-university/">List of Programmes</a></li>
+		<li id="menu-item-6506" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-6506"><a href="/student-statistics/">Student Statstics</a></li>
+		<li id="menu-item-4005" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-4005"><a href="https://ju.edu.et/academic-calendar/">Academic Calendar</a></li>
+		<li id="menu-item-4008" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4008"><a href="https://ju.edu.et/tuition-fee/">Tuition and Service Fees</a></li>
+		<li id="menu-item-3915" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3915"><a href="https://ju.edu.et/admission/">Admission</a></li>
+		<li id="menu-item-3917" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3917"><a href="https://ju.edu.et/contact-2-2/">Contact Us</a></li>
+	</ul>
+</li>
+	<li id="menu-item-2113" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-2113"><a href="#">Other</a>
+	<ul class="sub-menu">
+		<li id="menu-item-4036" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4036"><a href="https://ju.edu.et/office-continuing-and-distance-education/">Distance Education</a></li>
+		<li id="menu-item-4037" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4037"><a href="https://ju.edu.et/e-learning-coordinating-office/">e-Learning Coordinating Office</a></li>
+		<li id="menu-item-3914" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3914"><a href="https://ju.edu.et/programmes/">Programmes</a></li>
+	</ul>
+</li>
+	<li id="menu-item-5640" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-5640"><a href="https://ju.edu.et/professional-development/">Professional Development</a></li>
+</ul>
+</li>
+<li id="menu-item-81" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-81"><a href="/research-at-jimma-university/">RESEARCH</a>
+<ul class="sub-menu">
+	<li id="menu-item-3834" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3834"><a href="https://ju.edu.et/research-and-partnership-vice-president/">Research and  Partnership Vice President</a></li>
+	<li id="menu-item-1094" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-1094"><a href="#">Offices</a>
+	<ul class="sub-menu">
+		<li id="menu-item-3833" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3833"><a href="https://ju.edu.et/director-research/">Director for Research</a></li>
+		<li id="menu-item-3831" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3831"><a href="https://ju.edu.et/director-publication-and-extension/">Director for Publication &#038; Extension</a></li>
+		<li id="menu-item-3832" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3832"><a href="https://ju.edu.et/director-community-services-and-engagement/">Director for Community Services &#038; Engagement</a></li>
+		<li id="menu-item-1056" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1056"><a href="https://ju.edu.et/gallery/">Director for Technology Transfer &#038; University-Industry linkage</a></li>
+		<li id="menu-item-5150" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5150"><a href="/ict/">ICT Development Office</a></li>
+		<li id="menu-item-6565" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-6565"><a href="/ICT">ICT</a></li>
+	</ul>
+</li>
+	<li id="menu-item-927" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-927"><a href="#">Research Centers</a>
+	<ul class="sub-menu">
+		<li id="menu-item-3836" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3836"><a href="https://ju.edu.et/gilgel-gibe-field-research-center/">Gilgel Gibe Field Research Center</a></li>
+		<li id="menu-item-3837" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3837"><a href="https://ju.edu.et/jimma-university-laboratory-drug-quality-juladq/">Jimma University Laboratory of Drug Quality (JuLaDQ)</a></li>
+		<li id="menu-item-3838" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3838"><a href="https://ju.edu.et/molecular-biology-rc/">Molecular Biology RC</a></li>
+		<li id="menu-item-3839" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3839"><a href="https://ju.edu.et/mycobacteriology-research-center/">Mycobacteriology Research Center</a></li>
+		<li id="menu-item-3840" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3840"><a href="https://ju.edu.et/plant-and-animal-biotechnology-research-center/">Plant &#038; Animal Biotechnology Research Center</a></li>
+		<li id="menu-item-3843" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3843"><a href="https://ju.edu.et/climate-change-and-environment-research-center/">Climate Change and Environment Research Center (CCERC)</a></li>
+		<li id="menu-item-3842" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3842"><a href="https://ju.edu.et/research-center-road-and-transport-safety/">Research Center for Road &#038; Transport Safety</a></li>
+		<li id="menu-item-4315" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4315"><a href="/tidrc/">Tropical and Infectious Diseases RC</a></li>
+		<li id="menu-item-4160" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4160"><a href="/jucan/">Clinical and Nutrition Research Center (JUCAN)</a></li>
+	</ul>
+</li>
+	<li id="menu-item-962" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-962"><a href="#">Research Institutes</a>
+	<ul class="sub-menu">
+		<li id="menu-item-4293" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4293"><a href="/iicor/">International Institute of Coffee Research(IICOR)</a></li>
+		<li id="menu-item-3989" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3989"><a href="/institute-of-oromo-studies/">Institute of Oromo Studies (IOS)</a></li>
+		<li id="menu-item-3968" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3968"><a href="/agribusiness-leadership-institute/">Agribusiness Leadership Institute (ABLI)</a></li>
+		<li id="menu-item-4292" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4292"><a href="/emba/">Excutive Masters of Business Adminstration(EMBA)</a></li>
+		<li id="menu-item-4294" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4294"><a href="/ehis/">Capacity Building &#038; Mentorship Program</a></li>
+		<li id="menu-item-3841" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3841"><a href="https://ju.edu.et/food-and-nutrition-research-institute/">Food &#038; Nutrition Research Institute</a></li>
+	</ul>
+</li>
+	<li id="menu-item-83" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-83"><a href="#">JU Journals</a>
+	<ul class="sub-menu">
+		<li id="menu-item-3993" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3993"><a href="https://journals.ju.edu.et/index.php/ejast">Ethiopian Journal of Applied Sciences &#038; technology</a></li>
+		<li id="menu-item-3994" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3994"><a href="https://journals.ju.edu.et/index.php/ejes">Ethiopian Journal of Education &#038;  sciences</a></li>
+		<li id="menu-item-3995" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3995"><a href="https://journals.ju.edu.et/">Ethiopian Journal of Health sciences</a></li>
+		<li id="menu-item-3996" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3996"><a href="https://journals.ju.edu.et/index.php/ejssls">Ethiopian Journal of Social Sciences &#038; Language Studies</a></li>
+		<li id="menu-item-3987" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3987"><a href="https://journals.ju.edu.et/index.php/gadaa">Gadaa Journal</a></li>
+		<li id="menu-item-3988" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3988"><a href="https://journals.ju.edu.et/index.php/jlaw">Journal of Law</a></li>
+		<li id="menu-item-3997" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3997"><a href="https://journals.ju.edu.et/index.php/jbeco">Horn of Africa Journal of Business &#038; Economics</a></li>
+		<li id="menu-item-3998" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3998"><a href="https://journals.ju.edu.et/index.php/panjogov">Pan-African Journal of Governance &#038; Development</a></li>
+	</ul>
+</li>
+	<li id="menu-item-2235" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2235"><a href="https://ju.edu.et/researches/">Research Publications</a></li>
+	<li id="menu-item-5937" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5937"><a href="/research-policy/">Research Policy</a></li>
+	<li id="menu-item-4308" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4308"><a href="#">Research Strategy</a></li>
+</ul>
+</li>
+<li id="menu-item-2142" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-2142"><a href="/excellence-in-community-service-and-engagement/">COMMUNITY</a>
+<ul class="sub-menu">
+	<li id="menu-item-4291" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4291"><a href="/cbe/">Community Based Education</a></li>
+	<li id="menu-item-2150" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-2150"><a href="#">CBE</a>
+	<ul class="sub-menu">
+		<li id="menu-item-3845" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3845"><a href="https://ju.edu.et/philosophy-cbe/">Philosophy of CBE</a></li>
+		<li id="menu-item-3846" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3846"><a href="https://ju.edu.et/community-based-students-research/">Community Based Student’s Research</a></li>
+	</ul>
+</li>
+	<li id="menu-item-2151" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-2151"><a href="/community-based-training-programme-cbtp-0/">CBE Strategies</a>
+	<ul class="sub-menu">
+		<li id="menu-item-3852" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3852"><a href="https://ju.edu.et/community-based-training-programme-cbtp-0/">CBTP</a></li>
+		<li id="menu-item-3854" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3854"><a href="https://ju.edu.et/developmental-team-training-programme-dttp/">DTTP</a></li>
+		<li id="menu-item-3853" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3853"><a href="https://ju.edu.et/team-training-programme-ttp/">TTP</a></li>
+	</ul>
+</li>
+	<li id="menu-item-5942" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5942"><a href="/university-and-city-cooperation/">University and City Cooperation</a></li>
+</ul>
+</li>
+<li id="menu-item-2123" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-2123"><a href="/student-services-2/">STUDENTS</a>
+<ul class="sub-menu">
+	<li id="menu-item-2128" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2128"><a href="https://ju.edu.et/student-union/">Student Union</a></li>
+	<li id="menu-item-2125" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2125"><a href="https://ju.edu.et/student-service/">Student Services</a></li>
+	<li id="menu-item-2126" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2126"><a href="https://ju.edu.et/almuni-asoociation/">Alumni Association</a></li>
+	<li id="menu-item-4003" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-4003"><a href="https://ju.edu.et/first-year-students-dormitory-placement-0/">Students Placement</a></li>
+	<li id="menu-item-5970" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-5970"><a href="https://ju.edu.et/rules-and-regulations-2/">Rules and Regulations</a></li>
+</ul>
+</li>
+<li id="menu-item-4634" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-4634"><a href="/ju-library/">LIBRARY</a>
+<ul class="sub-menu">
+	<li id="menu-item-4724" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4724"><a href="http://ndl.ethernet.edu.et/">NADLE</a></li>
+</ul>
+</li>
+<li id="menu-item-2141" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-2141"><a href="#">NEWS</a>
+<ul class="sub-menu">
+	<li id="menu-item-3975" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3975"><a href="/all-news/">Latest News</a></li>
+	<li id="menu-item-3933" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-3933"><a href="https://ju.edu.et/bonus-pages/">Job Vacancy</a>
+	<ul class="sub-menu">
+		<li id="menu-item-4467" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4467"><a href="https://ju.edu.et/jobs/">Jobs</a></li>
+		<li id="menu-item-4468" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4468"><a href="https://ju.edu.et/job-dashboard/">Job Dashboard</a></li>
+		<li id="menu-item-4193" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4193"><a href="https://ju.edu.et/contact-us-3/">Apply for job</a></li>
+	</ul>
+</li>
+	<li id="menu-item-2138" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2138"><a href="https://ju.edu.et/all-events/">Upcomming Events</a></li>
+	<li id="menu-item-4657" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4657"><a href="#">Featured Stories</a></li>
+	<li id="menu-item-4658" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4658"><a href="#">Photo Galary</a></li>
+	<li id="menu-item-8144" class="d-none menu-item menu-item-type-custom menu-item-object-custom menu-item-8144"><a href="https://ju.edu.et/jit/library/">Library</a></li>
+	<li id="menu-item-8147" class="d-none menu-item menu-item-type-custom menu-item-object-custom menu-item-8147"><a href="https://ju.edu.et/jit/about-library/">About Library</a></li>
+	<li id="menu-item-8145" class="d-none menu-item menu-item-type-custom menu-item-object-custom menu-item-8145"><a href="https://ju.edu.et/jit/research-and-development-center/">Research &#038; Development Center</a></li>
+</ul>
+</li>
+</ul></nav>			</div>
+		</div>
+	</div>
+</div>		</header>
+
+        <div id="mobile-menu-sticky-placeholder"></div>
+<div class="rt-header-menu mean-container mobile-offscreen-menu header-icon-round" id="meanmenu">
+    <div class="mean-bar">
+        <div class="mobile-logo">
+            <div class="site-branding">
+                <a class="dark-logo" href="https://ju.edu.et/"><img src="https://ju.edu.et/wp-content/uploads/2022/12/main-logo.png"
+                                                                                           alt="Home"></a>
+            </div>
+        </div>
+
+        <div class="header-icon-area">
+            <ul class="header-btn">
+				                    <li>
+						<div class="search-box-area">
+	<div class="search-box">
+		<form role="search" method="get" action="https://ju.edu.et/">
+			<a href="#" class="search-close">
+                <i class="fas fa-times"></i>
+            </a>
+			<input type="text" name="s" class="search-text" placeholder="Search Here..." required>
+			<a href="#" class="search-button">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10.5831 0.0288696C4.74765 0.0288696 0 4.76354 0 10.5831C0 16.4027 4.7477 21.1374 10.5831 21.1374C16.4186 21.1374 21.1663 16.4027 21.1663 10.5831C21.1663 4.76354 16.4186 0.0288696 10.5831 0.0288696ZM10.5831 19.4024C5.70418 19.4024 1.73494 15.4459 1.73494 10.5831C1.73494 5.72002 5.70418 1.76376 10.5831 1.76376C15.4621 1.76376 19.4313 5.72002 19.4313 10.5831C19.4314 15.4459 15.4621 19.4024 10.5831 19.4024Z" fill="#676767"/>
+                    <path d="M23.7444 22.4886L18.048 16.8211C17.7083 16.4834 17.1591 16.4848 16.8211 16.8243C16.4834 17.1641 16.4848 17.7131 16.8243 18.0512L22.5207 23.7187C22.6902 23.887 22.9111 23.9711 23.1326 23.9711C23.3555 23.9711 23.5782 23.8858 23.7476 23.7155C24.0854 23.3757 24.0839 22.8266 23.7444 22.4886Z" fill="#676767"/>
+                </svg>
+            </a>
+		</form>
+	</div>
+</div>                    </li>
+				
+				
+                <li class="offcanvar_bar button" style="order: 99">
+                    <span class="sidebarBtn ">
+                    <span class="fa fa-bars">
+                    </span>
+                </span>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+
+    <div class="rt-slide-nav">
+        <div class="offscreen-navigation">
+			<nav class="menu-main-menu-container"><ul id="menu-main-menu-1" class="menu"><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-3903"><a href="http://ju.edu.et/">HOME</a></li>
+<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-4406"><a href="https://ju.edu.et/about-ju/">ABOUT US</a>
+<ul class="sub-menu">
+	<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3650"><a href="https://ju.edu.et/vision-and-mission/">Vision and Mission</a></li>
+	<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-24195"><a href="#">Boards and Leaders</a>
+	<ul class="sub-menu">
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-5985"><a href="https://ju.edu.et/university-board/">University Board</a></li>
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-24196"><a href="https://ju.edu.et/board-chairs/">Board Chairs</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3647"><a href="https://ju.edu.et/presidents-message/">President’s message</a></li>
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-24197"><a href="https://ju.edu.et/presidents-at-ju/">Presidents at JU</a></li>
+	</ul>
+</li>
+	<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-6194"><a href="https://ju.edu.et/senate-member/">Senate</a>
+	<ul class="sub-menu">
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5932"><a href="/senate-member/">Senate Member</a></li>
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5933"><a href="/senate-legislation/">Senate Legislation</a></li>
+	</ul>
+</li>
+	<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-4145"><a href="/background-of-collaboration/">Internationalization</a>
+	<ul class="sub-menu">
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4664"><a href="https://ju.edu.et/background-of-collaboration/">Background of Collaboration</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-4149"><a href="https://ju.edu.et/partnerships-and-projects-ju/">Partnerships and projects at JU</a>
+		<ul class="sub-menu">
+			<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4853"><a href="/ndmeet/">INDMEET</a></li>
+			<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-5450"><a href="https://ju.edu.et/gostar-foundation/">Gostar foundation</a></li>
+			<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-6887"><a href="https://ju.edu.et/center-of-excellence-jit/">Center of Excellence (JIT)</a></li>
+			<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-22441"><a href="https://ju.edu.et/metodic/">METODIC</a></li>
+			<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-7261"><a href="https://ju.edu.et/about-the-center/">JUCOH</a></li>
+			<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-7911"><a href="https://ju.edu.et/about-fatima-college-of-health-science-fchs/">FCHS</a></li>
+			<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-8371"><a href="https://ju.edu.et/cih-ju/">CIH-JU</a></li>
+		</ul>
+</li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4147"><a href="https://ju.edu.et/international-faculty-and-students/">International faculty &#038; students</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4148"><a href="https://ju.edu.et/internationalization-strategy/">Internationalization strategy</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4152"><a href="https://ju.edu.et/internationalization-and-institutional-collaboration/">Internationalization and Institutional Collaboration</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4150"><a href="https://ju.edu.et/internationalization-ju/">Internationalization at JU</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4151"><a href="https://ju.edu.et/why-study-and-teach-ju/">Why study and teach at JU?</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4153"><a href="https://ju.edu.et/what-international-partners-gain-collaborating-jimma-university/">What International Partners Gain from Collaborating with Jimma University</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3652"><a href="https://ju.edu.et/jimma-university-location/">Jimma University Location</a></li>
+	</ul>
+</li>
+	<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-23183"><a href="#">Documents</a>
+	<ul class="sub-menu">
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-6423"><a href="/child-care/">Child Care</a></li>
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5926"><a href="/civil-servant-proclamation-policy">Civil Servant Proclamation Policy</a></li>
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-6495"><a href="/budget-utilization/">Budget Utilization</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-6157"><a href="https://ju.edu.et/anti-corruption/">ANTI-CORRUPTION</a></li>
+	</ul>
+</li>
+	<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-7397"><a href="https://ju.edu.et/contact-us/">Contact Us</a></li>
+</ul>
+</li>
+<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-2110"><a href="https://ju.edu.et/about-academics/">ACADEMICS</a>
+<ul class="sub-menu">
+	<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4403"><a href="https://ju.edu.et/about-academics/">About Academics</a></li>
+	<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-2114"><a href="#">Colleges</a>
+	<ul class="sub-menu">
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3966"><a href="/law-and-governance/">College of Law &#038; Governance</a></li>
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3961"><a href="/college-of-business-and-conomics/">College of Business &#038; Economics</a></li>
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3959"><a href="/education-and-behavioral-science/">College of Education &#038; Behavioral Science</a></li>
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3960"><a href="/agri/">College of Agriculture and Veterinary Medicine</a></li>
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3958"><a href="/natural-sciences/">College of Natural Sciences</a></li>
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-2164"><a href="/social-sciences-and-humanities/">College of Social Sciences &#038; Humanities</a></li>
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5912"><a href="/sport-academy">Sport Academy</a></li>
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-23389"><a href="https://ju.edu.et/agaro-campus/">Agaro Campus</a></li>
+	</ul>
+</li>
+	<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-2122"><a href="#">Institute &#038; Schools</a>
+	<ul class="sub-menu">
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3962"><a href="/health-institute/">Institute of Health</a></li>
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3963"><a href="/jit/">Jimma Institute of Technology</a></li>
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-4012"><a href="#">School of Graduate Studies</a>
+		<ul class="sub-menu">
+			<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4009"><a href="http://ju.edu.et/school-of-graduate-studies/">About Graduate studies</a></li>
+			<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4010"><a href="http://ju.edu.et/programmes-2/">Programs</a></li>
+			<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4011"><a href="http://ju.edu.et/general-admission-provisions/">Admission Requirements</a></li>
+			<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4013"><a href="http://ju.edu.et/contact-us-3/">Contact us</a></li>
+		</ul>
+</li>
+	</ul>
+</li>
+	<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-2112"><a href="#">Registrar</a>
+	<ul class="sub-menu">
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3913"><a href="https://ju.edu.et/registrar-office/">Registrar Office</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4035"><a href="https://ju.edu.et/list-all-programmes-jimma-university/">List of Programmes</a></li>
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-6506"><a href="/student-statistics/">Student Statstics</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-post menu-item-4005"><a href="https://ju.edu.et/academic-calendar/">Academic Calendar</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4008"><a href="https://ju.edu.et/tuition-fee/">Tuition and Service Fees</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3915"><a href="https://ju.edu.et/admission/">Admission</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3917"><a href="https://ju.edu.et/contact-2-2/">Contact Us</a></li>
+	</ul>
+</li>
+	<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-2113"><a href="#">Other</a>
+	<ul class="sub-menu">
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4036"><a href="https://ju.edu.et/office-continuing-and-distance-education/">Distance Education</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4037"><a href="https://ju.edu.et/e-learning-coordinating-office/">e-Learning Coordinating Office</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3914"><a href="https://ju.edu.et/programmes/">Programmes</a></li>
+	</ul>
+</li>
+	<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-5640"><a href="https://ju.edu.et/professional-development/">Professional Development</a></li>
+</ul>
+</li>
+<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-81"><a href="/research-at-jimma-university/">RESEARCH</a>
+<ul class="sub-menu">
+	<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3834"><a href="https://ju.edu.et/research-and-partnership-vice-president/">Research and  Partnership Vice President</a></li>
+	<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-1094"><a href="#">Offices</a>
+	<ul class="sub-menu">
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3833"><a href="https://ju.edu.et/director-research/">Director for Research</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3831"><a href="https://ju.edu.et/director-publication-and-extension/">Director for Publication &#038; Extension</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3832"><a href="https://ju.edu.et/director-community-services-and-engagement/">Director for Community Services &#038; Engagement</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1056"><a href="https://ju.edu.et/gallery/">Director for Technology Transfer &#038; University-Industry linkage</a></li>
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5150"><a href="/ict/">ICT Development Office</a></li>
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-6565"><a href="/ICT">ICT</a></li>
+	</ul>
+</li>
+	<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-927"><a href="#">Research Centers</a>
+	<ul class="sub-menu">
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3836"><a href="https://ju.edu.et/gilgel-gibe-field-research-center/">Gilgel Gibe Field Research Center</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3837"><a href="https://ju.edu.et/jimma-university-laboratory-drug-quality-juladq/">Jimma University Laboratory of Drug Quality (JuLaDQ)</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3838"><a href="https://ju.edu.et/molecular-biology-rc/">Molecular Biology RC</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3839"><a href="https://ju.edu.et/mycobacteriology-research-center/">Mycobacteriology Research Center</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3840"><a href="https://ju.edu.et/plant-and-animal-biotechnology-research-center/">Plant &#038; Animal Biotechnology Research Center</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3843"><a href="https://ju.edu.et/climate-change-and-environment-research-center/">Climate Change and Environment Research Center (CCERC)</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3842"><a href="https://ju.edu.et/research-center-road-and-transport-safety/">Research Center for Road &#038; Transport Safety</a></li>
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4315"><a href="/tidrc/">Tropical and Infectious Diseases RC</a></li>
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4160"><a href="/jucan/">Clinical and Nutrition Research Center (JUCAN)</a></li>
+	</ul>
+</li>
+	<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-962"><a href="#">Research Institutes</a>
+	<ul class="sub-menu">
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4293"><a href="/iicor/">International Institute of Coffee Research(IICOR)</a></li>
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3989"><a href="/institute-of-oromo-studies/">Institute of Oromo Studies (IOS)</a></li>
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3968"><a href="/agribusiness-leadership-institute/">Agribusiness Leadership Institute (ABLI)</a></li>
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4292"><a href="/emba/">Excutive Masters of Business Adminstration(EMBA)</a></li>
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4294"><a href="/ehis/">Capacity Building &#038; Mentorship Program</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3841"><a href="https://ju.edu.et/food-and-nutrition-research-institute/">Food &#038; Nutrition Research Institute</a></li>
+	</ul>
+</li>
+	<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-83"><a href="#">JU Journals</a>
+	<ul class="sub-menu">
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3993"><a href="https://journals.ju.edu.et/index.php/ejast">Ethiopian Journal of Applied Sciences &#038; technology</a></li>
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3994"><a href="https://journals.ju.edu.et/index.php/ejes">Ethiopian Journal of Education &#038;  sciences</a></li>
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3995"><a href="https://journals.ju.edu.et/">Ethiopian Journal of Health sciences</a></li>
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3996"><a href="https://journals.ju.edu.et/index.php/ejssls">Ethiopian Journal of Social Sciences &#038; Language Studies</a></li>
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3987"><a href="https://journals.ju.edu.et/index.php/gadaa">Gadaa Journal</a></li>
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3988"><a href="https://journals.ju.edu.et/index.php/jlaw">Journal of Law</a></li>
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3997"><a href="https://journals.ju.edu.et/index.php/jbeco">Horn of Africa Journal of Business &#038; Economics</a></li>
+		<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3998"><a href="https://journals.ju.edu.et/index.php/panjogov">Pan-African Journal of Governance &#038; Development</a></li>
+	</ul>
+</li>
+	<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2235"><a href="https://ju.edu.et/researches/">Research Publications</a></li>
+	<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5937"><a href="/research-policy/">Research Policy</a></li>
+	<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4308"><a href="#">Research Strategy</a></li>
+</ul>
+</li>
+<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-2142"><a href="/excellence-in-community-service-and-engagement/">COMMUNITY</a>
+<ul class="sub-menu">
+	<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4291"><a href="/cbe/">Community Based Education</a></li>
+	<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-2150"><a href="#">CBE</a>
+	<ul class="sub-menu">
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3845"><a href="https://ju.edu.et/philosophy-cbe/">Philosophy of CBE</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3846"><a href="https://ju.edu.et/community-based-students-research/">Community Based Student’s Research</a></li>
+	</ul>
+</li>
+	<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-2151"><a href="/community-based-training-programme-cbtp-0/">CBE Strategies</a>
+	<ul class="sub-menu">
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3852"><a href="https://ju.edu.et/community-based-training-programme-cbtp-0/">CBTP</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3854"><a href="https://ju.edu.et/developmental-team-training-programme-dttp/">DTTP</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3853"><a href="https://ju.edu.et/team-training-programme-ttp/">TTP</a></li>
+	</ul>
+</li>
+	<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5942"><a href="/university-and-city-cooperation/">University and City Cooperation</a></li>
+</ul>
+</li>
+<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-2123"><a href="/student-services-2/">STUDENTS</a>
+<ul class="sub-menu">
+	<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2128"><a href="https://ju.edu.et/student-union/">Student Union</a></li>
+	<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2125"><a href="https://ju.edu.et/student-service/">Student Services</a></li>
+	<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2126"><a href="https://ju.edu.et/almuni-asoociation/">Alumni Association</a></li>
+	<li class="menu-item menu-item-type-post_type menu-item-object-post menu-item-4003"><a href="https://ju.edu.et/first-year-students-dormitory-placement-0/">Students Placement</a></li>
+	<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-5970"><a href="https://ju.edu.et/rules-and-regulations-2/">Rules and Regulations</a></li>
+</ul>
+</li>
+<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-4634"><a href="/ju-library/">LIBRARY</a>
+<ul class="sub-menu">
+	<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4724"><a href="http://ndl.ethernet.edu.et/">NADLE</a></li>
+</ul>
+</li>
+<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-2141"><a href="#">NEWS</a>
+<ul class="sub-menu">
+	<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3975"><a href="/all-news/">Latest News</a></li>
+	<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-3933"><a href="https://ju.edu.et/bonus-pages/">Job Vacancy</a>
+	<ul class="sub-menu">
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4467"><a href="https://ju.edu.et/jobs/">Jobs</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4468"><a href="https://ju.edu.et/job-dashboard/">Job Dashboard</a></li>
+		<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4193"><a href="https://ju.edu.et/contact-us-3/">Apply for job</a></li>
+	</ul>
+</li>
+	<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2138"><a href="https://ju.edu.et/all-events/">Upcomming Events</a></li>
+	<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4657"><a href="#">Featured Stories</a></li>
+	<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4658"><a href="#">Photo Galary</a></li>
+	<li class="d-none menu-item menu-item-type-custom menu-item-object-custom menu-item-8144"><a href="https://ju.edu.et/jit/library/">Library</a></li>
+	<li class="d-none menu-item menu-item-type-custom menu-item-object-custom menu-item-8147"><a href="https://ju.edu.et/jit/about-library/">About Library</a></li>
+	<li class="d-none menu-item menu-item-type-custom menu-item-object-custom menu-item-8145"><a href="https://ju.edu.et/jit/research-and-development-center/">Research &#038; Development Center</a></li>
+</ul>
+</li>
+</ul></nav>        </div>
+    </div>
+</div>
+
+		<div id="content" class="site-content">
+				<div class="entry-banner">
+		<div class="container">
+			<div class="entry-banner-content">
+				<h1 class="entry-title">Error 404</h1>
+									<div class="breadcrumb-area"><div class="entry-breadcrumb"><!-- Breadcrumb NavXT 7.3.0 -->
+<span property="itemListElement" typeof="ListItem"><a property="item" typeof="WebPage" title="Go to Home." href="https://ju.edu.et" class="home" ><span property="name">Home</span></a><meta property="position" content="1"></span> &gt; <span property="itemListElement" typeof="ListItem"><a property="item" typeof="WebPage" title="Go to 404." href="" class="404 current-item" aria-current="page"><span property="name">404</span></a><meta property="position" content="2"></span></div></div>							</div>
+		</div>
+	</div>
+<div id="primary" class="content-area error-page-area">
+	<div class="container">
+		<div class="error-page">
+			<img src="https://radiustheme.com/demo/wordpress/eikra/wp-content/themes/eikra/assets/img/404.png" alt="404">
+			<h3>Page not Found</h3>
+			<p>The page you are looking is not available or has been removed. Try going to Home Page by using the button below.</p>
+			<a class="rdtheme-button-1" href="https://ju.edu.et/">Go to Home Page</a>
+		</div>
+	</div>
+</div>
+</div><!-- #content -->
+<footer class="site-footer-wrap">
+	        <div class="footer-top-area">
+            <div class="container">
+                <div class="row">
+					<div class="col-lg-3 col-md-6 col-12"><div id="rdtheme_about-3" class="widget widget_rdtheme_about">            <p class="rtin-des">Jimma University
+External Relations and Communications 
+</br>
+E-mail : ero@ju.edu.et</br>
+Website: www.ju.edu.et</br>
+Tel : +251-(0)47-111-2202</br>
+POBox : 378 </br>
+President Building</p>
+            <ul>
+				                    <li><a href="https://www.facebook.com/JimmaUniv/" target="_blank"><i class="fab fa-facebook-f"></i></a></li>                    <li><a href="https://twitter.com/JimmaUniv" target="_blank"><i class="fab fa-twitter"></i></a></li>                    <li><a href="https://www.ju.edu.et/?q=contact-us#" target="_blank"><i class="fab fa-google-plus-g"></i></a></li>                    <li><a href="https://www.linkedin.com/school/jimma-university/?fbclid=IwZXh0bgNhZW0CMTAAAR1jmPjsueR-pySEqMy6Wb4oEPOSdzXogzjLmaCKw3IHKez7pfY3wqdPZIg_aem_YWqlUj7GFIVNtRDOGWJUGQ" target="_blank"><i class="fab fa-linkedin-in"></i></a></li>                    <li><a href="https://www.youtube.com/channel/UCtyhlHBXkxzIsS20ZPd3vow" target="_blank"><i class="fab fa-youtube"></i></a></li>            </ul>
+
+			</div><div id="wp_statsmechanic-4" class="widget widget_wp_statsmechanic"><h3 class="widgettitle">Total Visit</h3><link rel='stylesheet' type='text/css' href='https://ju.edu.et/wp-content/plugins/mechanic-visitor-counter/styles/css/default.css' /><div id='mvcwid' style='font-size:2; text-align:Left;color:;'>
+	<div id="mvccount"><img src='https://ju.edu.et/wp-content/plugins/mechanic-visitor-counter/styles/image/web/0.gif' alt='0'><img src='https://ju.edu.et/wp-content/plugins/mechanic-visitor-counter/styles/image/web/6.gif' alt='6'><img src='https://ju.edu.et/wp-content/plugins/mechanic-visitor-counter/styles/image/web/8.gif' alt='8'><img src='https://ju.edu.et/wp-content/plugins/mechanic-visitor-counter/styles/image/web/6.gif' alt='6'><img src='https://ju.edu.et/wp-content/plugins/mechanic-visitor-counter/styles/image/web/7.gif' alt='7'><img src='https://ju.edu.et/wp-content/plugins/mechanic-visitor-counter/styles/image/web/1.gif' alt='1'><img src='https://ju.edu.et/wp-content/plugins/mechanic-visitor-counter/styles/image/web/3.gif' alt='3'></div>
+	<div id="mvctable">
+        	<table width='100%'>
+                                                			                                                </table>
+    	</div>
+        		       
+ </div> 
+            </div></div><div class="col-lg-3 col-md-6 col-12"><div id="custom_html-4" class="widget_text widget widget_custom_html"><h3 class="widgettitle">Important Links</h3><div class="textwidget custom-html-widget"><div id="">
+<ul>
+<table width="100%" cellspacing="0" cellpadding="0" border="0">
+<tbody>
+
+<tr>
+<td style="border:unset">
+
+<ul>
+<li><strong> <a href="https://ju.edu.et/tuition-fee-2/"> Tuition fee  </a></strong></li>
+<li><strong> <a href="https://ju.edu.et/application-for-graduate-admission/">Application form </a></strong></li>
+<li><strong> <a href="/contact-us/">Contact Us </a></strong></li>
+<li><strong> <a href="https://ju.edu.et/admission/">  Admission </a></strong></li>
+<li><strong> <a href="https://ju.edu.et/women-and-youth-affairs-office-2/"> Women and Youth Affairs Office </a></strong></li>
+	
+<li><strong> <a href="/ju-library/"> Library </a></strong></li>
+
+	<li><strong> <a href="https://ju.edu.et/student-union/"> Student Union </a></strong></li>
+
+
+	</ul></td>
+</tr>
+
+</tbody></table>
+</ul>
+</div>
+
+</div></div></div><div class="col-lg-3 col-md-6 col-12"><div id="custom_html-6" class="widget_text widget widget_custom_html"><h3 class="widgettitle">Colleges &#038; Institutes</h3><div class="textwidget custom-html-widget"><div id="">
+<ul>
+<table width="100%" cellspacing="0" cellpadding="0" border="0">
+<tbody>
+
+<tr>
+<td style="border:unset">
+
+<ul>
+<li><strong> <a href="/jit">Institute of Technology </a></strong></li>
+<li><strong> <a href="/agri/"> Agri & veternary medicine </a></strong></li>
+<li><strong> <a href="/health-institute/"> Health Institutes </a></strong></li>
+<li><strong> <a href="/natural-sciences/">  Natural Science </a></strong></li>
+<li><strong> <a href="/social-sciences-and-humanities/"> Social Science </a></strong></li>
+	
+	<li><strong> <a href="/college-of-business-and-conomics/"> Business & Economomics </a></strong></li>
+	<li><strong> <a href="/law-and-governance/"> Law & Governance </a></strong></li>
+
+
+
+	</ul></td>
+</tr>
+
+</tbody></table>
+</ul>
+</div>
+</div></div></div><div class="col-lg-3 col-md-6 col-12"><div id="custom_html-3" class="widget_text widget widget_custom_html"><h3 class="widgettitle">Featured Links</h3><div class="textwidget custom-html-widget"><div id="">
+<ul>
+<table width="100%" cellspacing="0" cellpadding="0" border="0">
+<tbody>
+
+<tr>
+<td style="border:unset">
+
+<ul>
+<li><strong> <a href="https://www.asti.cgiar.org/ethiopia">ASTI Ethiopia </a></strong></li>
+	<li><strong> <a href="/academic-calendar"> Academic Calendar </a></strong></li>
+<li><strong> <a href="/community-radio/">Community Radio </a></strong></li>
+<li><strong> <a href="/plan-and-programme-budget/"> JU Legislations & Others </a></strong></li>
+<li><strong> <a href="/budget-utilization/">  Budget Utilization </a></strong></li>
+<li><strong> <a href="/jimma-university-procurement-property-administration-directorate-office/"> Procurement & Property </a></strong></li>
+	
+	<li><strong> <a href ="/ict/"> ICT Development Office </a></strong></li>
+	<li><strong> <a href="/jimma-medical-center/"> Jimma Medical Center </a></strong></li>
+
+
+
+	</ul></td>
+</tr>
+
+</tbody></table>
+</ul>
+</div>
+
+</div></div></div>                </div>
+            </div>
+        </div>
+		        <div class="footer-bottom-area">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-12 col-xs-12 text-center">Copyright © [wpsos_year] Jimma University. All Rights Reserved.</div>
+					                </div>
+            </div>
+        </div>
+	</footer></div><!-- #page -->
+<a href="#" class="scrollToTop"><i class="fas fa-arrow-up"></i></a><!-- Custom Facebook Feed JS -->
+<script type="text/javascript">var cffajaxurl = "https://ju.edu.et/wp-admin/admin-ajax.php";
+var cfflinkhashtags = "true";
+</script>
+<div id="sticky-social-icons-container" class="design-rounded alignment-left with-animation hide-in-mobile">
+	<ul>
+		<li  class="fa-brands-fa-facebook-f" len="0"><a href="https://www.facebook.com/JimmaUniv/"   target="_blank"  class="fa-brands-fa-facebook-f"  ><i class="fa-brands fa-facebook-f" ></i></a></li><li  class="fa-brands-fa-x-twitter" len="0"><a href="https://twitter.com/JimmaUniv"   target="_blank"  class="fa-brands-fa-x-twitter"  ><i class="fa-brands fa-x-twitter" ></i></a></li><li  class="fa-brands-fa-telegram-plane" len="0"><a href="https://t.me/JimmaUniversityOfficial"   target="_blank"  class="fa-brands-fa-telegram-plane"  ><i class="fa-brands fa-telegram-plane" ></i></a></li><li  class="fa-brands-fa-linkedin-in" len="0"><a href="https://www.linkedin.com/school/jimma-university/"   target="_blank"  class="fa-brands-fa-linkedin-in"  ><i class="fa-brands fa-linkedin-in" ></i></a></li><li  class="fa-brands-fa-youtube" len="0"><a href="https://www.youtube.com/@JimmaUniversityOfficial"   target="_blank"  class="fa-brands-fa-youtube"  ><i class="fa-brands fa-youtube" ></i></a></li><li  class="fa-solid-fa-envelope" len="0"><a href="mailto:ero@ju.edu.et"   target="_blank"  class="fa-solid-fa-envelope"  ><i class="fa-solid fa-envelope" ></i></a></li>	</ul>
+</div><link rel='stylesheet' id='redux-custom-fonts-css' href='//ju.edu.et/wp-content/uploads/redux/custom-fonts/fonts.css?ver=1778230730' type='text/css' media='all' />
+<script type="text/javascript" src="https://ju.edu.et/wp-content/plugins/automatic-copyright-year/script.js?ver=1.0" id="wpsos-copyright-js"></script>
+<script type="text/javascript" src="https://ju.edu.et/wp-content/plugins/contact-form-7/includes/swv/js/index.js?ver=5.9.4" id="swv-js"></script>
+<script type="text/javascript" id="contact-form-7-js-extra">
+/* <![CDATA[ */
+var wpcf7 = {"api":{"root":"https:\/\/ju.edu.et\/wp-json\/","namespace":"contact-form-7\/v1"},"cached":"1"};
+/* ]]> */
+</script>
+<script type="text/javascript" src="https://ju.edu.et/wp-content/plugins/contact-form-7/includes/js/index.js?ver=5.9.4" id="contact-form-7-js"></script>
+<script type="text/javascript" id="pt-cv-content-views-script-js-extra">
+/* <![CDATA[ */
+var PT_CV_PUBLIC = {"_prefix":"pt-cv-","page_to_show":"5","_nonce":"95bfbb11d7","is_admin":"","is_mobile":"","ajaxurl":"https:\/\/ju.edu.et\/wp-admin\/admin-ajax.php","lang":"","loading_image_src":"data:image\/gif;base64,R0lGODlhDwAPALMPAMrKygwMDJOTkz09PZWVla+vr3p6euTk5M7OzuXl5TMzMwAAAJmZmWZmZszMzP\/\/\/yH\/C05FVFNDQVBFMi4wAwEAAAAh+QQFCgAPACwAAAAADwAPAAAEQvDJaZaZOIcV8iQK8VRX4iTYoAwZ4iCYoAjZ4RxejhVNoT+mRGP4cyF4Pp0N98sBGIBMEMOotl6YZ3S61Bmbkm4mAgAh+QQFCgAPACwAAAAADQANAAAENPDJSRSZeA418itN8QiK8BiLITVsFiyBBIoYqnoewAD4xPw9iY4XLGYSjkQR4UAUD45DLwIAIfkEBQoADwAsAAAAAA8ACQAABC\/wyVlamTi3nSdgwFNdhEJgTJoNyoB9ISYoQmdjiZPcj7EYCAeCF1gEDo4Dz2eIAAAh+QQFCgAPACwCAAAADQANAAAEM\/DJBxiYeLKdX3IJZT1FU0iIg2RNKx3OkZVnZ98ToRD4MyiDnkAh6BkNC0MvsAj0kMpHBAAh+QQFCgAPACwGAAAACQAPAAAEMDC59KpFDll73HkAA2wVY5KgiK5b0RRoI6MuzG6EQqCDMlSGheEhUAgqgUUAFRySIgAh+QQFCgAPACwCAAIADQANAAAEM\/DJKZNLND\/kkKaHc3xk+QAMYDKsiaqmZCxGVjSFFCxB1vwy2oOgIDxuucxAMTAJFAJNBAAh+QQFCgAPACwAAAYADwAJAAAEMNAs86q1yaWwwv2Ig0jUZx3OYa4XoRAfwADXoAwfo1+CIjyFRuEho60aSNYlOPxEAAAh+QQFCgAPACwAAAIADQANAAAENPA9s4y8+IUVcqaWJ4qEQozSoAzoIyhCK2NFU2SJk0hNnyEOhKR2AzAAj4Pj4GE4W0bkJQIAOw=="};
+var PT_CV_PAGINATION = {"first":"\u00ab","prev":"\u2039","next":"\u203a","last":"\u00bb","goto_first":"Go to first page","goto_prev":"Go to previous page","goto_next":"Go to next page","goto_last":"Go to last page","current_page":"Current page is","goto_page":"Go to page"};
+/* ]]> */
+</script>
+<script type="text/javascript" src="https://ju.edu.et/wp-content/plugins/content-views-query-and-display-post-page/public/assets/js/cv.js?ver=3.7.2" id="pt-cv-content-views-script-js"></script>
+<script type="text/javascript" id="theme-my-login-js-extra">
+/* <![CDATA[ */
+var themeMyLogin = {"action":"","errors":[]};
+/* ]]> */
+</script>
+<script type="text/javascript" src="https://ju.edu.et/wp-content/plugins/theme-my-login/assets/scripts/theme-my-login.min.js?ver=7.1.7" id="theme-my-login-js"></script>
+<script type="text/javascript" id="cffscripts-js-extra">
+/* <![CDATA[ */
+var cffOptions = {"placeholder":"https:\/\/ju.edu.et\/wp-content\/plugins\/custom-facebook-feed\/assets\/img\/placeholder.png"};
+/* ]]> */
+</script>
+<script type="text/javascript" src="https://ju.edu.et/wp-content/plugins/custom-facebook-feed/assets/js/cff-scripts.js?ver=4.2.4" id="cffscripts-js"></script>
+<script type="text/javascript" src="https://ju.edu.et/wp-content/themes/eikra/assets/js/bootstrap.min.js?ver=4.4.1" id="bootstrap-js"></script>
+<script type="text/javascript" src="https://ju.edu.et/wp-content/themes/eikra/assets/js/jquery.nav.min.js?ver=4.4.1" id="jquery-nav-js"></script>
+<script type="text/javascript" src="https://ju.edu.et/wp-content/themes/eikra/assets/js/js.cookie.min.js?ver=4.4.1" id="js-cookie-js"></script>
+<script type="text/javascript" id="eikra-main-js-extra">
+/* <![CDATA[ */
+var EikraObj = {"ajaxurl":"https:\/\/ju.edu.et\/wp-admin\/admin-ajax.php","hasAdminBar":"0","headerStyle":"1","stickyMenu":"1","primaryColor":"#1e73be","seconderyColor":"#fdc800","day":"Day","hour":"Hour","minute":"Minute","second":"Second","extraOffset":"70","extraOffsetMobile":"52","rtl":"no","vcRtl":"no"};
+/* ]]> */
+</script>
+<script type="text/javascript" src="https://ju.edu.et/wp-content/themes/eikra/assets/js/main.js?ver=4.4.1" id="eikra-main-js"></script>
+</body>
+</html>
+<!-- WP Optimize page cache - https://getwpo.com - page NOT cached -->
