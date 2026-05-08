@@ -169,8 +169,9 @@ function CountUp({ target, suffix = "" }: { target: number; suffix?: string }) {
   return <span ref={ref}>{count.toLocaleString()}{suffix}</span>;
 }
 
-function OrgFavicon({ domain, initial, color }: { domain: string; initial: string; color: string }) {
+function OrgFavicon({ initial, color }: { domain: string; initial: string; color: string }) {
   const [failed, setFailed] = useState(false);
+  const logoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(initial)}&background=${color.replace("#", "")}&color=fff&size=128&bold=true`;
   if (failed) {
     return (
       <span
@@ -184,11 +185,35 @@ function OrgFavicon({ domain, initial, color }: { domain: string; initial: strin
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={`https://www.google.com/s2/favicons?domain=${domain}&sz=32`}
+      src={logoUrl}
       alt=""
       width={24}
       height={24}
-      className="rounded-md shrink-0 bg-white"
+      className="rounded-md shrink-0"
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
+function FeaturedOrgLogo({ name, color }: { name: string; color: string }) {
+  const [failed, setFailed] = useState(false);
+  const logoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${color.replace("#", "")}&color=fff&size=128&bold=true`;
+  if (failed) {
+    return (
+      <div
+        className="w-10 h-10 rounded-lg flex items-center justify-center text-white text-sm font-bold"
+        style={{ backgroundColor: color }}
+      >
+        {name[0]}
+      </div>
+    );
+  }
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={logoUrl}
+      alt={name}
+      className="w-10 h-10 rounded-lg object-contain"
       onError={() => setFailed(true)}
     />
   );
@@ -608,9 +633,7 @@ export default function HomeClient({
                   className="relative h-28 flex items-center justify-center"
                   style={{ background: `linear-gradient(135deg, ${org.color}, ${org.color}bb)` }}
                 >
-                  <span className="text-white font-extrabold select-none" style={{ fontSize: 56 }}>
-                    {org.name[0]}
-                  </span>
+                  <FeaturedOrgLogo name={org.name} color={org.color} />
                   <span className="absolute top-2 right-2 bg-black/30 backdrop-blur-sm text-white text-xs font-bold px-2 py-0.5 rounded-full">
                     {org.events}
                   </span>

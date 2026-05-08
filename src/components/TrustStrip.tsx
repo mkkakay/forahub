@@ -2,64 +2,65 @@
 
 import { useState } from "react";
 
-const ORGS = [
+const ORGS: { name: string; logo: string }[] = [
   // UN agencies
-  { domain: "who.int",                  name: "WHO" },
-  { domain: "unicef.org",               name: "UNICEF" },
-  { domain: "undp.org",                 name: "UNDP" },
-  { domain: "unfpa.org",                name: "UNFPA" },
-  { domain: "unwomen.org",              name: "UN Women" },
-  { domain: "unesco.org",               name: "UNESCO" },
-  { domain: "fao.org",                  name: "FAO" },
-  { domain: "wfp.org",                  name: "WFP" },
-  { domain: "iom.int",                  name: "IOM" },
-  { domain: "unhcr.org",                name: "UNHCR" },
-  { domain: "unaids.org",               name: "UNAIDS" },
-  { domain: "unep.org",                 name: "UNEP" },
-  { domain: "ilo.org",                  name: "ILO" },
-  { domain: "unhabitat.org",            name: "UN-Habitat" },
+  { name: "WHO",               logo: "https://ui-avatars.com/api/?name=WHO&background=0093D5&color=fff&size=128&bold=true" },
+  { name: "UNICEF",            logo: "https://ui-avatars.com/api/?name=UNICEF&background=00AEEF&color=fff&size=128&bold=true" },
+  { name: "UNDP",              logo: "https://ui-avatars.com/api/?name=UNDP&background=009FDA&color=fff&size=128&bold=true" },
+  { name: "UNFPA",             logo: "https://ui-avatars.com/api/?name=UNFPA&background=009FDA&color=fff&size=128&bold=true" },
+  { name: "UN Women",          logo: "https://ui-avatars.com/api/?name=UNW&background=4C9F38&color=fff&size=128&bold=true" },
+  { name: "UNESCO",            logo: "https://ui-avatars.com/api/?name=UNESCO&background=0093D5&color=fff&size=128&bold=true" },
+  { name: "FAO",               logo: "https://ui-avatars.com/api/?name=FAO&background=009A44&color=fff&size=128&bold=true" },
+  { name: "WFP",               logo: "https://ui-avatars.com/api/?name=WFP&background=009FE3&color=fff&size=128&bold=true" },
+  { name: "IOM",               logo: "https://ui-avatars.com/api/?name=IOM&background=003B6F&color=fff&size=128&bold=true" },
+  { name: "UNHCR",             logo: "https://ui-avatars.com/api/?name=UNHCR&background=00B398&color=fff&size=128&bold=true" },
+  { name: "UNAIDS",            logo: "https://ui-avatars.com/api/?name=UNAIDS&background=E2001A&color=fff&size=128&bold=true" },
+  { name: "UNEP",              logo: "https://ui-avatars.com/api/?name=UNEP&background=009A44&color=fff&size=128&bold=true" },
+  { name: "ILO",               logo: "https://ui-avatars.com/api/?name=ILO&background=003B6F&color=fff&size=128&bold=true" },
+  { name: "UN-Habitat",        logo: "https://ui-avatars.com/api/?name=UNH&background=0093D5&color=fff&size=128&bold=true" },
   // Major foundations
-  { domain: "gatesfoundation.org",      name: "Gates Foundation" },
-  { domain: "wellcome.org",             name: "Wellcome" },
-  { domain: "rockefellerfoundation.org",name: "Rockefeller Foundation" },
-  { domain: "fordfoundation.org",       name: "Ford Foundation" },
+  { name: "Gates Foundation",  logo: "https://ui-avatars.com/api/?name=Gates&background=E8192C&color=fff&size=128&bold=true" },
+  { name: "Wellcome",          logo: "https://ui-avatars.com/api/?name=Wellcome&background=E7157B&color=fff&size=128&bold=true" },
+  { name: "Rockefeller Fdn",   logo: "https://ui-avatars.com/api/?name=RF&background=003B6F&color=fff&size=128&bold=true" },
+  { name: "Ford Foundation",   logo: "https://ui-avatars.com/api/?name=Ford&background=003B6F&color=fff&size=128&bold=true" },
   // Development banks
-  { domain: "worldbank.org",            name: "World Bank" },
-  { domain: "afdb.org",                 name: "African Dev Bank" },
-  { domain: "iadb.org",                 name: "IDB" },
-  { domain: "adb.org",                  name: "Asian Dev Bank" },
-  { domain: "isdb.org",                 name: "IsDB" },
+  { name: "World Bank",        logo: "https://cdn.simpleicons.org/worldbank" },
+  { name: "African Dev Bank",  logo: "https://ui-avatars.com/api/?name=AfDB&background=006B3F&color=fff&size=128&bold=true" },
+  { name: "IDB",               logo: "https://ui-avatars.com/api/?name=IDB&background=003B6F&color=fff&size=128&bold=true" },
+  { name: "Asian Dev Bank",    logo: "https://ui-avatars.com/api/?name=ADB&background=003B6F&color=fff&size=128&bold=true" },
+  { name: "IsDB",              logo: "https://ui-avatars.com/api/?name=IsDB&background=009A44&color=fff&size=128&bold=true" },
   // Global health
-  { domain: "gavi.org",                 name: "Gavi" },
-  { domain: "theglobalfund.org",        name: "The Global Fund" },
-  { domain: "paho.org",                 name: "PAHO" },
+  { name: "Gavi",              logo: "https://ui-avatars.com/api/?name=Gavi&background=0066CC&color=fff&size=128&bold=true" },
+  { name: "The Global Fund",   logo: "https://ui-avatars.com/api/?name=GF&background=EF3340&color=fff&size=128&bold=true" },
+  { name: "PAHO",              logo: "https://ui-avatars.com/api/?name=PAHO&background=0093D5&color=fff&size=128&bold=true" },
+  { name: "Africa CDC",        logo: "https://ui-avatars.com/api/?name=ACDC&background=006B3F&color=fff&size=128&bold=true" },
   // Major INGOs
-  { domain: "msf.org",                  name: "MSF" },
-  { domain: "savethechildren.org",      name: "Save the Children" },
-  { domain: "oxfam.org",               name: "Oxfam" },
-  { domain: "care.org",                 name: "CARE" },
-  { domain: "path.org",                 name: "PATH" },
+  { name: "MSF",               logo: "https://ui-avatars.com/api/?name=MSF&background=E30613&color=fff&size=128&bold=true" },
+  { name: "Save the Children", logo: "https://ui-avatars.com/api/?name=STC&background=E2001A&color=fff&size=128&bold=true" },
+  { name: "Oxfam",             logo: "https://ui-avatars.com/api/?name=Oxfam&background=E70052&color=fff&size=128&bold=true" },
+  { name: "CARE",              logo: "https://ui-avatars.com/api/?name=CARE&background=E2001A&color=fff&size=128&bold=true" },
+  { name: "PATH",              logo: "https://ui-avatars.com/api/?name=PATH&background=003B6F&color=fff&size=128&bold=true" },
   // South-South donors
-  { domain: "jica.go.jp",              name: "JICA" },
-  { domain: "koica.go.kr",             name: "KOICA" },
-  { domain: "abc.gov.br",              name: "ABC Brazil" },
+  { name: "JICA",              logo: "https://ui-avatars.com/api/?name=JICA&background=003B6F&color=fff&size=128&bold=true" },
+  { name: "KOICA",             logo: "https://ui-avatars.com/api/?name=KOICA&background=003B6F&color=fff&size=128&bold=true" },
+  { name: "ABC Brazil",        logo: "https://ui-avatars.com/api/?name=ABC&background=009A44&color=fff&size=128&bold=true" },
   // African regional
-  { domain: "au.int",                   name: "African Union" },
-  { domain: "ecowas.int",              name: "ECOWAS" },
-  { domain: "sadc.int",                name: "SADC" },
-  { domain: "eac.int",                 name: "EAC" },
+  { name: "African Union",     logo: "https://ui-avatars.com/api/?name=AU&background=009A44&color=fff&size=128&bold=true" },
+  { name: "ECOWAS",            logo: "https://ui-avatars.com/api/?name=ECOWAS&background=009A44&color=fff&size=128&bold=true" },
+  { name: "SADC",              logo: "https://ui-avatars.com/api/?name=SADC&background=009A44&color=fff&size=128&bold=true" },
+  { name: "EAC",               logo: "https://ui-avatars.com/api/?name=EAC&background=009A44&color=fff&size=128&bold=true" },
   // Asian regional
-  { domain: "asean.org",               name: "ASEAN" },
-  { domain: "saarc-sec.org",           name: "SAARC" },
-  // Research
-  { domain: "brookings.edu",           name: "Brookings" },
-  { domain: "chathamhouse.org",        name: "Chatham House" },
-  { domain: "odi.org",                 name: "ODI" },
+  { name: "ASEAN",             logo: "https://ui-avatars.com/api/?name=ASEAN&background=003087&color=fff&size=128&bold=true" },
+  { name: "SAARC",             logo: "https://ui-avatars.com/api/?name=SAARC&background=003B6F&color=fff&size=128&bold=true" },
+  // Research & think tanks
+  { name: "Brookings",         logo: "https://ui-avatars.com/api/?name=Brookings&background=003974&color=fff&size=128&bold=true" },
+  { name: "Chatham House",     logo: "https://ui-avatars.com/api/?name=CH&background=003B6F&color=fff&size=128&bold=true" },
+  { name: "ODI",               logo: "https://ui-avatars.com/api/?name=ODI&background=003B6F&color=fff&size=128&bold=true" },
   // Global South universities
-  { domain: "makerere.ac.ug",          name: "Makerere University" },
-  { domain: "uonbi.ac.ke",             name: "University of Nairobi" },
-  { domain: "uct.ac.za",               name: "UCT" },
-  { domain: "aku.edu",                 name: "Aga Khan University" },
+  { name: "Makerere",          logo: "https://ui-avatars.com/api/?name=MAK&background=003B6F&color=fff&size=128&bold=true" },
+  { name: "Univ. of Nairobi",  logo: "https://ui-avatars.com/api/?name=UoN&background=003B6F&color=fff&size=128&bold=true" },
+  { name: "UCT",               logo: "https://ui-avatars.com/api/?name=UCT&background=003B6F&color=fff&size=128&bold=true" },
+  { name: "Aga Khan Univ.",    logo: "https://ui-avatars.com/api/?name=AKU&background=003B6F&color=fff&size=128&bold=true" },
 ];
 
 export default function TrustStrip() {
@@ -76,26 +77,25 @@ export default function TrustStrip() {
         <div className="logos-track pause-on-hover flex items-center">
           {doubled.map((org, i) => (
             <div
-              key={`${org.domain}-${i}`}
+              key={`${org.name}-${i}`}
               title={org.name}
               className="shrink-0 mx-4 flex items-center justify-center"
-              style={{ height: 32, minWidth: 32 }}
             >
-              {failed.has(org.domain) ? (
+              {failed.has(org.name) ? (
                 <span className="text-xs text-gray-500 font-medium whitespace-nowrap">
                   {org.name}
                 </span>
               ) : (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={`https://logo.clearbit.com/${org.domain}`}
+                  src={org.logo}
                   alt={org.name}
-                  className="max-h-8 w-auto object-contain"
+                  className="h-8 w-8 rounded-lg object-contain"
                   style={{ imageRendering: "crisp-edges" }}
                   onError={() =>
                     setFailed(prev => {
                       const next = new Set(prev);
-                      next.add(org.domain);
+                      next.add(org.name);
                       return next;
                     })
                   }
