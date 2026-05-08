@@ -31,7 +31,8 @@ type SlideData = {
 
 const SLIDES: SlideData[] = [
   {
-    bg: "https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=1920&q=95",
+    // WHO headquarters / diverse healthcare professionals — replaces generic syringe image
+    bg: "/images/hero/who-wha.jpg",
     badge: { text: "SDG 3 Good Health", color: "#4C9F38" },
     org: "WHO",
     headline: "World Health Assembly 2027",
@@ -39,7 +40,8 @@ const SLIDES: SlideData[] = [
     cta: { text: "View Event", href: "/events" },
   },
   {
-    bg: "https://images.unsplash.com/photo-1611270629569-8b357cb88da9?w=1920&q=95",
+    // Wind turbines / clean energy — contextually accurate for COP climate summit
+    bg: "/images/hero/cop-climate.jpg",
     badge: { text: "SDG 13 Climate Action", color: "#3F7E44" },
     org: "UNFCCC",
     headline: "COP31 Climate Conference",
@@ -47,7 +49,8 @@ const SLIDES: SlideData[] = [
     cta: { text: "View Event", href: "/events" },
   },
   {
-    bg: "https://images.unsplash.com/photo-1523995462485-3d171b5c8fa9?w=1920&q=95",
+    // Actual UN General Assembly Hall, New York (Wikimedia Commons, freely licensed)
+    bg: "/images/hero/un-hlpf.jpg",
     badge: { text: "SDG 17 Partnerships", color: "#19486A" },
     org: "UN DESA",
     headline: "SDG High Level Political Forum",
@@ -55,7 +58,8 @@ const SLIDES: SlideData[] = [
     cta: { text: "View Event", href: "/events" },
   },
   {
-    bg: "https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?w=1920&q=95",
+    // Large diverse international conference audience — replaces generic stock
+    bg: "/images/hero/global-events.jpg",
     badge: null,
     org: null,
     headline: "Never Miss a Global Development Event Again",
@@ -63,7 +67,8 @@ const SLIDES: SlideData[] = [
     cta: { text: "Explore Events", href: "/events" },
   },
   {
-    bg: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=1920&q=95",
+    // AI/robotics — contextually accurate for AI assistant feature
+    bg: "/images/hero/ai-assistant.jpg",
     badge: null,
     org: null,
     headline: "Your AI Assistant for Global Events",
@@ -71,7 +76,8 @@ const SLIDES: SlideData[] = [
     cta: { text: "Try AI Assistant", href: "/assistant" },
   },
   {
-    bg: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1920&q=95",
+    // Earth from space — literally every region on earth, replaces NGO-cliché hands image
+    bg: "/images/hero/global-regions.jpg",
     badge: null,
     org: null,
     headline: "Built for Every Region on Earth",
@@ -79,7 +85,8 @@ const SLIDES: SlideData[] = [
     cta: { text: "Browse by Region", href: "/events" },
   },
   {
-    bg: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1920&q=95",
+    // International conference/summit venue — contextually accurate
+    bg: "/images/hero/track-events.jpg",
     badge: null,
     org: null,
     headline: "Track global development events from Nairobi to Geneva",
@@ -87,7 +94,8 @@ const SLIDES: SlideData[] = [
     cta: { text: "Browse Organizations", href: "/events" },
   },
   {
-    bg: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1920&q=95",
+    // Conference stage — appropriate for event submission CTA
+    bg: "/images/hero/submit-event.jpg",
     badge: null,
     org: null,
     headline: "Organizing a Global Development Event?",
@@ -95,7 +103,8 @@ const SLIDES: SlideData[] = [
     cta: { text: "Submit Your Event", href: "/events/create", solid: true },
   },
   {
-    bg: "https://images.unsplash.com/photo-1509099836639-18ba1795216d?w=1920&q=95",
+    // Community/sustainability action — replaces irrelevant mountain path
+    bg: "/images/hero/sdg-goals.jpg",
     badge: null,
     org: null,
     headline: "Covering All 17 SDG Goals",
