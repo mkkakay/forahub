@@ -22,24 +22,24 @@ const SDG_LABELS: Record<number, string> = {
   15: "Life on Land", 16: "Peace & Justice", 17: "Partnerships",
 };
 
-const SDG_ICONS: Record<number, string> = {
-  1:  "/images/sdg/sdg-01.jpg",
-  2:  "/images/sdg/sdg-02.jpg",
-  3:  "/images/sdg/sdg-03.jpg",
-  4:  "/images/sdg/sdg-04.jpg",
-  5:  "/images/sdg/sdg-05.jpg",
-  6:  "/images/sdg/sdg-06.jpg",
-  7:  "/images/sdg/sdg-07.jpg",
-  8:  "/images/sdg/sdg-08.jpg",
-  9:  "/images/sdg/sdg-09.jpg",
-  10: "/images/sdg/sdg-10.jpg",
-  11: "/images/sdg/sdg-11.jpg",
-  12: "/images/sdg/sdg-12.jpg",
-  13: "/images/sdg/sdg-13.jpg",
-  14: "/images/sdg/sdg-14.jpg",
-  15: "/images/sdg/sdg-15.jpg",
-  16: "/images/sdg/sdg-16.jpg",
-  17: "/images/sdg/sdg-17.jpg",
+const SDG_PHOTOS: Record<number, string> = {
+  1:  "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=600&q=80",
+  2:  "https://images.unsplash.com/photo-1536304993881-ff86e0c9b5b?w=600&q=80",
+  3:  "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=600&q=80",
+  4:  "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=600&q=80",
+  5:  "https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=600&q=80",
+  6:  "https://images.unsplash.com/photo-1541544537156-7627a7a4aa1c?w=600&q=80",
+  7:  "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=600&q=80",
+  8:  "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600&q=80",
+  9:  "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80",
+  10: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600&q=80",
+  11: "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=600&q=80",
+  12: "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=600&q=80",
+  13: "https://images.unsplash.com/photo-1569163139599-0f4517e36f51?w=600&q=80",
+  14: "https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?w=600&q=80",
+  15: "https://images.unsplash.com/photo-1448375240586-882707db888b?w=600&q=80",
+  16: "https://images.unsplash.com/photo-1589994965851-a8f479c573a9?w=600&q=80",
+  17: "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=600&q=80",
 };
 
 const ORG_DOMAINS: Record<string, string> = {
@@ -209,6 +209,55 @@ function OrgFavicon({ domain, initial, color }: { domain: string; initial: strin
       className="rounded-md shrink-0 bg-white"
       onError={() => setFailed(true)}
     />
+  );
+}
+
+function SdgCard({ sdg, count }: { sdg: number; count: number }) {
+  const [bgFailed, setBgFailed] = useState(false);
+  const color = SDG_COLORS[sdg];
+  const label = SDG_LABELS[sdg];
+  const num = String(sdg).padStart(2, "0");
+
+  return (
+    <Link href={`/events?sdg=${sdg}`}>
+      <div className="relative overflow-hidden rounded-2xl cursor-pointer group h-48">
+        {/* Background photo */}
+        {!bgFailed ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={SDG_PHOTOS[sdg]}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            loading="lazy"
+            onError={() => setBgFailed(true)}
+          />
+        ) : (
+          <div className="absolute inset-0" style={{ backgroundColor: color }} />
+        )}
+        {/* Dark gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+        {/* Event count badge */}
+        {count > 0 && (
+          <span className="absolute top-3 right-3 bg-black/50 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
+            {count} event{count !== 1 ? "s" : ""}
+          </span>
+        )}
+        {/* SDG icon badge */}
+        <div className="absolute bottom-3 left-3 w-12 h-12 rounded-lg overflow-hidden shadow-lg border-2 border-white/20 shrink-0">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`/images/sdg/sdg-${num}.jpg`}
+            alt={`SDG ${sdg}`}
+            className="w-full h-full object-cover"
+          />
+        </div>
+        {/* Goal name */}
+        <span className="absolute bottom-3 left-16 text-white text-sm font-bold leading-tight max-w-[6rem]">
+          {label}
+        </span>
+      </div>
+    </Link>
   );
 }
 
@@ -416,6 +465,8 @@ export default function HomeClient({
   const [activityVisible, setActivityVisible] = useState(true);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
+  const [sdgCounts, setSdgCounts] = useState<Record<number, number>>({});
+
   const [suggestOpen, setSuggestOpen] = useState(false);
   const [suggestName, setSuggestName] = useState("");
   const [suggestWebsite, setSuggestWebsite] = useState("");
@@ -434,6 +485,23 @@ export default function HomeClient({
       clearInterval(id);
       clearTimeout(timeoutRef.current);
     };
+  }, []);
+
+  useEffect(() => {
+    async function fetchSdgCounts() {
+      const counts: Record<number, number> = {};
+      await Promise.all(
+        Array.from({ length: 17 }, (_, i) => i + 1).map(async sdg => {
+          const { count } = await supabase
+            .from("events")
+            .select("id", { count: "exact", head: true })
+            .contains("sdg_goals", [sdg]);
+          counts[sdg] = count ?? 0;
+        })
+      );
+      setSdgCounts(counts);
+    }
+    fetchSdgCounts();
   }, []);
 
   async function handleSuggestSubmit() {
@@ -598,34 +666,27 @@ export default function HomeClient({
       {/* Browse by SDG */}
       <section className="bg-gray-50 dark:bg-[#0f172a] py-8 md:py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-baseline justify-between mb-5">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{t(lang, "sdg.browse")}</h2>
-            <Link href="/events" className="text-sm text-[#4ea8de] hover:underline flex items-center gap-1 font-medium">
+          <div className="flex items-start justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Browse by SDG Category</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Explore events aligned with the UN 2030 Agenda</p>
+            </div>
+            <Link href="/events" className="text-sm text-[#4ea8de] hover:underline flex items-center gap-1 font-medium shrink-0 ml-4 mt-1">
               View All <ChevronRight size={14} />
             </Link>
           </div>
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 17 }, (_, i) => i + 1).map(sdg => (
-              <Link
-                key={sdg}
-                href={`/events?sdg=${sdg}`}
-                className="relative group rounded-xl overflow-hidden aspect-square hover:scale-105 hover:shadow-lg transition-all duration-200 shadow-sm"
-                title={`SDG ${sdg}: ${SDG_LABELS[sdg]}`}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={SDG_ICONS[sdg]}
-                  alt={`SDG ${sdg}: ${SDG_LABELS[sdg]}`}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-colors duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100 p-2">
-                  <span className="text-white text-xs font-bold text-center leading-tight">
-                    {SDG_LABELS[sdg]}
-                  </span>
-                </div>
-              </Link>
+              <SdgCard key={sdg} sdg={sdg} count={sdgCounts[sdg] ?? 0} />
             ))}
+          </div>
+          <div className="flex justify-center mt-8">
+            <Link
+              href="/events"
+              className="border border-gray-300 dark:border-[#334155] text-gray-600 dark:text-gray-300 px-6 py-2 rounded-xl text-sm hover:bg-gray-50 dark:hover:bg-[#1e293b] transition-colors"
+            >
+              View All 17 SDG Goals
+            </Link>
           </div>
         </div>
       </section>
