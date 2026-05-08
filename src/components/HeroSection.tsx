@@ -117,6 +117,8 @@ export default function HeroSection() {
   const swiperRef = useRef<SwiperType | null>(null);
   const [activeIdx, setActiveIdx] = useState(0);
   const [isSticky, setIsSticky] = useState(false);
+  const [showPulse, setShowPulse] = useState(false);
+  const wasSticky = useRef(false);
   const [query, setQuery] = useState("");
   const [sdgFilter, setSdgFilter] = useState("");
   const [formatFilter, setFormatFilter] = useState("");
@@ -132,7 +134,15 @@ export default function HeroSection() {
   useEffect(() => {
     const handleScroll = () => {
       const threshold = window.innerWidth < 768 ? 200 : 400;
-      setIsSticky(window.scrollY > threshold);
+      const sticky = window.scrollY > threshold;
+      setIsSticky(sticky);
+      if (sticky && !wasSticky.current) {
+        wasSticky.current = true;
+        setShowPulse(true);
+        setTimeout(() => setShowPulse(false), 3000);
+      } else if (!sticky) {
+        wasSticky.current = false;
+      }
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
@@ -154,20 +164,30 @@ export default function HeroSection() {
     <>
       {/* ── STICKY COMPACT SEARCH BAR ───────────────────────────────────────── */}
       <div
-        className={`fixed top-16 left-0 right-0 z-40 backdrop-blur-md bg-white/90 border-b border-gray-200 shadow-lg transition-all duration-300 ease-in-out ${
-          isSticky ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 pointer-events-none"
+        className={`fixed top-16 left-0 right-0 z-40 bg-white border-b border-gray-200 shadow-lg transition-transform duration-300 ease-in-out ${
+          isSticky ? "translate-y-0" : "-translate-y-full pointer-events-none"
         }`}
       >
-        <div className="max-w-5xl mx-auto px-3 md:px-4 py-2 md:py-3 flex items-center gap-2 md:gap-3">
-          <Search className="text-gray-400 shrink-0" size={16} />
-          <input
-            type="text"
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && handleSearch()}
-            placeholder="Search events, organizations, or SDG goals…"
-            className="flex-1 min-w-0 text-sm text-gray-800 bg-transparent focus:outline-none placeholder-gray-400"
-          />
+        <div className="max-w-4xl mx-auto px-4 md:px-8 py-3 flex items-center gap-3">
+          {/* Left accent + input group */}
+          <div className="flex-1 flex items-center gap-3 border-l-[3px] border-[#0f2a4a] pl-3 min-w-0">
+            {/* "Search Events" label — desktop only */}
+            <span className="hidden md:flex items-center gap-1.5 text-xs text-gray-400 uppercase tracking-wide shrink-0 select-none">
+              {showPulse && (
+                <span className="w-2 h-2 rounded-full bg-[#0f2a4a] animate-pulse" />
+              )}
+              Search Events
+            </span>
+            <span className="hidden md:block w-px h-4 bg-gray-200 shrink-0" />
+            <input
+              type="text"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && handleSearch()}
+              placeholder="Search events, organizations, or SDG goals…"
+              className="flex-1 min-w-0 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0f2a4a]/20 focus:border-[#0f2a4a] transition-colors"
+            />
+          </div>
           {query && (
             <button onClick={() => setQuery("")} className="text-gray-400 hover:text-gray-600 shrink-0">
               <X size={14} />
@@ -175,7 +195,7 @@ export default function HeroSection() {
           )}
           <button
             onClick={() => handleSearch()}
-            className="bg-[#0f2a4a] hover:bg-[#1a3f6e] text-white font-semibold px-4 md:px-5 py-1.5 md:py-2 rounded-xl text-sm transition-colors shrink-0"
+            className="bg-[#0f2a4a] hover:bg-[#1a3f6e] text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors shrink-0"
           >
             Search
           </button>
