@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Calendar, Flag, MapPin, Flame, ArrowRight, ChevronRight, Globe, X } from "lucide-react";
@@ -24,23 +23,23 @@ const SDG_LABELS: Record<number, string> = {
 };
 
 const SDG_ICONS: Record<number, string> = {
-  1:  "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Sustainable_Development_Goal_1.png/200px-Sustainable_Development_Goal_1.png",
-  2:  "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Sustainable_Development_Goal_2.png/200px-Sustainable_Development_Goal_2.png",
-  3:  "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Sustainable_Development_Goal_3.png/200px-Sustainable_Development_Goal_3.png",
-  4:  "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Sustainable_Development_Goal_4.png/200px-Sustainable_Development_Goal_4.png",
-  5:  "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Sustainable_Development_Goal_5.png/200px-Sustainable_Development_Goal_5.png",
-  6:  "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Sustainable_Development_Goal_6.png/200px-Sustainable_Development_Goal_6.png",
-  7:  "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Sustainable_Development_Goal_7.png/200px-Sustainable_Development_Goal_7.png",
-  8:  "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Sustainable_Development_Goal_8.png/200px-Sustainable_Development_Goal_8.png",
-  9:  "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Sustainable_Development_Goal_9.png/200px-Sustainable_Development_Goal_9.png",
-  10: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Sustainable_Development_Goal_10.png/200px-Sustainable_Development_Goal_10.png",
-  11: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Sustainable_Development_Goal_11.png/200px-Sustainable_Development_Goal_11.png",
-  12: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Sustainable_Development_Goal_12.png/200px-Sustainable_Development_Goal_12.png",
-  13: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Sustainable_Development_Goal_13.png/200px-Sustainable_Development_Goal_13.png",
-  14: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Sustainable_Development_Goal_14.png/200px-Sustainable_Development_Goal_14.png",
-  15: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Sustainable_Development_Goal_15.png/200px-Sustainable_Development_Goal_15.png",
-  16: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Sustainable_Development_Goal_16.png/200px-Sustainable_Development_Goal_16.png",
-  17: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Sustainable_Development_Goal_17.png/200px-Sustainable_Development_Goal_17.png",
+  1:  "https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-01.jpg",
+  2:  "https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-02.jpg",
+  3:  "https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-03.jpg",
+  4:  "https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-04.jpg",
+  5:  "https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-05.jpg",
+  6:  "https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-06.jpg",
+  7:  "https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-07.jpg",
+  8:  "https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-08.jpg",
+  9:  "https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-09.jpg",
+  10: "https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-10.jpg",
+  11: "https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-11.jpg",
+  12: "https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-12.jpg",
+  13: "https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-13.jpg",
+  14: "https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-14.jpg",
+  15: "https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-15.jpg",
+  16: "https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-16.jpg",
+  17: "https://sdgs.un.org/sites/default/files/goals/E_SDG_Icons-17.jpg",
 };
 
 const ORG_DOMAINS: Record<string, string> = {
@@ -613,16 +612,16 @@ export default function HomeClient({
                 className="relative group rounded-xl overflow-hidden aspect-square hover:scale-105 hover:shadow-lg transition-all duration-200 shadow-sm"
                 title={`SDG ${sdg}: ${SDG_LABELS[sdg]}`}
               >
-                <Image
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
                   src={SDG_ICONS[sdg]}
                   alt={`SDG ${sdg}: ${SDG_LABELS[sdg]}`}
-                  fill
-                  sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, 17vw"
-                  className="object-cover"
+                  className="w-full h-full object-cover"
+                  loading="lazy"
                 />
-                <div className="absolute inset-0 bg-white/0 group-hover:bg-white/15 transition-colors duration-200 flex items-end justify-end p-1.5 opacity-0 group-hover:opacity-100">
-                  <span className="text-white text-xs font-bold bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-full">
-                    Browse
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-colors duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100 p-2">
+                  <span className="text-white text-xs font-bold text-center leading-tight">
+                    {SDG_LABELS[sdg]}
                   </span>
                 </div>
               </Link>
