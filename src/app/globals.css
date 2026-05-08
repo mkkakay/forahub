@@ -102,14 +102,15 @@ html {
 
 /* Org logos trust strip scroll */
 @keyframes logos-scroll {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0%   { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
 }
 .logos-track {
   animation: logos-scroll 40s linear infinite;
   display: flex;
   white-space: nowrap;
   will-change: transform;
+  backface-visibility: hidden;
 }
 .pause-on-hover:hover {
   animation-play-state: paused;
