@@ -31,19 +31,26 @@ const STRIP_ORGS = ORGS.filter(name => LOCAL_LOGOS[name]);
 // Duplicate exactly twice: -50% CSS keyframe scrolls one full set then loops seamlessly
 const looped = [...STRIP_ORGS, ...STRIP_ORGS];
 
-function LogoItem({ name }: { name: string }) {
-  const [hidden, setHidden] = useState(false);
-  if (hidden) return null;
+function LogoItem({ name, index }: { name: string; index: number }) {
+  const [imgFailed, setImgFailed] = useState(false);
   return (
     <div className="flex items-center justify-center mx-6 flex-shrink-0 h-8 w-28">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={`${LOCAL_LOGOS[name]}?v=2`}
-        alt={name}
-        title={name}
-        className="max-h-7 max-w-24 object-contain"
-        onError={() => setHidden(true)}
-      />
+      {imgFailed ? (
+        <span className="text-xs font-semibold text-gray-600 text-center leading-tight">
+          {name}
+        </span>
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={`${LOCAL_LOGOS[name]}?v=2`}
+          alt={name}
+          title={name}
+          className="max-h-7 max-w-24 object-contain"
+          loading={index < 10 ? "eager" : "lazy"}
+          crossOrigin="anonymous"
+          onError={() => setImgFailed(true)}
+        />
+      )}
     </div>
   );
 }
@@ -57,7 +64,7 @@ export default function TrustStrip() {
       <div className="overflow-hidden">
         <div className="logos-track pause-on-hover flex items-center">
           {looped.map((name, i) => (
-            <LogoItem key={`${name}-${i}`} name={name} />
+            <LogoItem key={`${name}-${i}`} name={name} index={i} />
           ))}
         </div>
       </div>
