@@ -11,14 +11,16 @@ export default async function EventsPage({
 }: {
   searchParams: { q?: string };
 }) {
-  const today = new Date().toISOString();
-  const twoYearsFromNow = new Date(Date.now() + 2 * 365 * 24 * 60 * 60 * 1000).toISOString();
+  const now = new Date();
+  const today = now.toISOString();
+  const twoYearsAgo = new Date(now.getTime() - 2 * 365 * 24 * 60 * 60 * 1000).toISOString();
+  const endOf2030 = "2030-12-31T23:59:59.999Z";
 
   const { data } = await supabase
     .from("events")
     .select("*")
-    .gte("start_date", today)
-    .lte("start_date", twoYearsFromNow)
+    .gte("start_date", twoYearsAgo)
+    .lte("start_date", endOf2030)
     .order("start_date", { ascending: true });
 
   const events = (data as EventRow[] | null) ?? [];
@@ -36,14 +38,14 @@ export default async function EventsPage({
             <span>/</span>
             <span className="text-white">Events</span>
           </div>
-          <h1 className="text-3xl font-extrabold text-white">All Upcoming Events</h1>
+          <h1 className="text-3xl font-extrabold text-white">Global Events</h1>
           <p className="mt-2 text-blue-200 text-sm">
-            Next 24 months · {events.length} events across all SDG goals
+            {events.length} events · 2023–2030 · across all SDG goals
           </p>
         </div>
       </div>
 
-      <EventsClient events={events} initialSearch={searchQuery} />
+      <EventsClient events={events} initialSearch={searchQuery} today={today} />
     </div>
   );
 }

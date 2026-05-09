@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
-import { MapPin, Calendar, Building2, ExternalLink, ArrowLeft, Share2 } from "lucide-react";
+import { MapPin, Calendar, Building2, ExternalLink, ArrowLeft, Share2, Clock } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import EventDetailActions from "./EventDetailActions";
 import type { Database } from "@/lib/supabase/types";
@@ -67,6 +67,10 @@ export default async function EventDetailPage({ params }: { params: { id: string
   const primarySdg = typedEvent.sdg_goals?.[0];
   const sdgColor = primarySdg ? SDG_COLORS[primarySdg] : "#0f2a4a";
   const orgInitial = typedEvent.organization?.trim()[0]?.toUpperCase() ?? "E";
+
+  const today = new Date().toISOString();
+  const endDateOrStart = typedEvent.end_date ?? typedEvent.start_date;
+  const isPast = endDateOrStart < today;
 
   const daysUntil = typedEvent.registration_deadline
     ? Math.ceil((new Date(typedEvent.registration_deadline).getTime() - Date.now()) / 86400000)
@@ -157,6 +161,16 @@ export default async function EventDetailPage({ params }: { params: { id: string
         </div>
       </div>
 
+      {/* Past event banner */}
+      {isPast && (
+        <div className="bg-amber-50 border-b border-amber-200">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center gap-2 text-amber-800 text-sm font-medium">
+            <Clock size={15} className="shrink-0 text-amber-600" />
+            This event has already taken place. The information below is kept for reference.
+          </div>
+        </div>
+      )}
+
       {/* Main content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -202,8 +216,8 @@ export default async function EventDetailPage({ params }: { params: { id: string
 
           {/* Sidebar */}
           <div className="flex flex-col gap-4">
-            {/* Register CTA — top of sidebar */}
-            {typedEvent.registration_url && (
+            {/* Register CTA — top of sidebar (hidden for past events) */}
+            {typedEvent.registration_url && !isPast && (
               <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-[#334155] shadow-sm p-5">
                 <a
                   href={typedEvent.registration_url}

@@ -493,10 +493,12 @@ function EventCard({ event }: { event: EventPreview }) {
 export default function HomeClient({
   events,
   thisWeekEvents,
+  pastEvents,
   totalCount,
 }: {
   events: EventPreview[];
   thisWeekEvents: EventPreview[];
+  pastEvents: EventPreview[];
   totalCount: number;
 }) {
   const { lang } = useLanguage();
@@ -643,6 +645,21 @@ export default function HomeClient({
           </div>
         )}
       </section>
+
+      {/* Past Events */}
+      {pastEvents.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-0 border-t border-gray-100 dark:border-[#334155]">
+          <div className="flex items-baseline justify-between mb-2">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Past Events</h2>
+            <Link href="/events?filter=past" className="text-[#4ea8de] hover:text-[#3a95cc] text-sm font-medium flex items-center gap-1 transition-colors">
+              View All <ArrowRight size={14} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {pastEvents.map(event => <EventCard key={event.id} event={event} />)}
+          </div>
+        </section>
+      )}
 
       {/* Featured Calendars */}
       <section className="bg-gray-50 dark:bg-[#0f172a] pt-3 pb-0 border-t border-gray-100 dark:border-[#334155]">

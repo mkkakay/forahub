@@ -72,39 +72,51 @@ export default async function Home() {
     { global: { fetch: (url, init) => fetch(url, { ...init, cache: "no-store" }) } }
   );
 
-  const today = new Date().toISOString();
-  const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-  const twoYearsOut = new Date(Date.now() + 2 * 365 * 24 * 60 * 60 * 1000).toISOString();
+  const now = new Date();
+  const today = now.toISOString();
+  const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  const twoYearsAgo = new Date(now.getTime() - 2 * 365 * 24 * 60 * 60 * 1000).toISOString();
+  const endOf2030 = '2030-12-31T23:59:59.999Z';
+
+  const COLS = "id, title, start_date, end_date, location, organization, sdg_goals, is_featured, format, region";
 
   const [
     slideImages,
-    [{ data: upcomingData }, { data: thisWeekData }, { count: totalCount }],
+    [{ data: upcomingData }, { data: thisWeekData }, { data: pastData }, { count: totalCount }],
   ] = await Promise.all([
     fetchHeroImages(),
     Promise.all([
-    supabase
-      .from("events")
-      .select("id, title, start_date, end_date, location, organization, sdg_goals, is_featured, format, region")
-      .gte("start_date", today)
-      .lte("start_date", twoYearsOut)
-      .order("start_date", { ascending: true })
-      .limit(6),
-    supabase
-      .from("events")
-      .select("id, title, start_date, end_date, location, organization, sdg_goals, is_featured, format, region")
-      .gte("start_date", today)
-      .lte("start_date", nextWeek)
-      .order("start_date", { ascending: true })
-      .limit(10),
-    supabase
-      .from("events")
-      .select("*", { count: "exact", head: true })
-      .gte("start_date", today),
+      supabase
+        .from("events")
+        .select(COLS)
+        .gte("start_date", today)
+        .lte("start_date", endOf2030)
+        .order("start_date", { ascending: true })
+        .limit(6),
+      supabase
+        .from("events")
+        .select(COLS)
+        .gte("start_date", today)
+        .lte("start_date", nextWeek)
+        .order("start_date", { ascending: true })
+        .limit(10),
+      supabase
+        .from("events")
+        .select(COLS)
+        .gte("start_date", twoYearsAgo)
+        .lt("start_date", today)
+        .order("start_date", { ascending: false })
+        .limit(6),
+      supabase
+        .from("events")
+        .select("*", { count: "exact", head: true })
+        .gte("start_date", today),
     ]),
   ]);
 
   const events = (upcomingData as EventPreview[] | null) ?? [];
   const thisWeekEvents = (thisWeekData as EventPreview[] | null) ?? [];
+  const pastEvents = (pastData as EventPreview[] | null) ?? [];
 
   return (
     <div className="min-h-screen">
@@ -115,6 +127,7 @@ export default async function Home() {
       <HomeClient
         events={events}
         thisWeekEvents={thisWeekEvents}
+        pastEvents={pastEvents}
         totalCount={totalCount ?? 0}
       />
       <SubmitEventBanner />

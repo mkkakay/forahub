@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, Calendar, Building2, Tag, Filter, X, Search } from "lucide-react";
+import { MapPin, Calendar, Building2, Tag, Filter, X, Search, Clock } from "lucide-react";
 import Link from "next/link";
 import type { Database } from "@/lib/supabase/types";
 import { matchesSearch } from "@/lib/search";
@@ -13,6 +13,7 @@ import CalendarExportMenu from "@/components/CalendarExportMenu";
 import ShareMenu from "@/components/ShareMenu";
 
 type EventRow = Database["public"]["Tables"]["events"]["Row"];
+type TimeView = "upcoming" | "past" | "all";
 
 const SDG_META: Record<number, { label: string; color: string }> = {
   1:  { label: "No Poverty",              color: "bg-red-100 text-red-800" },
@@ -78,8 +79,8 @@ function formatDateRange(start: string, end: string | null): string {
   return `${fmt(start)} – ${fmt(end)}`;
 }
 
-function getCountdown(event: EventRow): { label: string; urgent: boolean } | null {
-  const now = new Date();
+function getCountdown(event: EventRow, today: string): { label: string; urgent: boolean } | null {
+  const now = new Date(today);
   const thirtyDays = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
   let target: Date | null = null;
   let prefix = "";
@@ -100,7 +101,15 @@ function getCountdown(event: EventRow): { label: string; urgent: boolean } | nul
 
 const ALL_REGIONS = ["Africa", "Americas", "Asia-Pacific", "Europe", "Middle East", "Online", "Other"];
 
-export default function EventsClient({ events, initialSearch = "" }: { events: EventRow[]; initialSearch?: string }) {
+export default function EventsClient({
+  events,
+  initialSearch = "",
+  today,
+}: {
+  events: EventRow[];
+  initialSearch?: string;
+  today: string;
+}) {
   const router = useRouter();
   const { hasFullAccess, userId: ctxUserId } = useSubscription();
   const [search, setSearch] = useState(initialSearch);
@@ -108,6 +117,7 @@ export default function EventsClient({ events, initialSearch = "" }: { events: E
   const [formatFilter, setFormatFilter] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const [regionFilter, setRegionFilter] = useState<string | null>(null);
+  const [timeView, setTimeView] = useState<TimeView>("upcoming");
   const [userId, setUserId] = useState<string | null>(null);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
 
@@ -118,18 +128,29 @@ export default function EventsClient({ events, initialSearch = "" }: { events: E
       .then(({ data }) => { if (data) setSavedIds(new Set(data.map(s => s.event_id))); });
   }, [ctxUserId]);
 
-  // Free-tier cutoff: 30 days from now
-  const freeCutoff = useMemo(() => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), []);
+  // Free-tier cutoff: 30 days from now (applies to upcoming only; past events are always visible)
+  const freeCutoff = useMemo(() => new Date(new Date(today).getTime() + 30 * 24 * 60 * 60 * 1000), [today]);
 
-  const visibleEvents = useMemo(() => {
-    if (hasFullAccess) return events;
-    return events.filter(e => new Date(e.start_date) <= freeCutoff);
-  }, [events, hasFullAccess, freeCutoff]);
+  const upcomingEvents = useMemo(() => events.filter(e => e.start_date >= today), [events, today]);
+  const pastEvents = useMemo(() => events.filter(e => e.start_date < today), [events, today]);
+
+  const visibleUpcoming = useMemo(() => {
+    if (hasFullAccess) return upcomingEvents;
+    return upcomingEvents.filter(e => new Date(e.start_date) <= freeCutoff);
+  }, [upcomingEvents, hasFullAccess, freeCutoff]);
+
+  // Past events are always fully visible (no paywall on historical records)
+  const baseEvents = useMemo(() => {
+    if (timeView === "upcoming") return visibleUpcoming;
+    if (timeView === "past") return [...pastEvents].reverse(); // most recent first
+    // all: upcoming ascending then past descending
+    return [...upcomingEvents, ...pastEvents.slice().reverse()];
+  }, [timeView, visibleUpcoming, upcomingEvents, pastEvents]);
 
   const activeSearch = search.trim();
 
   const filtered = useMemo(() => {
-    return visibleEvents.filter(e => {
+    return baseEvents.filter(e => {
       if (!matchesSearch(e, search)) return false;
       if (sdgFilter !== null && !e.sdg_goals.includes(sdgFilter)) return false;
       if (formatFilter !== null && e.format !== formatFilter) return false;
@@ -137,12 +158,12 @@ export default function EventsClient({ events, initialSearch = "" }: { events: E
       if (regionFilter !== null && deriveRegion(e.location) !== regionFilter) return false;
       return true;
     });
-  }, [visibleEvents, search, sdgFilter, formatFilter, typeFilter, regionFilter]);
+  }, [baseEvents, search, sdgFilter, formatFilter, typeFilter, regionFilter]);
 
-  // Show upgrade nudge when search/filters match events beyond the free window
+  // Show upgrade nudge when upcoming search/filters match events beyond the free window
   const hasBeyondFree = useMemo(() => {
-    if (hasFullAccess || filtered.length > 0) return false;
-    return events
+    if (hasFullAccess || filtered.length > 0 || timeView !== "upcoming") return false;
+    return upcomingEvents
       .filter(e => new Date(e.start_date) > freeCutoff)
       .some(e => {
         if (!matchesSearch(e, search)) return false;
@@ -152,7 +173,7 @@ export default function EventsClient({ events, initialSearch = "" }: { events: E
         if (regionFilter !== null && deriveRegion(e.location) !== regionFilter) return false;
         return true;
       });
-  }, [events, filtered.length, hasFullAccess, freeCutoff, search, sdgFilter, formatFilter, typeFilter, regionFilter]);
+  }, [upcomingEvents, filtered.length, hasFullAccess, freeCutoff, search, sdgFilter, formatFilter, typeFilter, regionFilter, timeView]);
 
   const hasFilters =
     activeSearch.length >= 2 ||
@@ -171,10 +192,15 @@ export default function EventsClient({ events, initialSearch = "" }: { events: E
 
   const countLabel = (() => {
     const base = `${filtered.length} event${filtered.length !== 1 ? "s" : ""}`;
-    const scope = hasFullAccess ? "" : " in the next 30 days";
-    if (activeSearch.length >= 2) return `${base} found for "${activeSearch}"${scope}`;
-    return `${base}${scope}`;
+    if (activeSearch.length >= 2) return `${base} for "${activeSearch}"`;
+    return base;
   })();
+
+  const TIME_VIEW_OPTIONS: { value: TimeView; label: string }[] = [
+    { value: "upcoming", label: "Upcoming" },
+    { value: "past", label: "Past" },
+    { value: "all", label: "All" },
+  ];
 
   return (
     <div>
@@ -182,6 +208,23 @@ export default function EventsClient({ events, initialSearch = "" }: { events: E
       <div className="bg-white border-b border-gray-200 sticky top-16 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap gap-3 items-center">
           <Filter size={16} className="text-gray-400 shrink-0" />
+
+          {/* Time view toggle */}
+          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+            {TIME_VIEW_OPTIONS.map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => setTimeView(opt.value)}
+                className={`text-sm font-medium px-3 py-1 rounded-md transition-colors ${
+                  timeView === opt.value
+                    ? "bg-white text-[#0f2a4a] shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
 
           {/* Search */}
           <div className="flex items-center border border-gray-200 rounded-lg px-2.5 py-1.5 gap-1.5 focus-within:ring-2 focus-within:ring-[#4ea8de]">
@@ -272,7 +315,7 @@ export default function EventsClient({ events, initialSearch = "" }: { events: E
                   Looking for events further ahead?
                 </p>
                 <p className="text-gray-400 text-sm max-w-sm mb-6">
-                  Pro unlocks the full 24-month calendar for $9.99/year, cancel anytime.
+                  Pro unlocks the full calendar to 2030 for $9.99/year, cancel anytime.
                 </p>
                 <Link
                   href="/pricing"
@@ -302,17 +345,23 @@ export default function EventsClient({ events, initialSearch = "" }: { events: E
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map(event => {
+              const isPast = event.start_date < today;
               const primarySdg = event.sdg_goals?.[0];
               const sdg = primarySdg ? SDG_META[primarySdg] : null;
-              const countdown = getCountdown(event);
+              const countdown = isPast ? null : getCountdown(event, today);
               return (
                 <div
                   key={event.id}
                   onClick={() => router.push(`/events/${event.id}`)}
-                  className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-6 flex flex-col gap-4 group cursor-pointer"
+                  className={`bg-white rounded-xl border shadow-sm hover:shadow-md transition-shadow p-6 flex flex-col gap-4 group cursor-pointer ${isPast ? "border-gray-100 opacity-80" : "border-gray-200"}`}
                 >
                   <div className="flex items-start justify-between gap-2 flex-wrap">
                     <div className="flex items-center gap-2 flex-wrap">
+                      {isPast && (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-500">
+                          <Clock size={10} /> Past
+                        </span>
+                      )}
                       {sdg && (
                         <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${sdg.color}`}>
                           <Tag size={11} />
@@ -355,7 +404,7 @@ export default function EventsClient({ events, initialSearch = "" }: { events: E
                     )}
                   </div>
 
-                  {event.registration_url && (
+                  {event.registration_url && !isPast && (
                     <a
                       href={event.registration_url}
                       target="_blank"
