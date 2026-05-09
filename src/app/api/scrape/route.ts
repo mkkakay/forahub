@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Parse body ────────────────────────────────────────────────────────────
-  let batchSize = 50;
+  let batchSize = 10;
   let offset = 0;
   try {
     const body = await req.json() as { batchSize?: number; offset?: number };
@@ -121,18 +121,41 @@ export async function POST(req: NextRequest) {
 
       // 2. Extract events via Groq (truncate to ~30k chars ≈ 7k tokens)
       const content = fetchResult.content.slice(0, 30_000);
-      const completion = await groq.chat.completions.create({
-        model: GROQ_MODEL,
-        max_tokens: 4096,
-        temperature: 0.1,
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          {
-            role: 'user',
-            content: `Organization: ${source.organization}\nURL: ${source.url}\n\nCONTENT:\n${content}`,
-          },
-        ],
-      });
+      const groqMessages: Parameters<typeof groq.chat.completions.create>[0]['messages'] = [
+        { role: 'system', content: SYSTEM_PROMPT },
+        {
+          role: 'user',
+          content: `Organization: ${source.organization}\nURL: ${source.url}\n\nCONTENT:\n${content}`,
+        },
+      ];
+
+      let completion: Awaited<ReturnType<typeof groq.chat.completions.create>>;
+      try {
+        completion = await groq.chat.completions.create({
+          model: GROQ_MODEL, max_tokens: 4096, temperature: 0.1, messages: groqMessages,
+        });
+      } catch (groqErr: unknown) {
+        const status = (groqErr as { status?: number }).status;
+        if (status === 429) {
+          // Rate limited — wait 60 s then retry once
+          await new Promise(resolve => setTimeout(resolve, 60_000));
+          try {
+            completion = await groq.chat.completions.create({
+              model: GROQ_MODEL, max_tokens: 4096, temperature: 0.1, messages: groqMessages,
+            });
+          } catch (retryErr) {
+            errors.push(`${source.id}: 429 rate limit, retry failed: ${String(retryErr).slice(0, 80)}`);
+            processed++;
+            await new Promise(resolve => setTimeout(resolve, 2_000));
+            continue;
+          }
+        } else {
+          throw groqErr;
+        }
+      }
+
+      // 2 s inter-request delay to stay within Groq free-tier 30 req/min limit
+      await new Promise(resolve => setTimeout(resolve, 2_000));
 
       const rawText = completion.choices[0]?.message?.content ?? '[]';
 
