@@ -6,24 +6,17 @@ import { SOURCES_ASIA } from './sources-asia';
 import { SOURCES_AMERICAS } from './sources-americas';
 import { SOURCES_EUROPE } from './sources-europe';
 import { SOURCES_TECH } from './sources-tech';
+import { SOURCES_CLIMATE } from './sources-climate-environment';
+import { SOURCES_EDUCATION } from './sources-education';
+import { SOURCES_GENDER_SOCIAL } from './sources-gender-social';
+import { SOURCES_FOOD_AGRICULTURE } from './sources-food-agriculture';
+import { SOURCES_GOVERNANCE_PEACE } from './sources-governance-peace';
+import { SOURCES_ECONOMIC_FINANCE } from './sources-economic-finance';
+import { SOURCES_HUMANITARIAN } from './sources-humanitarian';
+import { SOURCES_YOUTH_STUDENTS } from './sources-youth-students';
+import { SOURCES_EUROPE_EXPANDED } from './sources-europe-expanded';
+import { SOURCES_PACIFIC_OCEANIA } from './sources-pacific-oceania';
 
-/**
- * Canonical list of event sources for ForaHub — 1000+ sources total.
- *
- * Sources are split into regional/thematic sub-files to keep each file
- * manageable and prevent build timeouts:
- *   sources-global-orgs.ts  – UN system, global bodies, thematic SDG orgs
- *   sources-africa.ts       – Sub-Saharan Africa ministries, regional bodies, universities
- *   sources-mena.ts         – Middle East and North Africa
- *   sources-asia.ts         – South/Southeast/East/Central Asia and Pacific
- *   sources-americas.ts     – Latin America and the Caribbean
- *   sources-europe.ts       – Eastern Europe and Caucasus ministries
- *   sources-tech.ts         – Technology, AI/data science, fintech for development
- *
- * Scrape method priority: rss > ical > html > pdf
- * Phase 2 stubs (twitter, linkedin, newsletter, youtube) are included for
- * architecture completeness but return empty content gracefully.
- */
 export const SOURCES: ScraperSource[] = [
   ...SOURCES_GLOBAL,
   ...SOURCES_AFRICA,
@@ -32,6 +25,16 @@ export const SOURCES: ScraperSource[] = [
   ...SOURCES_AMERICAS,
   ...SOURCES_EUROPE,
   ...SOURCES_TECH,
+  ...SOURCES_CLIMATE,
+  ...SOURCES_EDUCATION,
+  ...SOURCES_GENDER_SOCIAL,
+  ...SOURCES_FOOD_AGRICULTURE,
+  ...SOURCES_GOVERNANCE_PEACE,
+  ...SOURCES_ECONOMIC_FINANCE,
+  ...SOURCES_HUMANITARIAN,
+  ...SOURCES_YOUTH_STUDENTS,
+  ...SOURCES_EUROPE_EXPANDED,
+  ...SOURCES_PACIFIC_OCEANIA,
 
   // ── PHASE 2 STUBS ─────────────────────────────────────────────────────────
   // Phase 2 requires API keys and additional setup.
