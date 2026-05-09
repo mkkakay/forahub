@@ -26,4 +26,6 @@ export const LOCAL_LOGOS: Record<string, string> = {
   "African Union":      "/images/logos/au.svg",
   "ECOWAS":             "/images/logos/ecowas.svg",
   "ASEAN":              "/images/logos/asean.svg",
+  // Universities
+  "NUS":                "/images/logos/nus.svg",
 };

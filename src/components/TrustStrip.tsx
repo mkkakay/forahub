@@ -10,6 +10,7 @@ const ORGS = [
   "World Bank", "The Global Fund", "Gavi",
   "MSF", "Save the Children", "Oxfam", "CARE",
   "African Union", "ECOWAS", "ASEAN",
+  "NUS",
 ];
 
 const STRIP_ORGS = ORGS.filter(name => LOCAL_LOGOS[name]);
