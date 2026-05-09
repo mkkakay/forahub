@@ -1,15 +1,29 @@
-// Local logo paths for orgs with successfully downloaded images (>10KB).
-// All others fall back to UI Avatars in the OrgLogo component.
+// Local logo paths for orgs with confirmed valid downloaded files.
+// Source: Wikimedia Commons + en.wikipedia.org (public domain / freely licensed).
 export const LOCAL_LOGOS: Record<string, string> = {
-  "WHO":             "/images/logos/who.png",
-  "UNESCO":          "/images/logos/unesco.png",
-  "FAO":             "/images/logos/fao.png",
-  "Gates Foundation":"/images/logos/gates.png",
-  "Africa CDC":      "/images/logos/africacdc.png",
-  "MSF":             "/images/logos/msf.png",
-  "CARE":            "/images/logos/care.png",
-  "PATH":            "/images/logos/path.png",
-  "JICA":            "/images/logos/jica.png",
-  "ECOWAS":          "/images/logos/ecowas.png",
-  "Chatham House":   "/images/logos/chatham.png",
+  // UN agencies
+  "WHO":                "/images/logos/who.svg",
+  "UNICEF":             "/images/logos/unicef.svg",
+  "UNDP":               "/images/logos/undp.svg",
+  "UN Women":           "/images/logos/unwomen.svg",
+  "FAO":                "/images/logos/fao.svg",
+  "WFP":                "/images/logos/wfp.svg",
+  "IOM":                "/images/logos/iom.svg",
+  "UNHCR":              "/images/logos/unhcr.svg",
+  "UNAIDS":             "/images/logos/unaids.svg",
+  "UNEP":               "/images/logos/unep.svg",
+  "ILO":                "/images/logos/ilo.svg",
+  // Development finance
+  "World Bank":         "/images/logos/worldbank.svg",
+  "The Global Fund":    "/images/logos/globalfund.svg",
+  "Gavi":               "/images/logos/gavi.png",
+  // INGOs
+  "MSF":                "/images/logos/msf.svg",
+  "Save the Children":  "/images/logos/savechildren.svg",
+  "Oxfam":              "/images/logos/oxfam.svg",
+  "CARE":               "/images/logos/care.svg",
+  // Regional bodies
+  "African Union":      "/images/logos/au.svg",
+  "ECOWAS":             "/images/logos/ecowas.svg",
+  "ASEAN":              "/images/logos/asean.svg",
 };
