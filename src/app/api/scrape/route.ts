@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 // Increase timeout for Vercel Pro / self-hosted. On hobby plan requests are capped at 10s.
 export const maxDuration = 300;
 
-const GROQ_MODEL = 'llama-3.3-70b-versatile';
+const GROQ_MODEL = 'llama3-8b-8192';
 
 const SYSTEM_PROMPT =
   'Extract all events from this webpage. Return JSON array with fields: ' +
@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
         const status = (groqErr as { status?: number }).status;
         if (status === 429) {
           // Rate limited — wait 60 s then retry once
-          await new Promise(resolve => setTimeout(resolve, 60_000));
+          await new Promise(resolve => setTimeout(resolve, 90_000));
           try {
             completion = await groq.chat.completions.create({
               model: GROQ_MODEL, max_tokens: 4096, temperature: 0.1, messages: groqMessages,
@@ -146,7 +146,7 @@ export async function POST(req: NextRequest) {
           } catch (retryErr) {
             errors.push(`${source.id}: 429 rate limit, retry failed: ${String(retryErr).slice(0, 80)}`);
             processed++;
-            await new Promise(resolve => setTimeout(resolve, 2_000));
+            await new Promise(resolve => setTimeout(resolve, 3_000));
             continue;
           }
         } else {
@@ -154,8 +154,8 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // 2 s inter-request delay to stay within Groq free-tier 30 req/min limit
-      await new Promise(resolve => setTimeout(resolve, 2_000));
+      // 3 s inter-request delay to stay within Groq free-tier rate limits
+      await new Promise(resolve => setTimeout(resolve, 3_000));
 
       const rawText = completion.choices[0]?.message?.content ?? '[]';
 
