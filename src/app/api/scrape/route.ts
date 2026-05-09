@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import Groq from 'groq-sdk';
+import Anthropic from '@anthropic-ai/sdk';
 import { adminSupabase } from '@/lib/supabase/admin';
 import { getActiveSources } from '@/lib/scraper/sources';
 import { fetchSource } from '@/lib/scraper/fetchSources';
@@ -10,16 +10,7 @@ export const dynamic = 'force-dynamic';
 // Increase timeout for Vercel Pro / self-hosted. On hobby plan requests are capped at 10s.
 export const maxDuration = 300;
 
-const GROQ_MODEL = 'llama3-8b-8192';
-
-const SYSTEM_PROMPT =
-  'Extract all events from this webpage. Return JSON array with fields: ' +
-  'title (string), description (string|null), start_date (YYYY-MM-DD|null), ' +
-  'end_date (YYYY-MM-DD|null), location (string|null), is_online (boolean), ' +
-  'organization_name (string|null), registration_url (string|null), ' +
-  'sdg_goals (array of numbers 1-17). ' +
-  'Only return valid upcoming or recent events. Return empty array if no events found. ' +
-  'Return ONLY the JSON array, no markdown fences.';
+const CLAUDE_MODEL = 'claude-haiku-4-5-20251001';
 
 function mapToExtracted(
   raw: Record<string, unknown>[],
@@ -88,9 +79,9 @@ export async function POST(req: NextRequest) {
   } catch { /* empty body is fine */ }
 
   // ── Validate env ──────────────────────────────────────────────────────────
-  const groqApiKey = process.env.GROQ_API_KEY;
-  if (!groqApiKey) {
-    return NextResponse.json({ error: 'GROQ_API_KEY not configured' }, { status: 500 });
+  const anthropicApiKey = process.env.ANTHROPIC_API_KEY;
+  if (!anthropicApiKey) {
+    return NextResponse.json({ error: 'ANTHROPIC_API_KEY not configured' }, { status: 500 });
   }
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -99,7 +90,7 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Setup ─────────────────────────────────────────────────────────────────
-  const groq = new Groq({ apiKey: groqApiKey });
+  const anthropic = new Anthropic({ apiKey: anthropicApiKey });
   const allSources = getActiveSources();
   const batch = allSources.slice(offset, offset + batchSize);
 
@@ -119,29 +110,33 @@ export async function POST(req: NextRequest) {
         continue;
       }
 
-      // 2. Extract events via Groq (truncate to ~30k chars ≈ 7k tokens)
-      const content = fetchResult.content.slice(0, 30_000);
-      const groqMessages: Parameters<typeof groq.chat.completions.create>[0]['messages'] = [
-        { role: 'system', content: SYSTEM_PROMPT },
-        {
-          role: 'user',
-          content: `Organization: ${source.organization}\nURL: ${source.url}\n\nCONTENT:\n${content}`,
-        },
-      ];
+      // 2. Extract events via Claude Haiku
+      const html = fetchResult.content;
+      const userPrompt =
+        `Extract all events from this webpage HTML. Return ONLY a valid JSON array with no other text. ` +
+        `Each event object must have these fields: title (string), description (string), ` +
+        `start_date (YYYY-MM-DD format), end_date (YYYY-MM-DD format or null), location (string or null), ` +
+        `is_online (boolean), organization_name (string), registration_url (string or null), ` +
+        `sdg_goals (array of numbers 1-17). Only include real upcoming or recent events with clear dates. ` +
+        `Return empty array [] if no events found.\n\nHTML:\n${html.substring(0, 15000)}`;
 
-      let completion: Awaited<ReturnType<typeof groq.chat.completions.create>>;
+      let message: Awaited<ReturnType<typeof anthropic.messages.create>>;
       try {
-        completion = await groq.chat.completions.create({
-          model: GROQ_MODEL, max_tokens: 4096, temperature: 0.1, messages: groqMessages,
+        message = await anthropic.messages.create({
+          model: CLAUDE_MODEL,
+          max_tokens: 1024,
+          messages: [{ role: 'user', content: userPrompt }],
         });
-      } catch (groqErr: unknown) {
-        const status = (groqErr as { status?: number }).status;
+      } catch (apiErr: unknown) {
+        const status = (apiErr as { status?: number }).status;
         if (status === 429) {
-          // Rate limited — wait 60 s then retry once
-          await new Promise(resolve => setTimeout(resolve, 90_000));
+          // Rate limited — wait 30 s then retry once
+          await new Promise(resolve => setTimeout(resolve, 30_000));
           try {
-            completion = await groq.chat.completions.create({
-              model: GROQ_MODEL, max_tokens: 4096, temperature: 0.1, messages: groqMessages,
+            message = await anthropic.messages.create({
+              model: CLAUDE_MODEL,
+              max_tokens: 1024,
+              messages: [{ role: 'user', content: userPrompt }],
             });
           } catch (retryErr) {
             errors.push(`${source.id}: 429 rate limit, retry failed: ${String(retryErr).slice(0, 80)}`);
@@ -150,14 +145,14 @@ export async function POST(req: NextRequest) {
             continue;
           }
         } else {
-          throw groqErr;
+          throw apiErr;
         }
       }
 
-      // 3 s inter-request delay to stay within Groq free-tier rate limits
+      // 3 s inter-request delay
       await new Promise(resolve => setTimeout(resolve, 3_000));
 
-      const rawText = completion.choices[0]?.message?.content ?? '[]';
+      const rawText = message.content[0]?.type === 'text' ? message.content[0].text : '[]';
 
       // 3. Parse JSON response
       let rawEvents: Record<string, unknown>[] = [];
