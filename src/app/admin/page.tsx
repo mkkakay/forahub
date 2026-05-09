@@ -4,6 +4,7 @@ import {
   CalendarDays, Users, TrendingUp, Star,
   AlertTriangle, Clock, CheckCircle, Radio,
 } from 'lucide-react'
+import ScraperPanel from './ScraperPanel'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,6 +18,7 @@ async function getDashboardData() {
     { count: freeUsers },
     { data: attentionSources },
     { data: usersResult },
+    { data: lastRunData },
   ] = await Promise.all([
     adminSupabase.from('events').select('*', { count: 'exact', head: true }),
     adminSupabase.from('events').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
@@ -26,6 +28,7 @@ async function getDashboardData() {
     adminSupabase.from('profiles').select('*', { count: 'exact', head: true }).eq('subscription_tier', 'free'),
     adminSupabase.from('sources').select('id, organization, consecutive_failures, last_scraped_at').eq('needs_attention', true).eq('is_active', true).limit(5),
     adminSupabase.from('profiles').select('id, created_at').order('created_at', { ascending: false }).limit(8),
+    adminSupabase.from('scraper_logs').select('run_at, sources_processed, events_found, events_saved, duration_seconds, errors').order('run_at', { ascending: false }).limit(1),
   ])
 
   // Get recent signups with emails from auth
@@ -48,6 +51,7 @@ async function getDashboardData() {
     attentionSources: attentionSources ?? [],
     recentSignups,
     recentProfiles: usersResult ?? [],
+    lastRun: (lastRunData ?? [])[0] ?? null,
   }
 }
 
@@ -211,6 +215,15 @@ export default async function AdminDashboard() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Scraper section */}
+      <div className="mt-6">
+        <ScraperPanel
+          lastRun={d.lastRun}
+          totalEvents={d.totalEvents}
+          adminSecret={process.env.ADMIN_SECRET ?? ''}
+        />
       </div>
 
       {/* Quick nav */}
