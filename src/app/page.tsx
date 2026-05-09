@@ -114,8 +114,6 @@ export default async function Home() {
     <div className="min-h-screen">
       <Navbar />
       <HeroSection slideImages={slideImages} />
-      {/* Spacer so stats section clears the floating search bar on md+ screens */}
-      <div className="hidden md:block h-14" />
       <TrustStrip />
       <LiveActivityTicker />
       <HomeClient
