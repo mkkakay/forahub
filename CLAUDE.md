@@ -106,6 +106,21 @@ Hero slides must be contextually accurate:
 - UN SDG slide must show UN assembly or sustainability imagery
 - Global South slides must show authentic African, Asian, Latin American, or Pacific imagery
 
+## Homepage spacing standards
+The four core content sections must flow as one continuous content block with no dead zones between them. These sections are: Happening This Week, Upcoming Events, Featured Calendars, Browse by SDG Category.
+
+Rules that must be verified before marking any spacing task complete:
+- Section wrapper padding: py-3 maximum on these four sections
+- Gap between section heading and cards below: mt-2 maximum
+- Gap between end of one section and start of next section heading: 16px maximum
+- Use border-t border-gray-100 as visual divider instead of padding
+- Section heading size: text-xl font-bold not text-2xl
+- No mb- or mt- margins larger than 8px between these four sections
+- After any spacing change visually verify: a user scrolling should move smoothly through all four sections without any visible dead zone or large gap
+- Reference check: does this feel like a news feed or product listing page? If sections feel isolated the spacing is still too large.
+
+All other sections: py-5 maximum, no section should have more than 32px total vertical space above and below it combined.
+
 ## Search and floating UI standards
 The floating search bar must feel like a premium discovery tool:
 - Visually prominent with white background and strong shadow
