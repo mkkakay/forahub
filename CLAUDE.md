@@ -137,3 +137,15 @@ Every completed task must report:
 4. Any remaining concerns or known limitations
 
 A task is only complete when it works technically, looks visually correct, feels polished, and matches the intended global institutional quality of ForaHub.
+
+## Scraper and AI cost decisions
+
+### Scraper decisions
+- Scraper uses Claude Haiku: claude-haiku-4-5-20251001
+- ANTHROPIC_API_KEY is in Vercel and .env.local
+- Monthly AI budget: $5 maximum
+- Do NOT use Groq, it has unreliable rate limits and decommissions models
+- Full scrape runs from forahub.org/admin clicking Run Full Scrape button
+- Automated 6 hour cron job to be set up in next session via Supabase Edge Function
+- Batch size: 5 sources per batch with 5 second delay between batches
+- Admin key: forahub_admin_2026
