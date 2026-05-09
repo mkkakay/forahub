@@ -6,7 +6,6 @@ import { Calendar, Flag, MapPin, Flame, ArrowRight, ChevronRight, Globe, X } fro
 import { supabase } from "@/lib/supabase/client";
 import { useLanguage } from "@/context/LanguageContext";
 import { t } from "@/lib/i18n";
-import OrgLogo from "@/components/OrgLogo";
 
 const SDG_COLORS: Record<number, string> = {
   1: "#E5243B", 2: "#DDA63A", 3: "#4C9F38", 4: "#C5192D", 5: "#FF3A21",
@@ -59,15 +58,30 @@ const REGIONS = [
   { name: "Pacific Islands", query: "Pacific", photo: "https://images.unsplash.com/photo-1559628233-100c798642d8?w=600&q=80", cities: ["Fiji", "Samoa", "Tonga"], events: 40 },
 ];
 
+const BF_KEY = "NJ56JESB-y_Yq9XLTApT75PLDyFi9Qf7-pz31r4tAVRcF1jD_r6AES98YRgJyToYZCUmW98HtK9wj_41zhBQjQ";
+const bf = (domain: string) => `https://cdn.brandfetch.io/${domain}/w/300/h/150/logo?c=${BF_KEY}`;
+
 const FEATURED_ORGS = [
-  { name: "WHO", full: "World Health Organization", color: "#1a5c2a", events: 48 },
-  { name: "UNICEF", full: "UNICEF", color: "#0075c9", events: 36 },
-  { name: "World Bank", full: "World Bank Group", color: "#8b1a1a", events: 62 },
-  { name: "UN Women", full: "UN Women", color: "#c0392b", events: 28 },
-  { name: "WFP", full: "World Food Programme", color: "#e67e00", events: 22 },
-  { name: "UNAIDS", full: "UNAIDS", color: "#7b2d8b", events: 19 },
-  { name: "UNEP", full: "UN Environment", color: "#2d6a4f", events: 31 },
-  { name: "UNDP", full: "UNDP", color: "#0d2137", events: 44 },
+  { name: "WHO",              full: "World Health Organization",         color: "#0093D5", logo: "/images/logos/who.svg",          events: 48 },
+  { name: "Gates Foundation", full: "Bill & Melinda Gates Foundation",   color: "#E8192C", logo: bf("gatesfoundation.org"),         events: 34 },
+  { name: "World Bank",       full: "World Bank Group",                  color: "#003299", logo: "/images/logos/worldbank.svg",     events: 62 },
+  { name: "UNICEF",           full: "UNICEF",                            color: "#00AEEF", logo: "/images/logos/unicef.svg",        events: 36 },
+  { name: "African Dev Bank", full: "African Development Bank",          color: "#006B3F", logo: bf("afdb.org"),                    events: 28 },
+  { name: "WEF",              full: "World Economic Forum",              color: "#1A1A1A", logo: bf("weforum.org"),                 events: 41 },
+  { name: "Gavi",             full: "Gavi, the Vaccine Alliance",        color: "#0066CC", logo: bf("gavi.org"),                   events: 19 },
+  { name: "Global Fund",      full: "The Global Fund",                   color: "#EF3340", logo: "/images/logos/globalfund.svg",   events: 22 },
+  { name: "MSF",              full: "Médecins Sans Frontières",          color: "#E30613", logo: "/images/logos/msf.svg",          events: 15 },
+  { name: "African Union",    full: "African Union",                     color: "#009A44", logo: "/images/logos/au.svg",           events: 31 },
+  { name: "UNDP",             full: "UN Development Programme",          color: "#009FDA", logo: "/images/logos/undp.svg",         events: 44 },
+  { name: "Wellcome",         full: "Wellcome Trust",                    color: "#E7157B", logo: bf("wellcome.org"),               events: 18 },
+  { name: "Save the Children",full: "Save the Children",                 color: "#E2001A", logo: "/images/logos/savechildren.svg", events: 24 },
+  { name: "Chatham House",    full: "Chatham House",                     color: "#003B6F", logo: bf("chathamhouse.org"),           events: 16 },
+  { name: "ADB",              full: "Asian Development Bank",            color: "#E3000F", logo: bf("adb.org"),                    events: 23 },
+  { name: "ASEAN",            full: "Association of Southeast Asian Nations", color: "#003087", logo: "/images/logos/asean.svg",  events: 29 },
+  { name: "Oxfam",            full: "Oxfam International",               color: "#E70052", logo: "/images/logos/oxfam.svg",       events: 21 },
+  { name: "Brookings",        full: "Brookings Institution",             color: "#003974", logo: bf("brookings.edu"),              events: 14 },
+  { name: "WFP",              full: "World Food Programme",              color: "#009FE3", logo: "/images/logos/wfp.svg",          events: 22 },
+  { name: "UNFCCC",           full: "UN Climate Change Secretariat",     color: "#009A44", logo: "/images/logos/unfccc.svg",      events: 27 },
 ];
 
 const ACTIVITY_FEED = [
@@ -196,6 +210,49 @@ function OrgFavicon({ initial, color }: { domain: string; initial: string; color
   );
 }
 
+
+function FeaturedOrgCard({ org }: {
+  org: { name: string; full: string; color: string; logo: string; events: number };
+}) {
+  const { lang } = useLanguage();
+  const [imgFailed, setImgFailed] = useState(false);
+  return (
+    <Link
+      href={`/events?org=${encodeURIComponent(org.full)}`}
+      className="shrink-0 w-52 snap-start bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-[#334155] hover:shadow-lg transition-all duration-200 group overflow-hidden flex flex-col"
+    >
+      {/* Branded header: near-white tinted background, large logo */}
+      <div
+        className="h-32 flex items-center justify-center p-6 border-b border-gray-100 dark:border-[#334155]"
+        style={{ backgroundColor: `${org.color}14` }}
+      >
+        {imgFailed ? (
+          <span className="text-lg font-bold text-center leading-tight" style={{ color: org.color }}>
+            {org.name}
+          </span>
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={org.logo}
+            alt={org.name}
+            className="max-h-12 max-w-40 object-contain mx-auto"
+            crossOrigin="anonymous"
+            onError={() => setImgFailed(true)}
+          />
+        )}
+      </div>
+      {/* Body */}
+      <div className="p-4 flex flex-col flex-1">
+        <p className="text-sm font-bold text-[#0f2a4a] dark:text-white group-hover:text-[#4ea8de] transition-colors">{org.name}</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{org.events} events</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-1 flex-1">{org.full}</p>
+        <span className="mt-3 block w-full py-2 rounded-lg text-sm font-semibold text-center border border-[#4ea8de]/40 text-[#4ea8de] group-hover:bg-[#4ea8de] group-hover:text-white transition-colors">
+          {t(lang, "calendar.follow")}
+        </span>
+      </div>
+    </Link>
+  );
+}
 
 function SdgCard({ sdg, count }: { sdg: number; count: number }) {
   const [bgFailed, setBgFailed] = useState(false);
@@ -601,30 +658,7 @@ export default function HomeClient({
           </div>
           <div className="flex gap-4 overflow-x-auto pb-0 no-scrollbar snap-x snap-mandatory pl-0.5">
             {FEATURED_ORGS.map(org => (
-              <Link
-                key={org.name}
-                href={`/events?org=${encodeURIComponent(org.full)}`}
-                className="shrink-0 w-52 snap-start bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-[#334155] hover:shadow-lg transition-all duration-200 group overflow-hidden flex flex-col"
-              >
-                {/* Cover */}
-                <div
-                  className="relative h-28 flex items-center justify-center"
-                  style={{ background: `linear-gradient(135deg, ${org.color}, ${org.color}bb)` }}
-                >
-                  <OrgLogo name={org.name} color={org.color} size="md" />
-                  <span className="absolute top-2 right-2 bg-black/30 backdrop-blur-sm text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                    {org.events}
-                  </span>
-                </div>
-                {/* Body */}
-                <div className="p-4 flex flex-col flex-1">
-                  <p className="text-sm font-bold text-[#0f2a4a] dark:text-white group-hover:text-[#4ea8de] transition-colors">{org.name}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2 flex-1">{org.full}</p>
-                  <span className="mt-3 block w-full py-2 rounded-lg text-sm font-semibold text-center border border-[#4ea8de]/40 text-[#4ea8de] group-hover:bg-[#4ea8de] group-hover:text-white transition-colors">
-                    {t(lang, "calendar.follow")}
-                  </span>
-                </div>
-              </Link>
+              <FeaturedOrgCard key={org.name} org={org} />
             ))}
             {/* Suggest organization CTA card */}
             <div className="shrink-0 w-52 snap-start rounded-2xl border-2 border-dashed border-gray-300 dark:border-[#334155] bg-white dark:bg-[#1e293b] flex flex-col items-center justify-center p-6 gap-2 text-center">
