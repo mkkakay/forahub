@@ -504,17 +504,17 @@ export default function HomeClient({
     <main className="flex-1">
       {/* This Week */}
       {thisWeekEvents.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between mb-3">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-0">
+          <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Flame size={20} className="text-orange-500" />
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{t(lang, "events.thisweek")}</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">{t(lang, "events.thisweek")}</h2>
             </div>
             <Link href="/events?filter=thisweek" className="text-sm text-[#4ea8de] hover:underline flex items-center gap-1 font-medium">
               {t(lang, "events.viewall")} <ChevronRight size={14} />
             </Link>
           </div>
-          <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar snap-x snap-mandatory pl-0.5">
+          <div className="flex gap-4 overflow-x-auto pb-0 no-scrollbar snap-x snap-mandatory pl-0.5">
             {thisWeekEvents.map(ev => {
               const sdg = ev.sdg_goals?.[0];
               const color = sdg ? SDG_COLORS[sdg] : "#3b82f6";
@@ -568,9 +568,9 @@ export default function HomeClient({
       )}
 
       {/* Upcoming Events */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div className="flex items-baseline justify-between mb-3">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{t(lang, "events.upcoming")}</h2>
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-0 border-t border-gray-100 dark:border-[#334155]">
+        <div className="flex items-baseline justify-between mb-2">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">{t(lang, "events.upcoming")}</h2>
           <Link href="/events" className="text-[#4ea8de] hover:text-[#3a95cc] text-sm font-medium flex items-center gap-1 transition-colors">
             {t(lang, "events.viewall")} <ArrowRight size={14} />
           </Link>
@@ -588,18 +588,18 @@ export default function HomeClient({
       </section>
 
       {/* Featured Calendars */}
-      <section className="bg-gray-50 dark:bg-[#0f172a] py-4">
+      <section className="bg-gray-50 dark:bg-[#0f172a] pt-3 pb-0 border-t border-gray-100 dark:border-[#334155]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-baseline justify-between mb-3">
+          <div className="flex items-baseline justify-between mb-2">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{t(lang, "calendar.featured")}</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">{t(lang, "calendar.featured")}</h2>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{t(lang, "calendar.subtitle")}</p>
             </div>
             <Link href="/events" className="text-sm text-[#4ea8de] hover:underline flex items-center gap-1 font-medium shrink-0 ml-4">
               View All <ChevronRight size={14} />
             </Link>
           </div>
-          <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar snap-x snap-mandatory pl-0.5">
+          <div className="flex gap-4 overflow-x-auto pb-0 no-scrollbar snap-x snap-mandatory pl-0.5">
             {FEATURED_ORGS.map(org => (
               <Link
                 key={org.name}
@@ -644,11 +644,11 @@ export default function HomeClient({
       </section>
 
       {/* Browse by SDG */}
-      <section className="bg-gray-50 dark:bg-[#0f172a] py-4">
+      <section className="bg-gray-50 dark:bg-[#0f172a] pt-3 pb-3 border-t border-gray-100 dark:border-[#334155]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-start justify-between mb-3">
+          <div className="flex items-start justify-between mb-2">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Browse by SDG Category</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Browse by SDG Category</h2>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Explore events aligned with the UN 2030 Agenda</p>
             </div>
             <Link href="/events" className="text-sm text-[#4ea8de] hover:underline flex items-center gap-1 font-medium shrink-0 ml-4 mt-1">
@@ -660,7 +660,7 @@ export default function HomeClient({
               <SdgCard key={sdg} sdg={sdg} count={sdgCounts[sdg] ?? 0} />
             ))}
           </div>
-          <div className="flex justify-center mt-3">
+          <div className="flex justify-center mt-2">
             <Link
               href="/events"
               className="border border-gray-300 dark:border-[#334155] text-gray-600 dark:text-gray-300 px-6 py-2 rounded-xl text-sm hover:bg-gray-50 dark:hover:bg-[#1e293b] transition-colors"
