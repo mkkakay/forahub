@@ -5,12 +5,25 @@ import { LOCAL_LOGOS } from "@/lib/logos";
 
 // Ordered list of orgs to show; only those present in LOCAL_LOGOS are rendered.
 const ORGS = [
+  // UN agencies
   "WHO", "UNICEF", "UNDP", "UN Women", "FAO", "WFP",
-  "IOM", "UNHCR", "UNAIDS", "UNEP", "ILO",
-  "World Bank", "The Global Fund", "Gavi",
-  "MSF", "Save the Children", "Oxfam", "CARE",
-  "African Union", "ECOWAS", "ASEAN",
-  "NUS",
+  "IOM", "UNHCR", "UNAIDS", "UNEP", "ILO", "UNFPA", "UNFCCC",
+  // Development finance
+  "World Bank", "The Global Fund", "Gavi", "AfDB", "ADB", "IDB", "IsDB",
+  // INGOs
+  "MSF", "Save the Children", "Oxfam", "CARE", "Rotary International",
+  // Health & public health
+  "PAHO", "Africa CDC", "CDC", "NIH", "LSHTM",
+  // Think tanks & intergovernmental
+  "OECD", "WEF", "Brookings", "Chatham House",
+  // Foundations
+  "Gates Foundation", "Rockefeller Foundation",
+  // Regional bodies
+  "African Union", "ECOWAS", "ASEAN", "SADC",
+  // Universities & research institutions
+  "NUS", "Harvard University", "Stanford University", "MIT",
+  "University of Cambridge", "Oxford", "Johns Hopkins",
+  "Karolinska", "Aga Khan University", "University of Cape Town",
 ];
 
 const STRIP_ORGS = ORGS.filter(name => LOCAL_LOGOS[name]);
