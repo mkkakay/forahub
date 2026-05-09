@@ -504,8 +504,8 @@ export default function HomeClient({
     <main className="flex-1">
       {/* This Week */}
       {thisWeekEvents.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between mb-5">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Flame size={20} className="text-orange-500" />
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{t(lang, "events.thisweek")}</h2>
@@ -514,7 +514,7 @@ export default function HomeClient({
               {t(lang, "events.viewall")} <ChevronRight size={14} />
             </Link>
           </div>
-          <div className="flex gap-4 overflow-x-auto pb-3 no-scrollbar snap-x snap-mandatory pl-0.5">
+          <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar snap-x snap-mandatory pl-0.5">
             {thisWeekEvents.map(ev => {
               const sdg = ev.sdg_goals?.[0];
               const color = sdg ? SDG_COLORS[sdg] : "#3b82f6";
@@ -568,8 +568,8 @@ export default function HomeClient({
       )}
 
       {/* Upcoming Events */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex items-baseline justify-between mb-5">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="flex items-baseline justify-between mb-3">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{t(lang, "events.upcoming")}</h2>
           <Link href="/events" className="text-[#4ea8de] hover:text-[#3a95cc] text-sm font-medium flex items-center gap-1 transition-colors">
             {t(lang, "events.viewall")} <ArrowRight size={14} />
@@ -588,9 +588,9 @@ export default function HomeClient({
       </section>
 
       {/* Featured Calendars */}
-      <section className="bg-gray-50 dark:bg-[#0f172a] py-6">
+      <section className="bg-gray-50 dark:bg-[#0f172a] py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-baseline justify-between mb-5">
+          <div className="flex items-baseline justify-between mb-3">
             <div>
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{t(lang, "calendar.featured")}</h2>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{t(lang, "calendar.subtitle")}</p>
@@ -599,7 +599,7 @@ export default function HomeClient({
               View All <ChevronRight size={14} />
             </Link>
           </div>
-          <div className="flex gap-4 overflow-x-auto pb-3 no-scrollbar snap-x snap-mandatory pl-0.5">
+          <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar snap-x snap-mandatory pl-0.5">
             {FEATURED_ORGS.map(org => (
               <Link
                 key={org.name}
@@ -644,9 +644,9 @@ export default function HomeClient({
       </section>
 
       {/* Browse by SDG */}
-      <section className="bg-gray-50 dark:bg-[#0f172a] py-6">
+      <section className="bg-gray-50 dark:bg-[#0f172a] py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-start justify-between mb-4">
+          <div className="flex items-start justify-between mb-3">
             <div>
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Browse by SDG Category</h2>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Explore events aligned with the UN 2030 Agenda</p>
@@ -655,12 +655,12 @@ export default function HomeClient({
               View All <ChevronRight size={14} />
             </Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {Array.from({ length: 17 }, (_, i) => i + 1).map(sdg => (
               <SdgCard key={sdg} sdg={sdg} count={sdgCounts[sdg] ?? 0} />
             ))}
           </div>
-          <div className="flex justify-center mt-5">
+          <div className="flex justify-center mt-3">
             <Link
               href="/events"
               className="border border-gray-300 dark:border-[#334155] text-gray-600 dark:text-gray-300 px-6 py-2 rounded-xl text-sm hover:bg-gray-50 dark:hover:bg-[#1e293b] transition-colors"
@@ -672,14 +672,14 @@ export default function HomeClient({
       </section>
 
       {/* Explore by Region */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex items-baseline justify-between mb-5">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="flex items-baseline justify-between mb-3">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{t(lang, "region.explore")}</h2>
           <Link href="/events" className="text-sm text-[#4ea8de] hover:underline flex items-center gap-1 font-medium">
             View All <ChevronRight size={14} />
           </Link>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {REGIONS.map(region => (
             <Link
               key={region.name}
@@ -719,8 +719,8 @@ export default function HomeClient({
 
       {/* Stats */}
       <section className="bg-white dark:bg-[#1e293b] border-t border-gray-100 border-b border-gray-200 dark:border-[#334155]">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-4 tracking-tight">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-3 tracking-tight">
             ForaHub by the numbers
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
@@ -744,7 +744,7 @@ export default function HomeClient({
 
       {/* Submit CTA */}
       <section
-        className="relative py-6 px-4 overflow-hidden"
+        className="relative py-4 px-4 overflow-hidden"
         style={{ background: "linear-gradient(135deg, #0f2a4a 0%, #1a3f6e 50%, #0f2a4a 100%)" }}
       >
         <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
