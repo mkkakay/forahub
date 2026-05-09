@@ -16,6 +16,9 @@ import { SOURCES_HUMANITARIAN } from './sources-humanitarian';
 import { SOURCES_YOUTH_STUDENTS } from './sources-youth-students';
 import { SOURCES_EUROPE_EXPANDED } from './sources-europe-expanded';
 import { SOURCES_PACIFIC_OCEANIA } from './sources-pacific-oceania';
+import { SOURCES_SOUTH_ASIA } from './sources-south-asia';
+import { SOURCES_LATIN_AMERICA } from './sources-latin-america';
+import { SOURCES_GLOBAL_CONFERENCES } from './sources-global-conferences';
 
 export const SOURCES: ScraperSource[] = [
   ...SOURCES_GLOBAL,
@@ -35,6 +38,9 @@ export const SOURCES: ScraperSource[] = [
   ...SOURCES_YOUTH_STUDENTS,
   ...SOURCES_EUROPE_EXPANDED,
   ...SOURCES_PACIFIC_OCEANIA,
+  ...SOURCES_SOUTH_ASIA,
+  ...SOURCES_LATIN_AMERICA,
+  ...SOURCES_GLOBAL_CONFERENCES,
 
   // ── PHASE 2 STUBS ─────────────────────────────────────────────────────────
   // Phase 2 requires API keys and additional setup.
