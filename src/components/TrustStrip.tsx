@@ -21,13 +21,13 @@ function LogoItem({ name }: { name: string }) {
   const [hidden, setHidden] = useState(false);
   if (hidden) return null;
   return (
-    <div className="shrink-0 mx-6 flex items-center justify-center h-10">
+    <div className="flex items-center justify-center mx-6 flex-shrink-0 h-8 w-28">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={LOCAL_LOGOS[name]!}
         alt={name}
         title={name}
-        className="max-h-8 w-auto object-contain"
+        className="max-h-7 max-w-24 object-contain"
         onError={() => setHidden(true)}
       />
     </div>
