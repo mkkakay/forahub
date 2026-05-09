@@ -36,11 +36,14 @@ function mapToExtracted(
       const locationStr = e.location ? String(e.location) : '';
       const parts = locationStr.split(',').map(s => s.trim()).filter(Boolean);
 
-      const quality =
+      // Base quality from extracted fields; add 2 for title+date (always present after filtering)
+      const quality = Math.max(3,
+        2 + // title and start_date are always present at this point
         (e.description ? 1 : 0) +
         (e.registration_url ? 1 : 0) +
         (e.start_date && e.end_date ? 1 : 0) +
-        (locationStr ? 1 : 0);
+        (locationStr ? 1 : 0),
+      );
 
       return {
         title: String(e.title).trim().slice(0, 500),
@@ -59,7 +62,7 @@ function mapToExtracted(
         is_recurring: false,
         speakers: [],
         deadlines: [],
-        confidence_score: 3,
+        confidence_score: 4, // curated trusted sources; qualifies for auto-publish
         quality_score: quality,
         language: source.language,
         source_url: source.url,
