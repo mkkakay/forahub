@@ -87,4 +87,13 @@ Hero slides must be contextually accurate:
 - WHA slide must show WHO or World Health Assembly imagery
 - COP slide must show climate summit or renewable energy imagery
 - UN SDG slide must show UN assembly or sustainability imagery
-- Global South slides must show authentic African, Asian, La
+- Global South slides must show authentic African, Asian, Latin American, or Middle Eastern settings
+
+## Final response format
+Every completed task must include:
+1. What was changed and why
+2. What was visually verified in the rendered UI
+3. Any additional fixes made after initial review
+4. Any remaining concerns or known limitations
+
+A task is only complete when it works technically, looks visually correct, feels polished, and matches the intended global institutional quality of ForaHub.
