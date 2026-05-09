@@ -31,24 +31,6 @@ type SlideData = {
 
 const SLIDES: SlideData[] = [
   {
-    // WHO headquarters / diverse healthcare professionals — replaces generic syringe image
-    bg: "/images/hero/who-wha.jpg",
-    badge: { text: "SDG 3 Good Health", color: "#4C9F38" },
-    org: "WHO",
-    headline: "World Health Assembly 2027",
-    subtext: "The world's highest health policy forum. Geneva, May 2027.",
-    cta: { text: "View Event", href: "/events" },
-  },
-  {
-    // Wind turbines / clean energy — contextually accurate for COP climate summit
-    bg: "/images/hero/cop-climate.jpg",
-    badge: { text: "SDG 13 Climate Action", color: "#3F7E44" },
-    org: "UNFCCC",
-    headline: "COP31 Climate Conference",
-    subtext: "Global climate action. Belem, Brazil, November 2026.",
-    cta: { text: "View Event", href: "/events" },
-  },
-  {
     // Actual UN General Assembly Hall, New York (Wikimedia Commons, freely licensed)
     bg: "/images/hero/un-hlpf.jpg",
     badge: { text: "SDG 17 Partnerships", color: "#19486A" },

@@ -12,8 +12,6 @@ import HomeClient from "@/components/HomeClient";
 
 // Search queries aligned to each slide's content — specific enough for accurate Pexels results
 const SLIDE_QUERIES = [
-  "id:16146279",                                                         // WHO/WHA — UN Geneva flags (Allée des Nations)
-  "climate action renewable energy solar wind earth environment",       // COP31
   "United Nations general assembly hall delegates sustainability",      // UN HLPF
   "global summit audience international stage diverse crowd",           // Never Miss
   "artificial intelligence digital network technology innovation global", // AI Assistant
@@ -25,8 +23,6 @@ const SLIDE_QUERIES = [
 
 // Local fallbacks (already downloaded) if Pexels is unavailable
 const SLIDE_FALLBACKS = [
-  "/images/hero/who-wha.jpg",
-  "/images/hero/cop-climate.jpg",
   "/images/hero/un-hlpf.jpg",
   "/images/hero/global-events.jpg",
   "/images/hero/ai-assistant.jpg",
