@@ -28,8 +28,8 @@ const ORGS = [
 
 const STRIP_ORGS = ORGS.filter(name => LOCAL_LOGOS[name]);
 
-// Triple for seamless infinite loop
-const looped = [...STRIP_ORGS, ...STRIP_ORGS, ...STRIP_ORGS];
+// Duplicate exactly twice: -50% CSS keyframe scrolls one full set then loops seamlessly
+const looped = [...STRIP_ORGS, ...STRIP_ORGS];
 
 function LogoItem({ name }: { name: string }) {
   const [hidden, setHidden] = useState(false);
@@ -38,7 +38,7 @@ function LogoItem({ name }: { name: string }) {
     <div className="flex items-center justify-center mx-6 flex-shrink-0 h-8 w-28">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={LOCAL_LOGOS[name]!}
+        src={`${LOCAL_LOGOS[name]}?v=2`}
         alt={name}
         title={name}
         className="max-h-7 max-w-24 object-contain"
