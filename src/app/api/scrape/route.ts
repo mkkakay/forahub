@@ -4,13 +4,148 @@ import { adminSupabase } from '@/lib/supabase/admin';
 import { getActiveSources } from '@/lib/scraper/sources';
 import { fetchSource } from '@/lib/scraper/fetchSources';
 import { deduplicateAndUpsert } from '@/lib/scraper/deduplicateAndUpsert';
-import type { ExtractedEvent, ScraperSource } from '@/lib/scraper/types';
+import type { ExtractedEvent, Region, ScraperSource } from '@/lib/scraper/types';
 
 export const dynamic = 'force-dynamic';
 // Increase timeout for Vercel Pro / self-hosted. On hobby plan requests are capped at 10s.
 export const maxDuration = 300;
 
 const CLAUDE_MODEL = 'claude-haiku-4-5-20251001';
+
+// ── FIX 1: Country → Region mapping ──────────────────────────────────────────
+
+const COUNTRY_REGION_MAP: Record<string, Region> = {
+  // Africa
+  'nigeria': 'Africa', 'kenya': 'Africa', 'ethiopia': 'Africa', 'ghana': 'Africa',
+  'south africa': 'Africa', 'tanzania': 'Africa', 'uganda': 'Africa', 'rwanda': 'Africa',
+  'senegal': 'Africa', 'cameroon': 'Africa', "côte d'ivoire": 'Africa', 'ivory coast': 'Africa',
+  'mozambique': 'Africa', 'zambia': 'Africa', 'zimbabwe': 'Africa', 'malawi': 'Africa',
+  'madagascar': 'Africa', 'angola': 'Africa', 'mali': 'Africa', 'burkina faso': 'Africa',
+  'niger': 'Africa', 'chad': 'Africa', 'sudan': 'Africa', 'somalia': 'Africa',
+  'democratic republic of congo': 'Africa', 'drc': 'Africa', 'congo': 'Africa',
+  'addis ababa': 'Africa', 'nairobi': 'Africa', 'lagos': 'Africa', 'accra': 'Africa',
+  'johannesburg': 'Africa', 'cape town': 'Africa', 'dakar': 'Africa', 'abuja': 'Africa',
+  'cairo': 'Africa', 'egypt': 'Africa', 'morocco': 'Africa', 'tunisia': 'Africa',
+  'algeria': 'Africa', 'libya': 'Africa',
+
+  // Asia Pacific
+  'china': 'Asia-Pacific', 'india': 'Asia-Pacific', 'indonesia': 'Asia-Pacific',
+  'bangladesh': 'Asia-Pacific', 'pakistan': 'Asia-Pacific', 'philippines': 'Asia-Pacific',
+  'vietnam': 'Asia-Pacific', 'thailand': 'Asia-Pacific', 'myanmar': 'Asia-Pacific',
+  'cambodia': 'Asia-Pacific', 'laos': 'Asia-Pacific', 'malaysia': 'Asia-Pacific',
+  'singapore': 'Asia-Pacific', 'japan': 'Asia-Pacific', 'south korea': 'Asia-Pacific',
+  'nepal': 'Asia-Pacific', 'sri lanka': 'Asia-Pacific', 'bhutan': 'Asia-Pacific',
+  'maldives': 'Asia-Pacific', 'afghanistan': 'Asia-Pacific', 'mongolia': 'Asia-Pacific',
+  'papua new guinea': 'Asia-Pacific', 'fiji': 'Asia-Pacific', 'samoa': 'Asia-Pacific',
+  'vanuatu': 'Asia-Pacific', 'solomon islands': 'Asia-Pacific', 'australia': 'Asia-Pacific',
+  'new zealand': 'Asia-Pacific', 'beijing': 'Asia-Pacific', 'shanghai': 'Asia-Pacific',
+  'new delhi': 'Asia-Pacific', 'dhaka': 'Asia-Pacific', 'bangkok': 'Asia-Pacific',
+  'manila': 'Asia-Pacific', 'jakarta': 'Asia-Pacific', 'kathmandu': 'Asia-Pacific',
+  'colombo': 'Asia-Pacific', 'islamabad': 'Asia-Pacific', 'karachi': 'Asia-Pacific',
+
+  // Middle East
+  'saudi arabia': 'Middle-East', 'uae': 'Middle-East', 'united arab emirates': 'Middle-East',
+  'qatar': 'Middle-East', 'kuwait': 'Middle-East', 'bahrain': 'Middle-East',
+  'oman': 'Middle-East', 'jordan': 'Middle-East', 'lebanon': 'Middle-East',
+  'iraq': 'Middle-East', 'iran': 'Middle-East', 'syria': 'Middle-East',
+  'yemen': 'Middle-East', 'palestine': 'Middle-East', 'israel': 'Middle-East',
+  'turkey': 'Middle-East', 'dubai': 'Middle-East', 'abu dhabi': 'Middle-East',
+  'riyadh': 'Middle-East', 'doha': 'Middle-East', 'amman': 'Middle-East',
+  'beirut': 'Middle-East', 'ankara': 'Middle-East', 'istanbul': 'Middle-East',
+
+  // Latin America
+  'brazil': 'Americas-Latin', 'mexico': 'Americas-Latin', 'colombia': 'Americas-Latin',
+  'argentina': 'Americas-Latin', 'peru': 'Americas-Latin', 'chile': 'Americas-Latin',
+  'venezuela': 'Americas-Latin', 'ecuador': 'Americas-Latin', 'bolivia': 'Americas-Latin',
+  'paraguay': 'Americas-Latin', 'uruguay': 'Americas-Latin', 'costa rica': 'Americas-Latin',
+  'panama': 'Americas-Latin', 'guatemala': 'Americas-Latin', 'honduras': 'Americas-Latin',
+  'el salvador': 'Americas-Latin', 'nicaragua': 'Americas-Latin', 'cuba': 'Americas-Latin',
+  'haiti': 'Americas-Latin', 'dominican republic': 'Americas-Latin', 'jamaica': 'Americas-Latin',
+  'trinidad': 'Americas-Latin', 'barbados': 'Americas-Latin', 'guyana': 'Americas-Latin',
+  'suriname': 'Americas-Latin', 'sao paulo': 'Americas-Latin', 'rio de janeiro': 'Americas-Latin',
+  'buenos aires': 'Americas-Latin', 'bogota': 'Americas-Latin', 'lima': 'Americas-Latin',
+  'santiago': 'Americas-Latin', 'mexico city': 'Americas-Latin', 'san jose': 'Americas-Latin',
+
+  // Europe
+  'switzerland': 'Europe', 'france': 'Europe', 'germany': 'Europe', 'uk': 'Europe',
+  'united kingdom': 'Europe', 'netherlands': 'Europe', 'sweden': 'Europe', 'norway': 'Europe',
+  'denmark': 'Europe', 'finland': 'Europe', 'belgium': 'Europe', 'austria': 'Europe',
+  'italy': 'Europe', 'spain': 'Europe', 'portugal': 'Europe', 'poland': 'Europe',
+  'czech republic': 'Europe', 'hungary': 'Europe', 'romania': 'Europe', 'ukraine': 'Europe',
+  'russia': 'Europe', 'georgia': 'Europe', 'armenia': 'Europe', 'azerbaijan': 'Europe',
+  'geneva': 'Europe', 'zurich': 'Europe', 'paris': 'Europe', 'berlin': 'Europe',
+  'london': 'Europe', 'amsterdam': 'Europe', 'brussels': 'Europe', 'vienna': 'Europe',
+  'stockholm': 'Europe', 'oslo': 'Europe', 'copenhagen': 'Europe', 'helsinki': 'Europe',
+  'rome': 'Europe', 'madrid': 'Europe', 'lisbon': 'Europe', 'warsaw': 'Europe',
+
+  // North America
+  'usa': 'Americas-North', 'united states': 'Americas-North', 'canada': 'Americas-North',
+  'washington': 'Americas-North', 'new york': 'Americas-North', 'washington dc': 'Americas-North',
+  'san francisco': 'Americas-North', 'chicago': 'Americas-North', 'los angeles': 'Americas-North',
+  'toronto': 'Americas-North', 'montreal': 'Americas-North', 'ottawa': 'Americas-North',
+
+  // Global / Online
+  'online': 'Global', 'virtual': 'Global', 'remote': 'Global', 'global': 'Global',
+  'worldwide': 'Global', 'international': 'Global',
+};
+
+function inferRegion(location: string | null | undefined): Region | undefined {
+  if (!location) return undefined;
+  const lower = location.toLowerCase();
+  for (const [key, region] of Object.entries(COUNTRY_REGION_MAP)) {
+    if (lower.includes(key)) return region;
+  }
+  return undefined;
+}
+
+// ── FIX 2: Hardened JSON extraction ──────────────────────────────────────────
+
+function extractJSON(text: string): Record<string, unknown>[] {
+  const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+
+  try {
+    const parsed = JSON.parse(cleaned);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch { /* fall through */ }
+
+  const arrayMatch = cleaned.match(/\[[\s\S]*\]/);
+  if (arrayMatch) {
+    try {
+      const parsed = JSON.parse(arrayMatch[0]);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch { /* fall through */ }
+  }
+
+  const objectMatch = cleaned.match(/\{[\s\S]*\}/);
+  if (objectMatch) {
+    try {
+      const parsed = JSON.parse(objectMatch[0]);
+      return [parsed as Record<string, unknown>];
+    } catch { /* fall through */ }
+  }
+
+  return [];
+}
+
+// ── FIX 5: Dead-page pre-filter ───────────────────────────────────────────────
+
+function shouldSkipPage(html: string): { skip: boolean; reason: string } {
+  if (html.length < 500) return { skip: true, reason: 'page too short' };
+  const lower = html.toLowerCase();
+  if (
+    lower.includes('login required') ||
+    lower.includes('sign in to continue') ||
+    lower.includes('access denied') ||
+    lower.includes('please log in')
+  ) {
+    return { skip: true, reason: 'login wall detected' };
+  }
+  const hasDatePattern = /202[6-9]|203[0-9]|january|february|march|april|may|june|july|august|september|october|november|december/i.test(html);
+  if (!hasDatePattern) return { skip: true, reason: 'no date patterns found' };
+  return { skip: false, reason: '' };
+}
+
+// ── Event mapping ─────────────────────────────────────────────────────────────
 
 function mapToExtracted(
   raw: Record<string, unknown>[],
@@ -29,12 +164,15 @@ function mapToExtracted(
 
       // Base quality from extracted fields; add 2 for title+date (always present after filtering)
       const quality = Math.max(3,
-        2 + // title and start_date are always present at this point
+        2 +
         (e.description ? 1 : 0) +
         (e.registration_url ? 1 : 0) +
         (e.start_date && e.end_date ? 1 : 0) +
         (locationStr ? 1 : 0),
       );
+
+      // FIX 1: infer region from extracted location string
+      const region = inferRegion(locationStr) ?? inferRegion(source.url) ?? undefined;
 
       return {
         title: String(e.title).trim().slice(0, 500),
@@ -53,10 +191,11 @@ function mapToExtracted(
         is_recurring: false,
         speakers: [],
         deadlines: [],
-        confidence_score: 4, // curated trusted sources; qualifies for auto-publish
+        confidence_score: 4,
         quality_score: quality,
         language: source.language,
         source_url: source.url,
+        region,
       } satisfies ExtractedEvent;
     });
 }
@@ -94,6 +233,9 @@ export async function POST(req: NextRequest) {
   const allSources = getActiveSources();
   const batch = allSources.slice(offset, offset + batchSize);
 
+  // FIX 4: today's date for the prompt
+  const today = new Date().toISOString().split('T')[0];
+
   const startTime = Date.now();
   let processed = 0;
   let eventsFound = 0;
@@ -110,15 +252,27 @@ export async function POST(req: NextRequest) {
         continue;
       }
 
-      // 2. Extract events via Claude Haiku
       const html = fetchResult.content;
+
+      // FIX 5: pre-filter dead/login-walled/dateless pages before spending tokens
+      const { skip, reason } = shouldSkipPage(html);
+      if (skip) {
+        errors.push(`${source.id}: pre-filter-skip (${reason})`);
+        processed++;
+        continue;
+      }
+
+      // FIX 3: increased HTML window 15k → 25k characters
+      // FIX 4: explicit today's date + future-only instruction in prompt
       const userPrompt =
-        `Extract all events from this webpage HTML. Return ONLY a valid JSON array with no other text. ` +
+        `Today's date is ${today}. Extract ONLY upcoming events with start_date ON OR AFTER ${today}. ` +
+        `Do NOT include events that have already happened. Do NOT include events from previous years. Only future events.\n\n` +
+        `Return ONLY a valid JSON array with no other text. ` +
         `Each event object must have these fields: title (string), description (string), ` +
         `start_date (YYYY-MM-DD format), end_date (YYYY-MM-DD format or null), location (string or null), ` +
         `is_online (boolean), organization_name (string), registration_url (string or null), ` +
-        `sdg_goals (array of numbers 1-17). Only include real upcoming or recent events with clear dates. ` +
-        `Return empty array [] if no events found.\n\nHTML:\n${html.substring(0, 15000)}`;
+        `sdg_goals (array of numbers 1-17). ` +
+        `Return empty array [] if no upcoming events found.\n\nHTML:\n${html.substring(0, 25000)}`;
 
       let message: Awaited<ReturnType<typeof anthropic.messages.create>>;
       try {
@@ -130,7 +284,6 @@ export async function POST(req: NextRequest) {
       } catch (apiErr: unknown) {
         const status = (apiErr as { status?: number }).status;
         if (status === 429) {
-          // Rate limited — wait 30 s then retry once
           await new Promise(resolve => setTimeout(resolve, 30_000));
           try {
             message = await anthropic.messages.create({
@@ -154,24 +307,11 @@ export async function POST(req: NextRequest) {
 
       const rawText = message.content[0]?.type === 'text' ? message.content[0].text : '[]';
 
-      // 3. Parse JSON response
-      let rawEvents: Record<string, unknown>[] = [];
-      try {
-        const json = rawText
-          .replace(/^```(?:json)?\s*/i, '')
-          .replace(/\s*```\s*$/, '')
-          .trim();
-        const parsed = JSON.parse(json);
-        rawEvents = Array.isArray(parsed) ? parsed : [];
-      } catch {
-        errors.push(`${source.id}: JSON parse failed`);
-        processed++;
-        continue;
-      }
+      // FIX 2: hardened JSON extraction with 3-tier fallback
+      const rawEvents = extractJSON(rawText);
 
       eventsFound += rawEvents.length;
 
-      // 4. Map to ExtractedEvent and save
       if (rawEvents.length > 0) {
         const events = mapToExtracted(rawEvents, source);
         if (events.length > 0) {
