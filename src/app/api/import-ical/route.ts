@@ -1,3 +1,6 @@
+// TODO: This endpoint is intentionally not exposed in the admin UI because many iCal feeds are
+// blocked by Cloudflare. Keep it as a direct-call utility for known-good feeds only.
+// Do not wire it back into the UI without first verifying the target feeds are CF-accessible.
 import { type NextRequest, NextResponse } from 'next/server';
 import ICAL from 'ical.js';
 import { adminSupabase } from '@/lib/supabase/admin';
