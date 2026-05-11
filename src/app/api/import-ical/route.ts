@@ -11,20 +11,38 @@ const FEEDS = [
   {
     id: 'ical-iisd',
     name: 'IISD SDG Knowledge Hub',
-    url: 'https://sdg.iisd.org/?ical',
+    url: 'https://sdg.iisd.org/?ical=1',
+    organization: 'IISD',
+  },
+  {
+    id: 'ical-iisd-enb',
+    name: 'IISD Earth Negotiations Bulletin',
+    url: 'https://enb.iisd.org/events?ical=1&feed_me=1',
     organization: 'IISD',
   },
   {
     id: 'ical-un',
-    name: 'UN Official Calendar',
-    url: 'https://www.un.org/en/calendar/ical',
+    name: 'UN System Calendar',
+    url: 'https://calendar.google.com/calendar/ical/un.org_ical_en%40resource.calendar.google.com/public/basic.ics',
     organization: 'United Nations',
   },
   {
     id: 'ical-unfccc',
     name: 'UNFCCC Events',
-    url: 'https://unfccc.int/events/ical',
+    url: 'https://unfccc.int/events?field_event_type_target_id=All&field_event_dates_value%5Bvalue%5D%5Bdate%5D=&field_event_dates_end_value%5Bvalue%5D%5Bdate%5D=&ical=1&feed_me=1',
     organization: 'UNFCCC',
+  },
+  {
+    id: 'ical-cbd',
+    name: 'CBD Biodiversity Events',
+    url: 'https://www.cbd.int/meetings/ical',
+    organization: 'CBD',
+  },
+  {
+    id: 'ical-ipbes',
+    name: 'IPBES Events',
+    url: 'https://ipbes.net/events/feed/ical',
+    organization: 'IPBES',
   },
 ] as const;
 
@@ -142,7 +160,11 @@ export async function POST(req: NextRequest) {
     try {
       // 1. Fetch raw iCal
       const res = await fetch(feed.url, {
-        headers: { 'User-Agent': 'ForaHub/1.0 (+https://forahub.org)' },
+        headers: {
+          'Accept': 'text/calendar, application/ics, text/plain, */*',
+          'User-Agent': 'ForaHub/1.0 (https://forahub.org; events@forahub.org)',
+          'Cache-Control': 'no-cache',
+        },
         signal: AbortSignal.timeout(30_000),
       });
       if (!res.ok) {
@@ -152,12 +174,19 @@ export async function POST(req: NextRequest) {
       }
       const raw = await res.text();
 
+      // FIX 4: detect HTML response (not a real iCal feed) and log first 200 chars
+      if (raw.trimStart().startsWith('<')) {
+        feedResult.errors.push(`Got HTML instead of iCal: ${raw.slice(0, 200).replace(/\s+/g, ' ')}`);
+        results.push(feedResult);
+        continue;
+      }
+
       // 2. Parse iCal
       let jcal: unknown;
       try {
         jcal = ICAL.parse(raw);
       } catch (e) {
-        feedResult.errors.push(`Parse error: ${String(e).slice(0, 80)}`);
+        feedResult.errors.push(`Parse error: ${String(e).slice(0, 80)} | Raw: ${raw.slice(0, 100)}`);
         results.push(feedResult);
         continue;
       }
