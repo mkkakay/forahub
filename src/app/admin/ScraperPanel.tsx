@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import {
   Play, Square, Loader2, CheckCircle2, AlertCircle,
-  Database, Zap, ListChecks, Clock, CalendarDays,
+  Database, Zap, ListChecks, Clock, AlertTriangle,
 } from "lucide-react";
 
 const TOTAL_SOURCES = 2874;
@@ -61,12 +61,6 @@ export default function ScraperPanel({
   const [error, setError] = useState<string | null>(null);
   const [batchSize, setBatchSize] = useState(10);
 
-  // ── iCal import state ─────────────────────────────────────────────────────
-  const [icalRunning, setIcalRunning] = useState(false);
-  const [icalResults, setIcalResults] = useState<{
-    feed: string; fetched: number; saved: number; skipped: number; errors: string[];
-  }[] | null>(null);
-
   // ── Full scrape state ─────────────────────────────────────────────────────
   const [fullRunning, setFullRunning] = useState(false);
   const [fullDone, setFullDone] = useState(false);
@@ -106,28 +100,6 @@ export default function ScraperPanel({
       setError(String(err));
     } finally {
       setRunning(false);
-    }
-  }
-
-  // ── iCal import ──────────────────────────────────────────────────────────
-  async function runIcalImport() {
-    setIcalRunning(true);
-    setIcalResults(null);
-    try {
-      const res = await fetch("/api/import-ical", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-admin-key": adminSecret },
-      });
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
-      }
-      const data = await res.json() as { results: typeof icalResults };
-      setIcalResults(data.results);
-    } catch (err) {
-      setError(String(err));
-    } finally {
-      setIcalRunning(false);
     }
   }
 
@@ -231,7 +203,7 @@ export default function ScraperPanel({
     eta = rate > 0 ? fmtDuration(remaining / rate) : "";
   }
 
-  const isAnyRunning = running || fullRunning || icalRunning;
+  const isAnyRunning = running || fullRunning;
 
   return (
     <div className="bg-[#0d2240] border border-blue-900/40 rounded-xl p-5">
@@ -451,56 +423,16 @@ export default function ScraperPanel({
         </div>
       )}
 
-      {/* iCal import section */}
-      <div className="bg-[#0a1a30] border border-blue-900/30 rounded-lg p-4 mt-4">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-white text-sm font-semibold flex items-center gap-2">
-            <CalendarDays size={14} className="text-[#4ea8de]" />
-            iCal Feed Importer
-            <span className="text-blue-600 text-xs font-normal">IISD · UN · UNFCCC</span>
-          </p>
-          <button
-            onClick={runIcalImport}
-            disabled={isAnyRunning}
-            className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
-          >
-            {icalRunning
-              ? <><Loader2 size={14} className="animate-spin" /> Importing…</>
-              : <><Play size={14} /> Import iCal Feeds</>
-            }
-          </button>
-        </div>
-
-        {icalResults && (
-          <div className="space-y-2">
-            {icalResults.map(r => (
-              <div key={r.feed} className="bg-[#0f2a4a] rounded-lg p-3">
-                <div className="flex items-center justify-between mb-1">
-                  <p className="text-blue-200 text-xs font-medium">{r.feed}</p>
-                  <div className="flex items-center gap-3 text-xs">
-                    <span className="text-blue-400">{r.fetched} fetched</span>
-                    <span className="text-green-400 font-semibold">{r.saved} saved</span>
-                    <span className="text-blue-600">{r.skipped} skipped</span>
-                  </div>
-                </div>
-                {r.errors.length > 0 && (
-                  <p className="text-amber-400 text-[10px] mt-1 truncate">
-                    {r.errors[0]}{r.errors.length > 1 ? ` +${r.errors.length - 1} more` : ""}
-                  </p>
-                )}
-              </div>
-            ))}
-            <p className="text-green-400 text-xs font-semibold pt-1">
-              Total saved: {icalResults.reduce((s, r) => s + r.saved, 0)} events
-            </p>
-          </div>
-        )}
-
-        {!icalResults && !icalRunning && (
-          <p className="text-blue-700 text-xs">
-            Imports structured iCalendar feeds from IISD, UN, and UNFCCC. Deduplicates by title + date.
-          </p>
-        )}
+      {/* Blocked sources notice */}
+      <div className="bg-[#0a1a30] border border-amber-900/30 rounded-lg p-4 mt-4">
+        <p className="text-amber-400 text-xs font-semibold flex items-center gap-1.5 mb-1">
+          <AlertTriangle size={12} />
+          Blocked sources — manual review required
+        </p>
+        <p className="text-blue-600 text-xs leading-relaxed">
+          IISD iCal and IISD event pages currently return Cloudflare challenge pages to server-side
+          requests. These sources are tracked as blocked/manual-review, not active automated sources.
+        </p>
       </div>
 
       <p className="text-blue-700 text-xs mt-3">

@@ -48,6 +48,35 @@ function detectsLoginWall(html: string): boolean {
   return LOGIN_SIGNALS.some(signal => lower.includes(signal));
 }
 
+// ── Cloudflare / bot-challenge detection ──────────────────────────────────────
+
+const CLOUDFLARE_SIGNALS = [
+  'checking your browser', 'cf-browser-verification', 'cloudflare ray id',
+  'just a moment', 'enable javascript and cookies', '_cf_chl',
+  'cf_clearance', 'challenge-platform', 'turnstile',
+];
+
+function detectsCloudflareChallenge(html: string): boolean {
+  const lower = html.toLowerCase();
+  return CLOUDFLARE_SIGNALS.some(sig => lower.includes(sig));
+}
+
+function buildDiagnosticError(opts: {
+  httpStatus: number;
+  finalUrl: string;
+  contentType: string;
+  cloudflare: boolean;
+  reason: string;
+}): string {
+  return [
+    `status=${opts.httpStatus}`,
+    `url=${opts.finalUrl}`,
+    `content-type=${opts.contentType}`,
+    opts.cloudflare ? 'cloudflare=true' : 'cloudflare=false',
+    `reason=${opts.reason}`,
+  ].join(' | ');
+}
+
 // ── HTTP fetch with timeout ───────────────────────────────────────────────────
 
 async function fetchWithTimeout(url: string, timeoutMs = 10_000): Promise<Response> {
@@ -206,26 +235,45 @@ async function fetchHtml(source: ScraperSource): Promise<FetchResult> {
   let detectedLanguage = source.language;
   let requiresAuth = false;
 
-  const fetchPage = async (url: string): Promise<string | null> => {
+  const fetchPage = async (url: string): Promise<{ html: string; status: number; finalUrl: string; ct: string } | null> => {
     await respectRateLimit(url);
     try {
       const res = await fetchWithTimeout(url);
-      if (!res.ok) return null;
-      return await res.text();
+      const html = await res.text();
+      return { html, status: res.status, finalUrl: res.url ?? url, ct: res.headers.get('content-type') ?? '' };
     } catch {
       return null;
     }
   };
 
   // First page
-  const firstHtml = await fetchPage(source.url);
-  if (!firstHtml) {
+  const firstResult = await fetchPage(source.url);
+  if (!firstResult) {
     return { content: '', contentType: 'empty', detectedLanguage, paginationPages: [], requiresAuth, error: 'Failed to fetch first page' };
+  }
+
+  const { html: firstHtml, status: firstStatus, finalUrl, ct: firstCt } = firstResult;
+
+  if (!firstHtml || firstStatus < 200 || firstStatus >= 400) {
+    return {
+      content: '', contentType: 'empty', detectedLanguage, paginationPages: [], requiresAuth,
+      error: buildDiagnosticError({ httpStatus: firstStatus, finalUrl, contentType: firstCt, cloudflare: false, reason: `HTTP ${firstStatus}` }),
+    };
+  }
+
+  if (detectsCloudflareChallenge(firstHtml)) {
+    return {
+      content: '', contentType: 'empty', detectedLanguage, paginationPages: [], requiresAuth,
+      error: buildDiagnosticError({ httpStatus: firstStatus, finalUrl, contentType: firstCt, cloudflare: true, reason: 'cloudflare-challenge' }),
+    };
   }
 
   if (detectsLoginWall(firstHtml)) {
     requiresAuth = true;
-    return { content: '', contentType: 'html', detectedLanguage, paginationPages: [], requiresAuth };
+    return {
+      content: '', contentType: 'html', detectedLanguage, paginationPages: [], requiresAuth,
+      error: buildDiagnosticError({ httpStatus: firstStatus, finalUrl, contentType: firstCt, cloudflare: false, reason: 'login-wall' }),
+    };
   }
 
   const $first = cheerio.load(firstHtml);
@@ -238,9 +286,9 @@ async function fetchHtml(source: ScraperSource): Promise<FetchResult> {
 
   for (const nextUrl of nextUrls) {
     if (pages.length >= 5) break;
-    const html = await fetchPage(nextUrl);
-    if (!html) break;
-    const $ = cheerio.load(html);
+    const pageResult = await fetchPage(nextUrl);
+    if (!pageResult || !pageResult.html) break;
+    const $ = cheerio.load(pageResult.html);
     pages.push(extractPageText($, source.css_selectors));
   }
 
