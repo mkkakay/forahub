@@ -249,7 +249,7 @@ export async function POST(req: NextRequest) {
       const fetchResult = await fetchSource(source);
       if (!fetchResult.content || fetchResult.content.trim().length < 50) {
         if (fetchResult.error) {
-          errors.push(`${source.id} (${source.organization}) ${source.url}: fetch failed – ${fetchResult.error.slice(0, 120)}`);
+          errors.push(`${source.id} (${source.organization}) ${source.url}: fetch failed – ${fetchResult.error.slice(0, 300)}`);
         }
         processed++;
         continue;
