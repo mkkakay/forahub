@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
   } catch { /* empty body ok */ }
 
   const startTime = Date.now();
-  const today = new Date().toISOString();
+  const today = new Date().toISOString().split('T')[0] + 'T00:00:00+00:00';
 
   const url = new URL(RELIEFWEB_ENDPOINT);
   url.searchParams.set('appname', APP_NAME);
