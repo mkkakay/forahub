@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import {
   Play, Square, Loader2, CheckCircle2, AlertCircle,
-  Database, Zap, ListChecks, Clock, AlertTriangle,
+  Database, Zap, ListChecks, Clock, AlertTriangle, Globe,
 } from "lucide-react";
 
 const TOTAL_SOURCES = 2874;
@@ -60,6 +60,44 @@ export default function ScraperPanel({
   const [result, setResult] = useState<RunResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [batchSize, setBatchSize] = useState(10);
+
+  // ── ReliefWeb importer state ──────────────────────────────────────────────
+  interface ReliefWebResult {
+    fetched: number;
+    inserted: number;
+    updated: number;
+    skipped: number;
+    errors: string[];
+    durationSeconds: number;
+    error?: string;
+  }
+  const [rwRunning, setRwRunning] = useState(false);
+  const [rwLimit, setRwLimit] = useState(1000);
+  const [rwResult, setRwResult] = useState<ReliefWebResult | null>(null);
+  const [rwError, setRwError] = useState<string | null>(null);
+
+  async function runReliefWebImport() {
+    setRwRunning(true);
+    setRwResult(null);
+    setRwError(null);
+    try {
+      const res = await fetch("/api/import-reliefweb", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-key": adminSecret },
+        body: JSON.stringify({ limit: rwLimit, offset: 0 }),
+      });
+      const data = (await res.json()) as ReliefWebResult;
+      if (!res.ok) {
+        setRwError(data.error ?? `HTTP ${res.status}`);
+      } else {
+        setRwResult(data);
+      }
+    } catch (err) {
+      setRwError(String(err));
+    } finally {
+      setRwRunning(false);
+    }
+  }
 
   // ── Full scrape state ─────────────────────────────────────────────────────
   const [fullRunning, setFullRunning] = useState(false);
@@ -422,6 +460,71 @@ export default function ScraperPanel({
           <p className="text-red-300 text-sm break-all">{error}</p>
         </div>
       )}
+
+      {/* ReliefWeb Importer */}
+      <div className="bg-[#0a1a30] border border-blue-900/30 rounded-lg p-4 mt-4">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-white text-sm font-semibold flex items-center gap-2">
+            <Globe size={14} className="text-[#4ea8de]" />
+            ReliefWeb Importer
+          </p>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              min={1}
+              max={1000}
+              value={rwLimit}
+              onChange={e => setRwLimit(Math.min(1000, Math.max(1, Number(e.target.value) || 1)))}
+              disabled={rwRunning}
+              className="text-xs bg-[#0f2a4a] border border-blue-900/40 text-blue-300 rounded-lg px-2 py-1.5 w-24 focus:outline-none focus:border-[#4ea8de]/50"
+              placeholder="Limit"
+            />
+            <button
+              onClick={runReliefWebImport}
+              disabled={rwRunning || isAnyRunning}
+              className="flex items-center gap-1.5 bg-[#4ea8de] hover:bg-[#3a95cc] disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+            >
+              {rwRunning ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
+              {rwRunning ? "Importing…" : "Run ReliefWeb Import"}
+            </button>
+          </div>
+        </div>
+
+        <p className="text-blue-700 text-xs mb-3">
+          Imports humanitarian training events from the OCHA ReliefWeb API. No API key, no token cost.
+        </p>
+
+        {rwResult && (
+          <>
+            <div className="grid grid-cols-4 gap-2 mb-2">
+              {[
+                { label: "Fetched", value: rwResult.fetched, color: "text-white" },
+                { label: "Inserted", value: rwResult.inserted, color: "text-green-400" },
+                { label: "Updated", value: rwResult.updated, color: "text-blue-300" },
+                { label: "Errors", value: rwResult.errors?.length ?? 0, color: rwResult.errors?.length ? "text-amber-400" : "text-blue-500" },
+              ].map(({ label, value, color }) => (
+                <div key={label} className="bg-[#0f2a4a] rounded-lg p-2 text-center">
+                  <p className="text-blue-600 text-[10px]">{label}</p>
+                  <p className={`font-bold tabular-nums text-sm ${color}`}>{value.toLocaleString()}</p>
+                </div>
+              ))}
+            </div>
+            <div className="bg-[#0f2a4a] rounded-lg p-2 mb-2 text-blue-400 text-xs">
+              Skipped: {rwResult.skipped} · Duration: {rwResult.durationSeconds}s
+            </div>
+            <pre className="bg-[#0f2a4a] border border-blue-900/40 rounded-lg p-3 text-xs text-blue-200 overflow-x-auto max-h-48">
+              {JSON.stringify(rwResult, null, 2)}
+            </pre>
+          </>
+        )}
+
+        {rwError && (
+          <div className="flex items-start gap-2 bg-red-900/20 border border-red-700/30 rounded-lg p-3">
+            <AlertCircle size={15} className="text-red-400 shrink-0 mt-0.5" />
+            <p className="text-red-300 text-sm break-all">{rwError}</p>
+          </div>
+        )}
+      </div>
 
       {/* Blocked sources notice */}
       <div className="bg-[#0a1a30] border border-amber-900/30 rounded-lg p-4 mt-4">
