@@ -4,7 +4,7 @@ import { adminSupabase } from '@/lib/supabase/admin';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
 
-const RELIEFWEB_ENDPOINT = 'https://api.reliefweb.int/v1/training';
+const RELIEFWEB_ENDPOINT = 'https://api.reliefweb.int/v2/training';
 const APP_NAME = 'forahub.org';
 
 // Map ReliefWeb theme names to SDG numbers
@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
     });
     if (!res.ok) {
       const text = await res.text();
-      const errMsg = `ReliefWeb HTTP ${res.status}: ${text.slice(0, 200)}`;
+      const errMsg = `ReliefWeb HTTP ${res.status}: ${text.slice(0, 500)}`;
       await adminSupabase.from('source_status').upsert({
         source_id: 'reliefweb_api',
         organization: 'ReliefWeb (OCHA)',
@@ -116,7 +116,12 @@ export async function POST(req: NextRequest) {
         last_error: errMsg,
         updated_at: new Date().toISOString(),
       });
-      return NextResponse.json({ error: errMsg }, { status: 502 });
+      return NextResponse.json({
+        error: errMsg,
+        upstreamStatus: res.status,
+        upstreamBody: text.slice(0, 2000),
+        endpoint: url.toString(),
+      }, { status: 502 });
     }
     payload = await res.json() as { data?: ReliefWebEvent[] };
   } catch (err) {
