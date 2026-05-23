@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   ChevronDown, ChevronRight, Image as ImageIcon, Upload, Trash2, Pencil,
-  Eye, EyeOff, Loader2, Check, AlertCircle, X,
+  Eye, EyeOff, Loader2, Check, AlertCircle, X, Link as LinkIcon, Sparkles,
+  FileText, Wand2,
 } from "lucide-react";
 
 interface HeroImage {
@@ -19,21 +20,56 @@ interface HeroImage {
   uploaded_at: string;
 }
 
+type Tab = "file" | "url" | "topic";
+
+interface AiSuggestion {
+  title: string;
+  subtitle: string;
+  cta_text: string;
+}
+
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function HeroImagesPanel({ adminSecret }: { adminSecret: string }) {
   const [open, setOpen] = useState(false);
+  const [tab, setTab] = useState<Tab>("file");
   const [images, setImages] = useState<HeroImage[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // upload form state
-  const [file, setFile] = useState<File | null>(null);
+  // shared metadata
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [ctaText, setCtaText] = useState("");
   const [ctaUrl, setCtaUrl] = useState("");
   const [order, setOrder] = useState<number>(0);
-  const [uploading, setUploading] = useState(false);
+
+  // file tab
+  const [file, setFile] = useState<File | null>(null);
+
+  // url tab
+  const [sourceUrl, setSourceUrl] = useState("");
+
+  // topic tab
+  const [topic, setTopic] = useState("");
+
+  // upload state
+  const [submitting, setSubmitting] = useState(false);
   const [uploadOk, setUploadOk] = useState(false);
+
+  // ai suggestion state
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiMode, setAiMode] = useState<"image" | "topic">("image");
+  const [aiTopic, setAiTopic] = useState("");
+  const [aiRunning, setAiRunning] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   // edit row state
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -60,13 +96,92 @@ export default function HeroImagesPanel({ adminSecret }: { adminSecret: string }
     if (open) refresh();
   }, [open, refresh]);
 
-  async function handleUpload(e: React.FormEvent) {
+  function resetUploadForm() {
+    setFile(null);
+    setSourceUrl("");
+    setTopic("");
+    setTitle("");
+    setSubtitle("");
+    setCtaText("");
+    setCtaUrl("");
+    setOrder(0);
+    const input = document.getElementById("hero-file-input") as HTMLInputElement | null;
+    if (input) input.value = "";
+  }
+
+  function applySuggestion(s: AiSuggestion) {
+    setTitle(s.title);
+    setSubtitle(s.subtitle);
+    setCtaText(s.cta_text);
+  }
+
+  async function runAiSuggestion() {
+    setAiRunning(true);
+    setAiError(null);
+    try {
+      let payload: { mode: "image"; image_url: string } | { mode: "topic"; topic: string };
+      if (aiMode === "image") {
+        if (tab === "file") {
+          if (!file) throw new Error("Choose a file first");
+          const dataUrl = await fileToDataUrl(file);
+          payload = { mode: "image", image_url: dataUrl };
+        } else if (tab === "url") {
+          if (!sourceUrl.trim()) throw new Error("Enter an image URL first");
+          payload = { mode: "image", image_url: sourceUrl.trim() };
+        } else {
+          throw new Error("Image mode requires the File or URL tab");
+        }
+      } else {
+        const t = aiTopic.trim();
+        if (!t) throw new Error("Enter a topic");
+        payload = { mode: "topic", topic: t };
+      }
+
+      const res = await fetch("/api/admin/hero-images/suggest-text", {
+        method: "POST",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
+      applySuggestion(json.data as AiSuggestion);
+      setAiOpen(false);
+      setAiTopic("");
+    } catch (err) {
+      setAiError(String(err instanceof Error ? err.message : err));
+    } finally {
+      setAiRunning(false);
+    }
+  }
+
+  async function runTopicOnlyGenerate() {
+    setSubmitting(true);
+    setError(null);
+    try {
+      const t = topic.trim();
+      if (!t) throw new Error("Enter a topic");
+      const res = await fetch("/api/admin/hero-images/suggest-text", {
+        method: "POST",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: "topic", topic: t }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
+      applySuggestion(json.data as AiSuggestion);
+    } catch (err) {
+      setError(String(err instanceof Error ? err.message : err));
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleFileUpload(e: React.FormEvent) {
     e.preventDefault();
     if (!file) {
       setError("Choose an image first");
       return;
     }
-    setUploading(true);
+    setSubmitting(true);
     setError(null);
     setUploadOk(false);
     try {
@@ -86,21 +201,50 @@ export default function HeroImagesPanel({ adminSecret }: { adminSecret: string }
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
 
-      setFile(null);
-      setTitle("");
-      setSubtitle("");
-      setCtaText("");
-      setCtaUrl("");
-      setOrder(0);
+      resetUploadForm();
       setUploadOk(true);
-      const input = document.getElementById("hero-file-input") as HTMLInputElement | null;
-      if (input) input.value = "";
       await refresh();
       setTimeout(() => setUploadOk(false), 3000);
     } catch (err) {
       setError(String(err instanceof Error ? err.message : err));
     } finally {
-      setUploading(false);
+      setSubmitting(false);
+    }
+  }
+
+  async function handleUrlUpload(e: React.FormEvent) {
+    e.preventDefault();
+    const u = sourceUrl.trim();
+    if (!u) {
+      setError("Paste a URL first");
+      return;
+    }
+    setSubmitting(true);
+    setError(null);
+    setUploadOk(false);
+    try {
+      const res = await fetch("/api/admin/hero-images", {
+        method: "POST",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          source_url: u,
+          title: title || null,
+          subtitle: subtitle || null,
+          cta_text: ctaText || null,
+          cta_url: ctaUrl || null,
+          display_order: order,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
+      resetUploadForm();
+      setUploadOk(true);
+      await refresh();
+      setTimeout(() => setUploadOk(false), 3000);
+    } catch (err) {
+      setError(String(err instanceof Error ? err.message : err));
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -172,6 +316,55 @@ export default function HeroImagesPanel({ adminSecret }: { adminSecret: string }
   const labelClass =
     "block text-[10px] font-bold uppercase tracking-wider text-blue-400 mb-1";
 
+  const tabBtnClass = (t: Tab) =>
+    `flex items-center gap-1.5 px-4 py-2 text-xs font-semibold uppercase tracking-wider transition-colors border-b-2 ${
+      tab === t
+        ? "text-white border-[#4ea8de]"
+        : "text-blue-400 border-transparent hover:text-blue-200"
+    }`;
+
+  const metadataSection = (
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="md:col-span-2 flex items-center justify-between">
+          <label className={`${labelClass} mb-0`}>Overlay text</label>
+          <button
+            type="button"
+            onClick={() => { setAiOpen(true); setAiError(null); }}
+            className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-[#4ea8de] hover:text-white border border-[#4ea8de]/40 hover:border-[#4ea8de] rounded-full px-2.5 py-1 transition-colors"
+          >
+            <Sparkles size={12} /> Generate text with AI
+          </button>
+        </div>
+        <div>
+          <label className={labelClass}>Title</label>
+          <input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. SDG High Level Political Forum" className={inputClass} />
+        </div>
+        <div>
+          <label className={labelClass}>Subtitle</label>
+          <input value={subtitle} onChange={e => setSubtitle(e.target.value)} placeholder="Short caption beneath the title" className={inputClass} />
+        </div>
+        <div>
+          <label className={labelClass}>CTA text</label>
+          <input value={ctaText} onChange={e => setCtaText(e.target.value)} placeholder="e.g. View Event" className={inputClass} />
+        </div>
+        <div>
+          <label className={labelClass}>CTA URL</label>
+          <input value={ctaUrl} onChange={e => setCtaUrl(e.target.value)} placeholder="/events or https://..." className={inputClass} />
+        </div>
+        <div>
+          <label className={labelClass}>Display order</label>
+          <input
+            type="number"
+            value={order}
+            onChange={e => setOrder(Number(e.target.value) || 0)}
+            className={inputClass}
+          />
+        </div>
+      </div>
+    </>
+  );
+
   return (
     <div className="bg-[#0d2240] border border-blue-900/40 rounded-xl overflow-hidden">
       <button
@@ -194,9 +387,8 @@ export default function HeroImagesPanel({ adminSecret }: { adminSecret: string }
 
       {open && (
         <div className="border-t border-blue-900/40 p-5 space-y-6">
-          {/* Status banner */}
           <div className="text-xs text-blue-400 bg-[#0a1a2e] border border-blue-900/40 rounded-lg px-3 py-2">
-            When at least one image is active here, the homepage hero uses these instead of Pexels. Upload Canva exports (PNG/JPG, max 5MB).
+            When at least one image is active here, the homepage hero uses these instead of Pexels. Upload Canva exports (PNG/JPG/WebP, max 5MB).
           </div>
 
           {error && (
@@ -209,64 +401,210 @@ export default function HeroImagesPanel({ adminSecret }: { adminSecret: string }
             </div>
           )}
 
-          {/* Upload form */}
-          <form onSubmit={handleUpload} className="bg-[#0a1a2e] border border-blue-900/40 rounded-lg p-4">
-            <h3 className="text-white text-sm font-semibold mb-3 flex items-center gap-2">
-              <Upload size={14} /> Upload new image
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="md:col-span-2">
-                <label className={labelClass}>Image file (JPG / PNG, max 5MB)</label>
-                <input
-                  id="hero-file-input"
-                  type="file"
-                  accept="image/jpeg,image/png"
-                  onChange={e => setFile(e.target.files?.[0] ?? null)}
-                  className="w-full text-sm text-blue-200 file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-[#4ea8de] file:text-white hover:file:bg-[#3a95cc] file:cursor-pointer"
-                />
-              </div>
-              <div>
-                <label className={labelClass}>Title</label>
-                <input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. SDG High Level Political Forum" className={inputClass} />
-              </div>
-              <div>
-                <label className={labelClass}>Subtitle</label>
-                <input value={subtitle} onChange={e => setSubtitle(e.target.value)} placeholder="Short caption beneath the title" className={inputClass} />
-              </div>
-              <div>
-                <label className={labelClass}>CTA text</label>
-                <input value={ctaText} onChange={e => setCtaText(e.target.value)} placeholder="e.g. View Event" className={inputClass} />
-              </div>
-              <div>
-                <label className={labelClass}>CTA URL</label>
-                <input value={ctaUrl} onChange={e => setCtaUrl(e.target.value)} placeholder="/events or https://..." className={inputClass} />
-              </div>
-              <div>
-                <label className={labelClass}>Display order</label>
-                <input
-                  type="number"
-                  value={order}
-                  onChange={e => setOrder(Number(e.target.value) || 0)}
-                  className={inputClass}
-                />
-              </div>
-              <div className="flex items-end">
-                <button
-                  type="submit"
-                  disabled={uploading || !file}
-                  className="w-full bg-[#4ea8de] hover:bg-[#3a95cc] disabled:bg-blue-900/40 disabled:text-blue-500 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
-                >
-                  {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
-                  {uploading ? "Uploading…" : "Upload"}
-                </button>
+          {/* Upload card with tabs */}
+          <div className="bg-[#0a1a2e] border border-blue-900/40 rounded-lg overflow-hidden">
+            <div className="flex border-b border-blue-900/40 bg-[#0d2240]">
+              <button onClick={() => setTab("file")} className={tabBtnClass("file")}>
+                <Upload size={12} /> Upload File
+              </button>
+              <button onClick={() => setTab("url")} className={tabBtnClass("url")}>
+                <LinkIcon size={12} /> Add from URL
+              </button>
+              <button onClick={() => setTab("topic")} className={tabBtnClass("topic")}>
+                <Wand2 size={12} /> Generate from Topic
+              </button>
+            </div>
+
+            <div className="p-4 space-y-4">
+              {tab === "file" && (
+                <form onSubmit={handleFileUpload} className="space-y-4">
+                  <div>
+                    <label className={labelClass}>Image file (JPG / PNG / WebP, max 5MB)</label>
+                    <input
+                      id="hero-file-input"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={e => setFile(e.target.files?.[0] ?? null)}
+                      className="w-full text-sm text-blue-200 file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-[#4ea8de] file:text-white hover:file:bg-[#3a95cc] file:cursor-pointer"
+                    />
+                  </div>
+                  {metadataSection}
+                  <button
+                    type="submit"
+                    disabled={submitting || !file}
+                    className="w-full bg-[#4ea8de] hover:bg-[#3a95cc] disabled:bg-blue-900/40 disabled:text-blue-500 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
+                  >
+                    {submitting ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+                    {submitting ? "Uploading…" : "Upload"}
+                  </button>
+                </form>
+              )}
+
+              {tab === "url" && (
+                <form onSubmit={handleUrlUpload} className="space-y-4">
+                  <div>
+                    <label className={labelClass}>Image URL or page URL (Unsplash, Pexels, Pixabay)</label>
+                    <input
+                      type="url"
+                      value={sourceUrl}
+                      onChange={e => setSourceUrl(e.target.value)}
+                      placeholder="https://images.unsplash.com/photo-... or https://unsplash.com/photos/..."
+                      className={inputClass}
+                    />
+                    <p className="text-[11px] text-blue-500 mt-1">
+                      Direct image URLs upload fastest. For page URLs, we extract the og:image tag.
+                    </p>
+                  </div>
+                  {metadataSection}
+                  <button
+                    type="submit"
+                    disabled={submitting || !sourceUrl.trim()}
+                    className="w-full bg-[#4ea8de] hover:bg-[#3a95cc] disabled:bg-blue-900/40 disabled:text-blue-500 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
+                  >
+                    {submitting ? <Loader2 size={14} className="animate-spin" /> : <LinkIcon size={14} />}
+                    {submitting ? "Fetching…" : "Fetch & Save"}
+                  </button>
+                </form>
+              )}
+
+              {tab === "topic" && (
+                <div className="space-y-4">
+                  <div>
+                    <label className={labelClass}>Topic for AI text generation</label>
+                    <input
+                      type="text"
+                      value={topic}
+                      onChange={e => setTopic(e.target.value)}
+                      placeholder='e.g. "COP31 climate summit in Belém" or "World Health Assembly 2027"'
+                      className={inputClass}
+                    />
+                    <p className="text-[11px] text-blue-500 mt-1">
+                      Generates title / subtitle / CTA only. Switch to a different tab afterwards to upload the actual image.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={runTopicOnlyGenerate}
+                    disabled={submitting || !topic.trim()}
+                    className="w-full bg-[#4ea8de] hover:bg-[#3a95cc] disabled:bg-blue-900/40 disabled:text-blue-500 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
+                  >
+                    {submitting ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                    {submitting ? "Generating…" : "Generate Suggestions"}
+                  </button>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-blue-900/40">
+                    <div className="md:col-span-2 text-[10px] font-bold uppercase tracking-wider text-blue-400">
+                      Generated text (editable)
+                    </div>
+                    <div>
+                      <label className={labelClass}>Title</label>
+                      <input value={title} onChange={e => setTitle(e.target.value)} className={inputClass} />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Subtitle</label>
+                      <input value={subtitle} onChange={e => setSubtitle(e.target.value)} className={inputClass} />
+                    </div>
+                    <div>
+                      <label className={labelClass}>CTA text</label>
+                      <input value={ctaText} onChange={e => setCtaText(e.target.value)} className={inputClass} />
+                    </div>
+                    <div>
+                      <label className={labelClass}>CTA URL</label>
+                      <input value={ctaUrl} onChange={e => setCtaUrl(e.target.value)} className={inputClass} />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {uploadOk && (
+                <div className="text-xs text-green-300 flex items-center gap-1.5">
+                  <Check size={14} /> Image saved successfully.
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* AI suggestion modal */}
+          {aiOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+              <div className="w-full max-w-md bg-[#0d2240] border border-[#4ea8de]/40 rounded-2xl shadow-2xl p-5 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-white">
+                    <Sparkles size={16} className="text-[#4ea8de]" />
+                    <h3 className="font-semibold">Generate overlay text</h3>
+                  </div>
+                  <button onClick={() => setAiOpen(false)} className="text-blue-400 hover:text-white">
+                    <X size={16} />
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setAiMode("image")}
+                    disabled={tab === "topic"}
+                    className={`px-3 py-3 rounded-lg text-xs font-semibold border transition-colors flex items-center justify-center gap-1.5 ${
+                      aiMode === "image"
+                        ? "bg-[#4ea8de] border-[#4ea8de] text-white"
+                        : "bg-[#0a1a2e] border-blue-900/40 text-blue-200 hover:border-[#4ea8de]/40"
+                    } disabled:opacity-40 disabled:cursor-not-allowed`}
+                    title={tab === "topic" ? "Not available on this tab" : "Use vision on the selected image"}
+                  >
+                    <ImageIcon size={12} /> From this image
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAiMode("topic")}
+                    className={`px-3 py-3 rounded-lg text-xs font-semibold border transition-colors flex items-center justify-center gap-1.5 ${
+                      aiMode === "topic"
+                        ? "bg-[#4ea8de] border-[#4ea8de] text-white"
+                        : "bg-[#0a1a2e] border-blue-900/40 text-blue-200 hover:border-[#4ea8de]/40"
+                    }`}
+                  >
+                    <FileText size={12} /> From a topic
+                  </button>
+                </div>
+                {aiMode === "topic" && (
+                  <div>
+                    <label className={labelClass}>Topic</label>
+                    <input
+                      type="text"
+                      value={aiTopic}
+                      onChange={e => setAiTopic(e.target.value)}
+                      placeholder='e.g. "COP31 climate summit"'
+                      className={inputClass}
+                      autoFocus
+                    />
+                  </div>
+                )}
+                {aiMode === "image" && tab !== "topic" && (
+                  <p className="text-xs text-blue-400">
+                    Will use {tab === "file" ? "the selected file" : "the URL pasted above"} to generate text.
+                  </p>
+                )}
+                {aiError && (
+                  <div className="flex items-start gap-2 text-xs text-red-300 bg-red-900/20 border border-red-900/40 rounded-lg px-3 py-2">
+                    <AlertCircle size={12} className="mt-0.5 shrink-0" />
+                    <span className="break-words">{aiError}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={runAiSuggestion}
+                    disabled={aiRunning || (aiMode === "topic" && !aiTopic.trim())}
+                    className="flex-1 bg-[#4ea8de] hover:bg-[#3a95cc] disabled:bg-blue-900/40 disabled:text-blue-500 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
+                  >
+                    {aiRunning ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                    {aiRunning ? "Generating…" : "Generate"}
+                  </button>
+                  <button
+                    onClick={() => setAiOpen(false)}
+                    className="text-blue-400 hover:text-blue-200 text-sm px-3 py-2"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             </div>
-            {uploadOk && (
-              <div className="mt-3 text-xs text-green-300 flex items-center gap-1.5">
-                <Check size={14} /> Image uploaded successfully.
-              </div>
-            )}
-          </form>
+          )}
 
           {/* Existing images table */}
           <div className="bg-[#0a1a2e] border border-blue-900/40 rounded-lg overflow-hidden">
