@@ -6,7 +6,7 @@ import { Autoplay, Keyboard, A11y } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Search, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import "swiper/css";
 
@@ -31,7 +31,6 @@ type SlideData = {
 
 const SLIDES: SlideData[] = [
   {
-    // Actual UN General Assembly Hall, New York (Wikimedia Commons, freely licensed)
     bg: "/images/hero/un-hlpf.jpg",
     badge: { text: "SDG 17 Partnerships", color: "#19486A" },
     org: "UN DESA",
@@ -40,7 +39,6 @@ const SLIDES: SlideData[] = [
     cta: { text: "View Event", href: "/events" },
   },
   {
-    // Large diverse international conference audience — replaces generic stock
     bg: "/images/hero/global-events.jpg",
     badge: null,
     org: null,
@@ -49,7 +47,6 @@ const SLIDES: SlideData[] = [
     cta: { text: "Explore Events", href: "/events" },
   },
   {
-    // AI/robotics — contextually accurate for AI assistant feature
     bg: "/images/hero/ai-assistant.jpg",
     badge: null,
     org: null,
@@ -58,7 +55,6 @@ const SLIDES: SlideData[] = [
     cta: { text: "Try AI Assistant", href: "/assistant" },
   },
   {
-    // Earth from space — literally every region on earth, replaces NGO-cliché hands image
     bg: "/images/hero/global-regions.jpg",
     badge: null,
     org: null,
@@ -67,7 +63,6 @@ const SLIDES: SlideData[] = [
     cta: { text: "Browse by Region", href: "/events" },
   },
   {
-    // International conference/summit venue — contextually accurate
     bg: "/images/hero/track-events.jpg",
     badge: null,
     org: null,
@@ -76,7 +71,6 @@ const SLIDES: SlideData[] = [
     cta: { text: "Browse Organizations", href: "/events" },
   },
   {
-    // Conference stage — appropriate for event submission CTA
     bg: "/images/hero/submit-event.jpg",
     badge: null,
     org: null,
@@ -85,7 +79,6 @@ const SLIDES: SlideData[] = [
     cta: { text: "Submit Your Event", href: "/events/create", solid: true },
   },
   {
-    // Community/sustainability action — replaces irrelevant mountain path
     bg: "/images/hero/sdg-goals.jpg",
     badge: null,
     org: null,
@@ -95,107 +88,217 @@ const SLIDES: SlideData[] = [
   },
 ];
 
-const SDG_OPTIONS = Array.from({ length: 17 }, (_, i) => ({ value: String(i + 1), label: `SDG ${i + 1}` }));
+const SDG_LABELS: Record<number, string> = {
+  1: "No Poverty",
+  2: "Zero Hunger",
+  3: "Good Health and Well-being",
+  4: "Quality Education",
+  5: "Gender Equality",
+  6: "Clean Water and Sanitation",
+  7: "Affordable and Clean Energy",
+  8: "Decent Work and Economic Growth",
+  9: "Industry, Innovation and Infrastructure",
+  10: "Reduced Inequalities",
+  11: "Sustainable Cities and Communities",
+  12: "Responsible Consumption and Production",
+  13: "Climate Action",
+  14: "Life Below Water",
+  15: "Life on Land",
+  16: "Peace, Justice and Strong Institutions",
+  17: "Partnerships for the Goals",
+};
+
+const TOPIC_OPTIONS = Array.from({ length: 17 }, (_, i) => ({
+  value: String(i + 1),
+  label: `SDG ${i + 1}: ${SDG_LABELS[i + 1]}`,
+}));
+
+const REGION_OPTIONS = [
+  { value: "global",         label: "Global" },
+  { value: "africa",         label: "Africa" },
+  { value: "americas_north", label: "Americas (North)" },
+  { value: "americas_latin", label: "Americas (Latin)" },
+  { value: "asia_pacific",   label: "Asia & Pacific" },
+  { value: "europe",         label: "Europe" },
+  { value: "mena",           label: "MENA" },
+];
+
 const FORMAT_OPTIONS = [
+  { value: "virtual",   label: "Online" },
   { value: "in_person", label: "In-Person" },
-  { value: "virtual",   label: "Virtual" },
   { value: "hybrid",    label: "Hybrid" },
 ];
-const POPULAR_CHIPS = ["Health", "Climate", "WHA", "SDG 3", "Water"];
+
+const DATE_OPTIONS = [
+  { value: "week",          label: "This Week" },
+  { value: "month",         label: "This Month" },
+  { value: "next_3_months", label: "Next 3 Months" },
+  { value: "next_6_months", label: "Next 6 Months" },
+  { value: "year",          label: "This Year" },
+];
 
 export default function HeroSection({ slideImages }: { slideImages?: string[] }) {
   const router = useRouter();
   const swiperRef = useRef<SwiperType | null>(null);
   const [activeIdx, setActiveIdx] = useState(0);
   const [isSticky, setIsSticky] = useState(false);
-  const [showPulse, setShowPulse] = useState(false);
-  const wasSticky = useRef(false);
   const [query, setQuery] = useState("");
-  const [sdgFilter, setSdgFilter] = useState("");
-  const [formatFilter, setFormatFilter] = useState("");
+  const [topic, setTopic] = useState("");
+  const [region, setRegion] = useState("");
+  const [format, setFormat] = useState("");
+  const [dateRange, setDateRange] = useState("");
 
-  // Stop autoplay for users who prefer reduced motion
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       swiperRef.current?.autoplay.stop();
     }
   }, []);
 
-  // Sticky search bar on scroll
   useEffect(() => {
     const handleScroll = () => {
-      const threshold = window.innerWidth < 768 ? 200 : 400;
-      const sticky = window.scrollY > threshold;
-      setIsSticky(sticky);
-      if (sticky && !wasSticky.current) {
-        wasSticky.current = true;
-        setShowPulse(true);
-        setTimeout(() => setShowPulse(false), 3000);
-      } else if (!sticky) {
-        wasSticky.current = false;
-      }
+      const threshold = window.innerWidth < 768 ? 320 : 560;
+      setIsSticky(window.scrollY > threshold);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  function buildUrl(q: string) {
+  function handleSearch() {
     const params = new URLSearchParams();
-    if (q.trim()) params.set("q", q.trim());
-    if (sdgFilter) params.set("sdg", sdgFilter);
-    if (formatFilter) params.set("format", formatFilter);
-    return `/events${params.toString() ? `?${params}` : ""}`;
+    if (query.trim()) params.set("q", query.trim());
+    if (topic) params.set("sdg", topic);
+    if (region) params.set("region", region);
+    if (format) params.set("format", format);
+    if (dateRange) params.set("date", dateRange);
+    router.push(`/events${params.toString() ? `?${params}` : ""}`);
   }
 
-  function handleSearch(overrideQuery?: string) {
-    router.push(buildUrl(overrideQuery ?? query));
-  }
+  const labelClass =
+    "block text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5";
+  const fieldClass =
+    "w-full h-11 px-3 text-sm text-gray-800 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0f2a4a]/30 focus:border-[#0f2a4a] transition-colors";
+  const selectClass = `${fieldClass} appearance-none pr-9 cursor-pointer`;
+  const selectStyle: React.CSSProperties = {
+    backgroundImage:
+      "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>\")",
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "right 0.75rem center",
+    backgroundSize: "12px",
+  };
+
+  const renderFilterBar = (idPrefix: string) => (
+    <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+      <div className="md:col-span-3">
+        <label htmlFor={`${idPrefix}-q`} className={labelClass}>Search</label>
+        <div className="relative">
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+            size={16}
+          />
+          <input
+            id={`${idPrefix}-q`}
+            type="text"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleSearch()}
+            placeholder="Search events, organizations, or topics..."
+            className={`${fieldClass} pl-9`}
+          />
+        </div>
+      </div>
+
+      <div className="md:col-span-2">
+        <label htmlFor={`${idPrefix}-topic`} className={labelClass}>Topic</label>
+        <select
+          id={`${idPrefix}-topic`}
+          value={topic}
+          onChange={e => setTopic(e.target.value)}
+          className={selectClass}
+          style={selectStyle}
+        >
+          <option value="">All Topics</option>
+          {TOPIC_OPTIONS.map(o => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="md:col-span-2">
+        <label htmlFor={`${idPrefix}-region`} className={labelClass}>Region</label>
+        <select
+          id={`${idPrefix}-region`}
+          value={region}
+          onChange={e => setRegion(e.target.value)}
+          className={selectClass}
+          style={selectStyle}
+        >
+          <option value="">All Regions</option>
+          {REGION_OPTIONS.map(o => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="md:col-span-2">
+        <label htmlFor={`${idPrefix}-format`} className={labelClass}>Format</label>
+        <select
+          id={`${idPrefix}-format`}
+          value={format}
+          onChange={e => setFormat(e.target.value)}
+          className={selectClass}
+          style={selectStyle}
+        >
+          <option value="">All Formats</option>
+          {FORMAT_OPTIONS.map(o => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="md:col-span-2">
+        <label htmlFor={`${idPrefix}-date`} className={labelClass}>Date</label>
+        <select
+          id={`${idPrefix}-date`}
+          value={dateRange}
+          onChange={e => setDateRange(e.target.value)}
+          className={selectClass}
+          style={selectStyle}
+        >
+          <option value="">Any Date</option>
+          {DATE_OPTIONS.map(o => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="md:col-span-1">
+        <button
+          onClick={handleSearch}
+          aria-label="Apply filters and search events"
+          className="w-full h-11 bg-[#0f2a4a] hover:bg-[#1a3f6e] text-white font-semibold rounded-lg text-sm transition-colors flex items-center justify-center gap-1.5"
+        >
+          <Search size={16} />
+          <span>Search</span>
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <>
-      {/* ── STICKY COMPACT SEARCH BAR ───────────────────────────────────────── */}
+      {/* ── STICKY FILTER BAR (slides in on scroll) ─────────────────── */}
       <div
         className={`fixed top-16 left-0 right-0 z-40 bg-white border-b border-gray-200 shadow-lg transition-transform duration-300 ease-in-out ${
           isSticky ? "translate-y-0" : "-translate-y-full pointer-events-none"
         }`}
       >
-        <div className="max-w-4xl mx-auto px-4 md:px-8 py-3 flex items-center gap-3">
-          {/* Left accent + input group */}
-          <div className="flex-1 flex items-center gap-3 border-l-[3px] border-[#0f2a4a] pl-3 min-w-0">
-            {/* "Search Events" label — desktop only */}
-            <span className="hidden md:flex items-center gap-1.5 text-xs text-gray-400 uppercase tracking-wide shrink-0 select-none">
-              {showPulse && (
-                <span className="w-2 h-2 rounded-full bg-[#0f2a4a] animate-pulse" />
-              )}
-              Search Events
-            </span>
-            <span className="hidden md:block w-px h-4 bg-gray-200 shrink-0" />
-            <input
-              type="text"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && handleSearch()}
-              placeholder="Search events, organizations, or SDG goals…"
-              className="flex-1 min-w-0 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0f2a4a]/20 focus:border-[#0f2a4a] transition-colors"
-            />
-          </div>
-          {query && (
-            <button onClick={() => setQuery("")} className="text-gray-400 hover:text-gray-600 shrink-0">
-              <X size={14} />
-            </button>
-          )}
-          <button
-            onClick={() => handleSearch()}
-            className="bg-[#0f2a4a] hover:bg-[#1a3f6e] text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors shrink-0"
-          >
-            Search
-          </button>
+        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-3">
+          {renderFilterBar("sticky")}
         </div>
       </div>
 
       <div className="relative">
-
-        {/* ── SWIPER CAROUSEL ───────────────────────────────────────────────── */}
+        {/* ── SWIPER CAROUSEL ─────────────────────────────────────────── */}
         <div className="relative h-[50vh] sm:h-[55vh] lg:h-[70vh]">
           <Swiper
             onSwiper={(swiper) => { swiperRef.current = swiper; }}
@@ -230,7 +333,7 @@ export default function HeroSection({ slideImages }: { slideImages?: string[] })
                         "linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(15,42,74,0.85) 100%)",
                     }}
                   />
-                  <div className="hero-slide-text absolute bottom-0 left-0 right-0 pb-20 md:pb-24 pl-6 md:pl-10 pr-6 md:pr-10">
+                  <div className="hero-slide-text absolute bottom-0 left-0 right-0 pb-24 md:pb-28 pl-6 md:pl-10 pr-6 md:pr-10">
                     {slide.badge && (
                       <span
                         className="text-xs font-bold text-white px-3 py-1 rounded-full mb-3 inline-block"
@@ -269,7 +372,6 @@ export default function HeroSection({ slideImages }: { slideImages?: string[] })
             ))}
           </Swiper>
 
-          {/* Left arrow */}
           <button
             onClick={() => swiperRef.current?.slidePrev()}
             aria-label="Previous slide"
@@ -278,7 +380,6 @@ export default function HeroSection({ slideImages }: { slideImages?: string[] })
             <ChevronLeft size={22} />
           </button>
 
-          {/* Right arrow */}
           <button
             onClick={() => swiperRef.current?.slideNext()}
             aria-label="Next slide"
@@ -287,7 +388,6 @@ export default function HeroSection({ slideImages }: { slideImages?: string[] })
             <ChevronRight size={22} />
           </button>
 
-          {/* Dot indicators */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
             {SLIDES.map((_, i) => (
               <button
@@ -303,98 +403,13 @@ export default function HeroSection({ slideImages }: { slideImages?: string[] })
             ))}
           </div>
         </div>
+      </div>
 
-        {/* ── FLOATING SEARCH BAR (md and above) ──────────────────────────── */}
-        <div
-          className="hidden md:block absolute bottom-0 translate-y-1/2 left-1/2 -translate-x-1/2 w-full px-4 md:px-6 lg:px-0 lg:max-w-5xl"
-          style={{ zIndex: 30 }}
-        >
-          <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 dark:bg-[#1e293b] dark:border-[#334155]">
-            <div className="flex items-center px-4 py-4 md:px-6 md:py-5 gap-3">
-              <Search className="text-gray-400 shrink-0" size={22} />
-              <input
-                type="text"
-                value={query}
-                onChange={e => setQuery(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && handleSearch()}
-                placeholder="Search events, organizations, or SDG goals…"
-                className="flex-1 min-w-0 text-base font-medium text-gray-800 dark:text-gray-100 bg-white dark:bg-transparent placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 rounded"
-              />
-              {query && (
-                <button
-                  onClick={() => setQuery("")}
-                  className="text-gray-400 hover:text-gray-600 shrink-0 transition-colors"
-                >
-                  <X size={16} />
-                </button>
-              )}
-              <div className="hidden md:flex items-center gap-2 shrink-0">
-                <select
-                  value={sdgFilter}
-                  onChange={e => setSdgFilter(e.target.value)}
-                  className="text-xs text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-[#334155] border border-gray-200 dark:border-[#475569] rounded-lg px-2.5 py-2 focus:outline-none focus:ring-1 focus:ring-[#4ea8de] cursor-pointer"
-                >
-                  <option value="">All SDGs</option>
-                  {SDG_OPTIONS.map(o => (
-                    <option key={o.value} value={o.value}>{o.label}</option>
-                  ))}
-                </select>
-                <select
-                  value={formatFilter}
-                  onChange={e => setFormatFilter(e.target.value)}
-                  className="hidden lg:block text-xs text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-[#334155] border border-gray-200 dark:border-[#475569] rounded-lg px-2.5 py-2 focus:outline-none focus:ring-1 focus:ring-[#4ea8de] cursor-pointer"
-                >
-                  <option value="">All Formats</option>
-                  {FORMAT_OPTIONS.map(o => (
-                    <option key={o.value} value={o.value}>{o.label}</option>
-                  ))}
-                </select>
-              </div>
-              <button
-                onClick={() => handleSearch()}
-                className="bg-[#0f2a4a] hover:bg-[#1a3f6e] text-white font-semibold px-6 py-3 rounded-xl text-base transition-colors shrink-0"
-              >
-                Search
-              </button>
-            </div>
-          </div>
+      {/* ── FLOATING FILTER BAR (overlaps hero bottom) ──────────────── */}
+      <div className="relative z-30 -mt-16 md:-mt-20 mx-auto max-w-7xl px-4 md:px-6 lg:px-8">
+        <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 p-4 md:p-5">
+          {renderFilterBar("floating")}
         </div>
-
-        {/* ── MOBILE INLINE SEARCH BAR ──────────────────────────────────────── */}
-        <div
-          className="md:hidden mx-4 mt-2 relative bg-white dark:bg-[#1e293b] rounded-2xl shadow-lg border border-gray-200 dark:border-[#334155] overflow-hidden"
-          style={{ zIndex: 10 }}
-        >
-          <div className="flex items-center px-4 border-b border-gray-100 dark:border-[#334155]">
-            <Search className="text-gray-400 shrink-0" size={18} />
-            <input
-              type="text"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && handleSearch()}
-              placeholder="Search events or organizations…"
-              className="flex-1 px-3 py-4 text-sm text-gray-800 dark:text-gray-100 bg-transparent placeholder-gray-400 focus:outline-none min-w-0"
-            />
-            <button
-              onClick={() => handleSearch()}
-              className="bg-[#4ea8de] hover:bg-[#3a95cc] text-white font-semibold px-4 py-2 rounded-xl text-xs transition-colors shrink-0 my-2"
-            >
-              Search
-            </button>
-          </div>
-          <div className="flex gap-2 px-4 py-3 flex-wrap">
-            {POPULAR_CHIPS.map(chip => (
-              <button
-                key={chip}
-                onClick={() => handleSearch(chip)}
-                className="text-xs font-medium px-3 py-1.5 rounded-full bg-gray-100 dark:bg-[#334155] text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#475569] transition-colors"
-              >
-                {chip}
-              </button>
-            ))}
-          </div>
-        </div>
-
       </div>
     </>
   );
