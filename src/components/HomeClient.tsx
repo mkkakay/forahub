@@ -6,6 +6,7 @@ import { Calendar, Flag, MapPin, Flame, ArrowRight, ChevronRight, Globe, X } fro
 import { supabase } from "@/lib/supabase/client";
 import { useLanguage } from "@/context/LanguageContext";
 import { t } from "@/lib/i18n";
+import { slugify } from "@/lib/organizations";
 
 const SDG_COLORS: Record<number, string> = {
   1: "#E5243B", 2: "#DDA63A", 3: "#4C9F38", 4: "#C5192D", 5: "#FF3A21",
@@ -129,7 +130,7 @@ function getEventCoverImage(org: string | null, sdgGoals: number[]): string {
   return "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&q=80";
 }
 
-interface EventPreview {
+export interface EventPreview {
   id: string;
   title: string;
   start_date: string;
@@ -218,7 +219,7 @@ function FeaturedOrgCard({ org }: {
   const [imgFailed, setImgFailed] = useState(false);
   return (
     <Link
-      href={`/events?org=${encodeURIComponent(org.full)}`}
+      href={`/organizations/${slugify(org.full)}`}
       className="shrink-0 w-52 snap-start bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-[#334155] hover:shadow-lg transition-all duration-200 group overflow-hidden flex flex-col"
     >
       {/* Branded header: near-white tinted background, large logo */}
@@ -300,7 +301,7 @@ function SdgCard({ sdg, count }: { sdg: number; count: number }) {
   );
 }
 
-function EventCard({ event }: { event: EventPreview }) {
+export function EventCard({ event }: { event: EventPreview }) {
   const sdg = event.sdg_goals?.[0];
   const color = sdg ? SDG_COLORS[sdg] : "#3b82f6";
   const orgInitial = event.organization?.trim()[0]?.toUpperCase() ?? "E";
