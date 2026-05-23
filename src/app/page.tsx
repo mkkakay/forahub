@@ -65,6 +65,16 @@ type EventPreview = Pick<
   'id' | 'title' | 'start_date' | 'end_date' | 'location' | 'organization' | 'sdg_goals' | 'is_featured' | 'format' | 'region'
 >;
 
+type HeroImageRow = {
+  id: string;
+  public_url: string;
+  title: string | null;
+  subtitle: string | null;
+  cta_text: string | null;
+  cta_url: string | null;
+  display_order: number;
+};
+
 export default async function Home() {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -81,7 +91,7 @@ export default async function Home() {
 
   const [
     slideImages,
-    [{ data: upcomingData }, { data: thisWeekData }, { count: totalCount }],
+    [{ data: upcomingData }, { data: thisWeekData }, { count: totalCount }, { data: heroImagesData }],
   ] = await Promise.all([
     fetchHeroImages(),
     Promise.all([
@@ -103,16 +113,22 @@ export default async function Home() {
         .from("events")
         .select("*", { count: "exact", head: true })
         .gte("start_date", today),
+      supabase
+        .from("hero_images")
+        .select("id, public_url, title, subtitle, cta_text, cta_url, display_order")
+        .eq("is_active", true)
+        .order("display_order", { ascending: true }),
     ]),
   ]);
 
   const events = (upcomingData as EventPreview[] | null) ?? [];
   const thisWeekEvents = (thisWeekData as EventPreview[] | null) ?? [];
+  const heroImages = ((heroImagesData ?? []) as HeroImageRow[]);
 
   return (
     <div className="min-h-screen">
       <Navbar />
-      <HeroSection slideImages={slideImages} />
+      <HeroSection slideImages={slideImages} heroImages={heroImages} />
       <TrustStrip />
       <LiveActivityTicker />
       <HomeClient

@@ -5,6 +5,7 @@ import {
   AlertTriangle, Clock, CheckCircle, Radio,
 } from 'lucide-react'
 import ScraperPanel from './ScraperPanel'
+import HeroImagesPanel from './HeroImagesPanel'
 
 export const dynamic = 'force-dynamic'
 
@@ -224,6 +225,11 @@ export default async function AdminDashboard() {
           totalEvents={d.totalEvents}
           adminSecret={process.env.ADMIN_SECRET ?? ''}
         />
+      </div>
+
+      {/* Hero Images section */}
+      <div className="mt-6">
+        <HeroImagesPanel adminSecret={process.env.ADMIN_SECRET ?? ''} />
       </div>
 
       {/* Quick nav */}

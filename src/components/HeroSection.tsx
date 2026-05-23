@@ -29,6 +29,16 @@ type SlideData = {
   cta: { text: string; href: string; solid?: boolean };
 };
 
+export type HeroImageRow = {
+  id: string;
+  public_url: string;
+  title: string | null;
+  subtitle: string | null;
+  cta_text: string | null;
+  cta_url: string | null;
+  display_order: number;
+};
+
 const SLIDES: SlideData[] = [
   {
     bg: "/images/hero/un-hlpf.jpg",
@@ -137,7 +147,23 @@ const DATE_OPTIONS = [
   { value: "year",          label: "This Year" },
 ];
 
-export default function HeroSection({ slideImages }: { slideImages?: string[] }) {
+export default function HeroSection({
+  slideImages,
+  heroImages,
+}: {
+  slideImages?: string[];
+  heroImages?: HeroImageRow[];
+}) {
+  const adminSlides: SlideData[] = (heroImages ?? []).map(h => ({
+    bg: h.public_url,
+    badge: null,
+    org: null,
+    headline: h.title ?? "",
+    subtext: h.subtitle ?? "",
+    cta: { text: h.cta_text ?? "Explore Events", href: h.cta_url ?? "/events" },
+  }));
+  const useAdmin = adminSlides.length > 0;
+  const slides: SlideData[] = useAdmin ? adminSlides : SLIDES;
   const router = useRouter();
   const swiperRef = useRef<SwiperType | null>(null);
   const [activeIdx, setActiveIdx] = useState(0);
@@ -311,19 +337,22 @@ export default function HeroSection({ slideImages }: { slideImages?: string[] })
             a11y={{ enabled: true, prevSlideMessage: "Previous slide", nextSlideMessage: "Next slide" }}
             className="w-full h-full"
           >
-            {SLIDES.map((slide, i) => (
+            {slides.map((slide, i) => {
+              const bg = useAdmin ? slide.bg : (slideImages?.[i] ?? slide.bg);
+              const remoteBg = bg.startsWith("https://") || bg.startsWith("http://");
+              return (
               <SwiperSlide key={i}>
                 <div className="relative w-full h-full overflow-hidden">
                   <div className="hero-kb-image absolute inset-0">
                     <Image
-                      src={slideImages?.[i] ?? slide.bg}
-                      alt={slide.headline}
+                      src={bg}
+                      alt={slide.headline || `Slide ${i + 1}`}
                       fill
                       priority={i === 0}
                       sizes="100vw"
                       className="object-cover object-center"
                       style={{ filter: "brightness(0.65) saturate(0.9)" }}
-                      unoptimized={!!(slideImages?.[i]?.startsWith("https://"))}
+                      unoptimized={remoteBg}
                     />
                   </div>
                   <div
@@ -369,7 +398,8 @@ export default function HeroSection({ slideImages }: { slideImages?: string[] })
                   </div>
                 </div>
               </SwiperSlide>
-            ))}
+              );
+            })}
           </Swiper>
 
           <button
@@ -389,7 +419,7 @@ export default function HeroSection({ slideImages }: { slideImages?: string[] })
           </button>
 
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
-            {SLIDES.map((_, i) => (
+            {slides.map((_, i) => (
               <button
                 key={i}
                 onClick={() => swiperRef.current?.slideTo(i)}
