@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { Calendar, Flag, MapPin, Flame, ArrowRight, ChevronRight, Globe, X } from "lucide-react";
+import { Calendar, Flag, MapPin, ArrowRight, ChevronRight, Globe, X } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { useLanguage } from "@/context/LanguageContext";
 import { t } from "@/lib/i18n";
@@ -110,14 +110,11 @@ export interface EventPreview {
   is_featured: boolean;
   format: string | null;
   region: string | null;
+  banner_image_url?: string | null;
 }
 
 function formatDate(d: string) {
   return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
-}
-
-function formatShortDate(d: string) {
-  return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
 }
 
 function CountUp({ target, suffix = "" }: { target: number; suffix?: string }) {
@@ -328,7 +325,7 @@ export function EventCard({ event }: { event: EventPreview }) {
           {!coverFailed && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={getEventCoverImage(event.organization, event.sdg_goals)}
+              src={event.banner_image_url ?? getEventCoverImage(event.organization, event.sdg_goals)}
               alt=""
               aria-hidden="true"
               className="w-full h-full object-cover object-center"
@@ -468,13 +465,11 @@ export function EventCard({ event }: { event: EventPreview }) {
 
 export default function HomeClient({
   events,
-  thisWeekEvents,
   pastEvents,
   totalCount,
   orgLogos = {},
 }: {
   events: EventPreview[];
-  thisWeekEvents: EventPreview[];
   pastEvents: EventPreview[];
   totalCount: number;
   orgLogos?: Record<string, string>;
@@ -540,71 +535,6 @@ export default function HomeClient({
   return (
     <OrgLogosContext.Provider value={orgLogos}>
     <main className="flex-1">
-      {/* This Week */}
-      {thisWeekEvents.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-0">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <Flame size={20} className="text-orange-500" />
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">{t(lang, "events.thisweek")}</h2>
-            </div>
-            <Link href="/events?filter=thisweek" className="text-sm text-[#4ea8de] hover:underline flex items-center gap-1 font-medium">
-              {t(lang, "events.viewall")} <ChevronRight size={14} />
-            </Link>
-          </div>
-          <div className="flex gap-4 overflow-x-auto pb-0 no-scrollbar snap-x snap-mandatory pl-0.5">
-            {thisWeekEvents.map(ev => {
-              const sdg = ev.sdg_goals?.[0];
-              const color = sdg ? SDG_COLORS[sdg] : "#3b82f6";
-              return (
-                <Link
-                  key={ev.id}
-                  href={`/events/${ev.id}`}
-                  className="shrink-0 w-80 snap-start bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-[#334155] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 overflow-hidden group"
-                >
-                  {/* Cover strip */}
-                  <div
-                    className="h-[60px] flex items-center px-4 gap-3 relative"
-                    style={{ background: `linear-gradient(135deg, ${color}, ${color}bb)` }}
-                  >
-                    {ev.organization && (
-                      <span className="text-white font-extrabold text-2xl opacity-90 shrink-0">
-                        {ev.organization.trim()[0].toUpperCase()}
-                      </span>
-                    )}
-                    {ev.organization && (
-                      <span className="text-white/80 text-xs font-medium truncate flex-1">{ev.organization}</span>
-                    )}
-                    <div className="absolute top-2 right-2 bg-black/30 backdrop-blur-sm text-white text-xs font-bold px-2 py-0.5 rounded-full shrink-0">
-                      {formatShortDate(ev.start_date)}
-                    </div>
-                  </div>
-                  <div className="p-4">
-                    {sdg && (
-                      <span
-                        className="text-xs font-bold px-2 py-0.5 rounded-full text-white mb-2 inline-block"
-                        style={{ backgroundColor: color }}
-                      >
-                        SDG {sdg}
-                      </span>
-                    )}
-                    <p className="text-sm font-semibold text-[#0f2a4a] dark:text-white line-clamp-2 mt-1 group-hover:text-[#4ea8de] transition-colors">
-                      {ev.title}
-                    </p>
-                    {ev.location && (
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 flex items-center gap-1">
-                        <MapPin size={11} className="text-[#4ea8de] shrink-0" />
-                        <span className="truncate">{ev.location}</span>
-                      </p>
-                    )}
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
       {/* Upcoming Events */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-0 border-t border-gray-100 dark:border-[#334155]">
         <div className="flex items-baseline justify-between mb-2">

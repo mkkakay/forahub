@@ -56,6 +56,9 @@ export interface EventRow {
   is_hero_featured: boolean
   hero_panel_position: number | null
   hero_featured_until: string | null
+  event_tier: 'flagship' | 'major' | 'standard'
+  banner_image_url: string | null
+  banner_fetched_at: string | null
 }
 
 export interface EventDeadlineRow {

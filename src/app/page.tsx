@@ -10,6 +10,7 @@ import LiveActivityTicker from "@/components/LiveActivityTicker";
 import SubmitEventBanner from "@/components/SubmitEventBanner";
 import HomeClient from "@/components/HomeClient";
 import { batchGetLogos } from "@/lib/organizations/getLogoUrl";
+import { backfillBannersAsync } from "@/lib/events/fetchEventBanner";
 
 // Search queries aligned to each slide's content — specific enough for accurate Pexels results
 const SLIDE_QUERIES = [
@@ -63,7 +64,7 @@ const fetchHeroImages = unstable_cache(
 
 type EventPreview = Pick<
   Database['public']['Tables']['events']['Row'],
-  'id' | 'title' | 'start_date' | 'end_date' | 'location' | 'organization' | 'sdg_goals' | 'is_featured' | 'format' | 'region'
+  'id' | 'title' | 'start_date' | 'end_date' | 'location' | 'organization' | 'sdg_goals' | 'is_featured' | 'format' | 'region' | 'banner_image_url'
 >;
 
 type HeroImageRow = {
@@ -85,14 +86,13 @@ export default async function Home() {
 
   const now = new Date();
   const today = now.toISOString();
-  const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
   const endOf2030 = '2030-12-31T23:59:59.999Z';
 
-  const COLS = "id, title, start_date, end_date, location, organization, sdg_goals, is_featured, format, region";
+  const COLS = "id, title, start_date, end_date, location, organization, sdg_goals, is_featured, format, region, banner_image_url";
 
   const [
     slideImages,
-    [{ data: upcomingData }, { data: thisWeekData }, { count: totalCount }, { data: heroImagesData }],
+    [{ data: upcomingData }, { count: totalCount }, { data: heroImagesData }],
   ] = await Promise.all([
     fetchHeroImages(),
     Promise.all([
@@ -103,13 +103,6 @@ export default async function Home() {
         .lte("start_date", endOf2030)
         .order("start_date", { ascending: true })
         .limit(6),
-      supabase
-        .from("events")
-        .select(COLS)
-        .gte("start_date", today)
-        .lte("start_date", nextWeek)
-        .order("start_date", { ascending: true })
-        .limit(10),
       supabase
         .from("events")
         .select("*", { count: "exact", head: true })
@@ -123,14 +116,20 @@ export default async function Home() {
   ]);
 
   const events = (upcomingData as EventPreview[] | null) ?? [];
-  const thisWeekEvents = (thisWeekData as EventPreview[] | null) ?? [];
   const heroImages = ((heroImagesData ?? []) as HeroImageRow[]);
 
   const orgLogos = await batchGetLogos(
-    [...events, ...thisWeekEvents]
+    events
       .map(e => e.organization)
       .filter((o): o is string => typeof o === "string" && o.trim().length > 0)
   ).catch(() => ({}));
+
+  // Fire-and-forget banner backfill for events missing a cached image.
+  backfillBannersAsync(
+    events
+      .filter(e => !e.banner_image_url)
+      .map(e => ({ id: e.id, title: e.title, sdg_goals: e.sdg_goals }))
+  );
 
   return (
     <div className="min-h-screen">
@@ -140,7 +139,6 @@ export default async function Home() {
       <LiveActivityTicker />
       <HomeClient
         events={events}
-        thisWeekEvents={thisWeekEvents}
         pastEvents={[]}
         totalCount={totalCount ?? 0}
         orgLogos={orgLogos}
