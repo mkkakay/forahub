@@ -43,7 +43,7 @@ async function looksLikeImageUrl(url: string): Promise<{ ok: boolean; contentTyp
 export async function POST(req: NextRequest) {
   if (!checkAuth(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  let body: { event_id?: string; banner_url?: string };
+  let body: { event_id?: string; banner_url?: string; banner_display_mode?: string };
   try {
     body = await req.json();
   } catch {
@@ -54,6 +54,11 @@ export async function POST(req: NextRequest) {
   const bannerUrl = (body.banner_url ?? "").trim();
   if (!eventId) return NextResponse.json({ error: "event_id required" }, { status: 400 });
   if (!bannerUrl) return NextResponse.json({ error: "banner_url required" }, { status: 400 });
+
+  const displayMode: "contain" | "cover" | null =
+    body.banner_display_mode === "cover" || body.banner_display_mode === "contain"
+      ? body.banner_display_mode
+      : null;
 
   try {
     const u = new URL(bannerUrl);
@@ -72,12 +77,15 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const updatePatch: Record<string, unknown> = {
+    banner_image_url: bannerUrl,
+    banner_fetched_at: new Date().toISOString(),
+  };
+  if (displayMode) updatePatch.banner_display_mode = displayMode;
+
   const { error } = await adminSupabase
     .from("events")
-    .update({
-      banner_image_url: bannerUrl,
-      banner_fetched_at: new Date().toISOString(),
-    })
+    .update(updatePatch)
     .eq("id", eventId);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

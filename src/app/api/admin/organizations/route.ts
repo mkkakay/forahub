@@ -14,6 +14,7 @@ const ALLOWED_FIELDS = new Set([
   "brand_color",
   "is_featured",
   "display_order",
+  "logo_display_mode",
 ]);
 
 function checkAuth(req: NextRequest): boolean {
@@ -54,6 +55,8 @@ export async function PATCH(req: NextRequest) {
       patch[k] = typeof v === "number" ? v : Number(v) || 0;
     } else if (k === "needs_dark_background" || k === "is_featured") {
       patch[k] = Boolean(v);
+    } else if (k === "logo_display_mode") {
+      patch[k] = v === "cover" ? "cover" : "contain";
     } else {
       // empty string → null (so the override stops shadowing the registry value)
       patch[k] = typeof v === "string" && v.trim() === "" ? null : v;

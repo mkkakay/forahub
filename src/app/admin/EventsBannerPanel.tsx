@@ -15,6 +15,7 @@ interface EventRow {
   sdg_goals: number[] | null;
   banner_image_url: string | null;
   banner_fetched_at: string | null;
+  banner_display_mode: "contain" | "cover" | null;
 }
 
 function formatDate(d: string) {
@@ -118,6 +119,28 @@ export default function EventsBannerPanel({ adminSecret }: { adminSecret: string
     }
   }
 
+  async function changeDisplayMode(eventId: string, mode: "contain" | "cover") {
+    // Optimistic UI: update local state immediately so the toggle responds.
+    setEvents(list => list.map(e => (e.id === eventId ? { ...e, banner_display_mode: mode } : e)));
+    setBusyId(eventId);
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/events", {
+        method: "PATCH",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({ event_id: eventId, banner_display_mode: mode }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
+      flashSaved(eventId);
+    } catch (err) {
+      setError(String(err instanceof Error ? err.message : err));
+      await refresh();
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   async function refetchPexels(eventId: string) {
     setBusyId(eventId);
     setError(null);
@@ -199,10 +222,19 @@ export default function EventsBannerPanel({ adminSecret }: { adminSecret: string
                 return (
                   <div key={event.id} className="bg-[#0a1a2e] border border-blue-900/40 rounded-lg p-3 grid grid-cols-1 lg:grid-cols-[160px_1fr_auto] gap-3">
                     {/* Banner thumbnail */}
-                    <div className="w-full lg:w-[160px] h-24 rounded-md border border-blue-900/40 overflow-hidden bg-[#0d2240] flex items-center justify-center">
+                    <div className="w-full lg:w-[160px] h-24 rounded-md border border-blue-900/40 overflow-hidden bg-white flex items-center justify-center">
                       {event.banner_image_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={event.banner_image_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                        <img
+                          src={event.banner_image_url}
+                          alt=""
+                          className={
+                            event.banner_display_mode === "contain"
+                              ? "w-full h-full object-contain"
+                              : "w-full h-full object-cover"
+                          }
+                          loading="lazy"
+                        />
                       ) : (
                         <span className="text-[10px] text-blue-500 px-2 text-center">No banner yet</span>
                       )}
@@ -235,6 +267,35 @@ export default function EventsBannerPanel({ adminSecret }: { adminSecret: string
                         >
                           Set
                         </button>
+                      </div>
+                      {/* Display-mode toggle — auto-saves */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400">Banner</span>
+                        <div className="inline-flex rounded border border-blue-900/40 overflow-hidden">
+                          <button
+                            type="button"
+                            onClick={() => changeDisplayMode(event.id, "cover")}
+                            className={`text-[11px] font-semibold px-3 py-1 transition-colors ${
+                              (event.banner_display_mode ?? "cover") === "cover"
+                                ? "bg-[#4ea8de] text-white"
+                                : "bg-[#0a1a2e] text-blue-300 hover:bg-[#0d2240]"
+                            }`}
+                          >
+                            Photo (fill)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => changeDisplayMode(event.id, "contain")}
+                            className={`text-[11px] font-semibold px-3 py-1 border-l border-blue-900/40 transition-colors ${
+                              event.banner_display_mode === "contain"
+                                ? "bg-[#4ea8de] text-white"
+                                : "bg-[#0a1a2e] text-blue-300 hover:bg-[#0d2240]"
+                            }`}
+                          >
+                            Logo (fit)
+                          </button>
+                        </div>
+                        <span className="text-[10px] text-blue-500">auto-saves</span>
                       </div>
                     </div>
 

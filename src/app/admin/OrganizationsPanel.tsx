@@ -20,6 +20,7 @@ interface ResolvedOrg {
   is_featured: boolean;
   display_order: number;
   has_override: boolean;
+  logo_display_mode: "contain" | "cover";
 }
 
 interface RowDraft {
@@ -31,6 +32,7 @@ interface RowDraft {
   brand_color: string;
   is_featured: boolean;
   display_order: number;
+  logo_display_mode: "contain" | "cover";
 }
 
 function draftFromOrg(o: ResolvedOrg): RowDraft {
@@ -43,6 +45,7 @@ function draftFromOrg(o: ResolvedOrg): RowDraft {
     brand_color: o.color,
     is_featured: o.is_featured,
     display_order: o.display_order,
+    logo_display_mode: o.logo_display_mode,
   };
 }
 
@@ -118,6 +121,23 @@ export default function OrganizationsPanel({ adminSecret }: { adminSecret: strin
       setError(String(err instanceof Error ? err.message : err));
     } finally {
       setSavingSlug(null);
+    }
+  }
+
+  async function changeDisplayMode(slug: string, mode: "contain" | "cover") {
+    updateDraft(slug, { logo_display_mode: mode });
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/organizations", {
+        method: "PATCH",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({ slug, logo_display_mode: mode }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
+      await refresh();
+    } catch (err) {
+      setError(String(err instanceof Error ? err.message : err));
     }
   }
 
@@ -238,7 +258,9 @@ export default function OrganizationsPanel({ adminSecret }: { adminSecret: strin
                   >
                     {/* Logo preview */}
                     <div
-                      className="w-full lg:w-[88px] h-20 rounded-md border border-blue-900/40 flex items-center justify-center p-2"
+                      className={`w-full lg:w-[88px] h-20 rounded-md border border-blue-900/40 overflow-hidden ${
+                        draft.logo_display_mode === "cover" ? "" : "flex items-center justify-center p-2"
+                      }`}
                       style={{
                         backgroundColor: draft.needs_dark_background
                           ? "#0f2a4a"
@@ -252,7 +274,11 @@ export default function OrganizationsPanel({ adminSecret }: { adminSecret: strin
                         <img
                           src={draft.manual_logo_url || org.logo_url || ""}
                           alt={draft.short_name || org.short}
-                          className="max-w-full max-h-full object-contain"
+                          className={
+                            draft.logo_display_mode === "cover"
+                              ? "w-full h-full object-cover"
+                              : "max-w-full max-h-full object-contain"
+                          }
                           loading="lazy"
                         />
                       ) : (
@@ -370,6 +396,34 @@ export default function OrganizationsPanel({ adminSecret }: { adminSecret: strin
                         />
                         Featured on homepage
                       </label>
+                      <div className="md:col-span-2 flex items-center gap-2">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-blue-400">Display</label>
+                        <div className="inline-flex rounded border border-blue-900/40 overflow-hidden">
+                          <button
+                            type="button"
+                            onClick={() => changeDisplayMode(org.slug, "contain")}
+                            className={`text-[11px] font-semibold px-3 py-1 transition-colors ${
+                              draft.logo_display_mode === "contain"
+                                ? "bg-[#4ea8de] text-white"
+                                : "bg-[#0a1a2e] text-blue-300 hover:bg-[#0d2240]"
+                            }`}
+                          >
+                            Logo (fit)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => changeDisplayMode(org.slug, "cover")}
+                            className={`text-[11px] font-semibold px-3 py-1 border-l border-blue-900/40 transition-colors ${
+                              draft.logo_display_mode === "cover"
+                                ? "bg-[#4ea8de] text-white"
+                                : "bg-[#0a1a2e] text-blue-300 hover:bg-[#0d2240]"
+                            }`}
+                          >
+                            Photo (fill)
+                          </button>
+                        </div>
+                        <span className="text-[10px] text-blue-500">auto-saves</span>
+                      </div>
                     </div>
 
                     {/* Action column */}

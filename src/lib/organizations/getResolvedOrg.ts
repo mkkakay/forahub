@@ -17,6 +17,8 @@ export interface ResolvedOrg extends OrgConfig {
   is_featured: boolean;
   display_order: number;
   has_override: boolean;
+  /** 'contain' = logo fits (default), 'cover' = photo fills the tile. */
+  logo_display_mode: "contain" | "cover";
 }
 
 interface OverrideRow {
@@ -29,6 +31,7 @@ interface OverrideRow {
   brand_color: string | null;
   is_featured: boolean | null;
   display_order: number | null;
+  logo_display_mode: "contain" | "cover" | null;
 }
 
 interface LogoCacheRow {
@@ -40,7 +43,7 @@ interface LogoCacheRow {
 async function readAllOverrides(): Promise<Map<string, OverrideRow>> {
   const { data } = await adminSupabase
     .from("organization_overrides")
-    .select("slug, display_name, short_name, description, manual_logo_url, needs_dark_background, brand_color, is_featured, display_order");
+    .select("slug, display_name, short_name, description, manual_logo_url, needs_dark_background, brand_color, is_featured, display_order, logo_display_mode");
   const rows = (data as OverrideRow[] | null) ?? [];
   return new Map(rows.map(r => [r.slug, r]));
 }
@@ -79,6 +82,7 @@ function resolveOne(
         : FEATURED_CALENDAR_SLUGS.includes(base.slug),
     display_order: override?.display_order ?? 0,
     has_override: overrideExists,
+    logo_display_mode: override?.logo_display_mode ?? "contain",
   };
 }
 

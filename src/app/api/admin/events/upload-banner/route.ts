@@ -34,6 +34,9 @@ export async function POST(req: NextRequest) {
   const eventId = ((form.get("event_id") as string | null) ?? "").trim();
   if (!eventId) return NextResponse.json({ error: "event_id field required" }, { status: 400 });
 
+  const modeField = ((form.get("banner_display_mode") as string | null) ?? "").trim();
+  const displayMode: "contain" | "cover" | null = modeField === "cover" || modeField === "contain" ? modeField : null;
+
   const file = form.get("file");
   if (!(file instanceof File)) return NextResponse.json({ error: "No file provided" }, { status: 400 });
 
@@ -65,12 +68,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: err instanceof Error ? err.message : String(err) }, { status: 500 });
   }
 
+  const updatePatch: Record<string, unknown> = {
+    banner_image_url: publicUrl,
+    banner_fetched_at: new Date().toISOString(),
+  };
+  if (displayMode) updatePatch.banner_display_mode = displayMode;
+
   const { error: updateError } = await adminSupabase
     .from("events")
-    .update({
-      banner_image_url: publicUrl,
-      banner_fetched_at: new Date().toISOString(),
-    })
+    .update(updatePatch)
     .eq("id", eventId);
 
   if (updateError) {

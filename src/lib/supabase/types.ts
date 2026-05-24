@@ -59,6 +59,7 @@ export interface EventRow {
   event_tier: 'flagship' | 'major' | 'standard'
   banner_image_url: string | null
   banner_fetched_at: string | null
+  banner_display_mode: 'contain' | 'cover' | null
 }
 
 export interface EventDeadlineRow {

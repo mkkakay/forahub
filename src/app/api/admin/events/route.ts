@@ -20,11 +20,44 @@ export async function GET(req: NextRequest) {
   const today = new Date().toISOString();
   const { data, error } = await adminSupabase
     .from("events")
-    .select("id, title, organization, start_date, end_date, sdg_goals, banner_image_url, banner_fetched_at")
+    .select("id, title, organization, start_date, end_date, sdg_goals, banner_image_url, banner_fetched_at, banner_display_mode")
     .gte("start_date", today)
     .order("start_date", { ascending: true })
     .limit(50);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ data: data ?? [] });
+}
+
+/** Lightweight field updates for events from the admin UI (banner display mode toggle, etc.). */
+export async function PATCH(req: NextRequest) {
+  if (!checkAuth(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  let body: { event_id?: string; banner_display_mode?: string };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  const eventId = (body.event_id ?? "").trim();
+  if (!eventId) return NextResponse.json({ error: "event_id required" }, { status: 400 });
+
+  const patch: Record<string, unknown> = {};
+  if (body.banner_display_mode === "cover" || body.banner_display_mode === "contain") {
+    patch.banner_display_mode = body.banner_display_mode;
+  }
+  if (Object.keys(patch).length === 0) {
+    return NextResponse.json({ error: "No supported fields to update" }, { status: 400 });
+  }
+
+  const { data, error } = await adminSupabase
+    .from("events")
+    .update(patch)
+    .eq("id", eventId)
+    .select("id, banner_display_mode")
+    .single();
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ data });
 }

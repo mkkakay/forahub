@@ -18,6 +18,7 @@ export interface FeaturedOrg {
   color: string;
   needs_dark_background: boolean;
   logo_url: string | null;
+  logo_display_mode?: "contain" | "cover";
 }
 
 export interface HomeRegion {
@@ -64,6 +65,7 @@ export interface EventPreview {
   format: string | null;
   region: string | null;
   banner_image_url?: string | null;
+  banner_display_mode?: "contain" | "cover" | null;
 }
 
 function formatDate(d: string) {
@@ -158,9 +160,12 @@ function FeaturedOrgCard({ org }: { org: FeaturedOrg }) {
       href={`/organizations/${org.slug}`}
       className="shrink-0 w-52 snap-start bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-100 dark:border-[#334155] shadow-sm hover:shadow-lg transition-all duration-200 group overflow-hidden flex flex-col"
     >
-      {/* Tinted brand-color logo tile (or full color when dark mode is on) */}
+      {/* Tinted brand-color logo tile (or full color when dark mode is on);
+          full-bleed photo fill when display_mode = "cover". */}
       <div
-        className="h-32 flex items-center justify-center p-6 border-b border-gray-100 dark:border-[#334155]"
+        className={`h-32 border-b border-gray-100 dark:border-[#334155] overflow-hidden ${
+          org.logo_display_mode === "cover" ? "" : "flex items-center justify-center p-6"
+        }`}
         style={{ backgroundColor: headerBg }}
       >
         {showLogo ? (
@@ -168,7 +173,11 @@ function FeaturedOrgCard({ org }: { org: FeaturedOrg }) {
           <img
             src={logoUrl}
             alt={org.short}
-            className="max-h-12 max-w-40 object-contain mx-auto"
+            className={
+              org.logo_display_mode === "cover"
+                ? "w-full h-full object-cover"
+                : "max-h-12 max-w-40 object-contain mx-auto"
+            }
             loading="lazy"
             onError={() => setLogoFailed(true)}
           />
@@ -294,7 +303,11 @@ export function EventCard({ event }: { event: EventPreview }) {
               src={assets.banner_image_url}
               alt=""
               aria-hidden="true"
-              className="w-full h-full object-cover object-center"
+              className={
+                event.banner_display_mode === "contain"
+                  ? "w-full h-full object-contain object-center bg-white"
+                  : "w-full h-full object-cover object-center"
+              }
               loading="lazy"
               onError={() => setCoverFailed(true)}
             />
