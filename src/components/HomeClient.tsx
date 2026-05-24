@@ -149,21 +149,13 @@ function FeaturedOrgCard({ org }: { org: FeaturedOrg }) {
   const [logoFailed, setLogoFailed] = useState(false);
   const showLogo = logoUrl && !logoFailed;
 
-  const headerBg = org.needs_dark_background
-    ? "#0f2a4a"
-    : `${org.color}14`;
-  const fallbackTextColor = org.needs_dark_background ? "#ffffff" : org.color;
-
   return (
     <Link
       href={`/organizations/${org.slug}`}
       className="shrink-0 w-52 snap-start bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-[#334155] hover:shadow-lg transition-all duration-200 group overflow-hidden flex flex-col"
     >
-      {/* Branded header: tinted (or dark navy) background, large logo (or short-name fallback) */}
-      <div
-        className="h-32 flex items-center justify-center p-6 border-b border-gray-100 dark:border-[#334155]"
-        style={{ backgroundColor: headerBg }}
-      >
+      {/* Uniform white logo tile — consistent backdrop across all orgs */}
+      <div className="h-32 flex items-center justify-center p-6 bg-white border border-gray-200 shadow-sm rounded-t-2xl">
         {showLogo ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -174,7 +166,7 @@ function FeaturedOrgCard({ org }: { org: FeaturedOrg }) {
             onError={() => setLogoFailed(true)}
           />
         ) : (
-          <span className="text-lg font-bold text-center leading-tight" style={{ color: fallbackTextColor }}>
+          <span className="text-lg font-bold text-center leading-tight" style={{ color: org.color }}>
             {org.short}
           </span>
         )}
