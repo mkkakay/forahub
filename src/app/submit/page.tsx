@@ -4,13 +4,17 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   Upload, LinkIcon, PencilLine, Loader2, Sparkles, CheckCircle2,
-  AlertCircle, Calendar, MapPin, X, ArrowRight, Globe,
+  AlertCircle, Calendar, X, ArrowRight, Globe,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { useSubscription } from "@/context/SubscriptionContext";
 import { supabase } from "@/lib/supabase/client";
-import { ORG_LIST } from "@/lib/organizations";
 import { parseApiResponse } from "@/lib/admin/fetchJson";
+import LocationCombobox from "./_components/LocationCombobox";
+import OrgCombobox from "./_components/OrgCombobox";
+import OrgChipInput from "./_components/OrgChipInput";
+import { timezoneForCountry, languageForCountry } from "@/lib/location/countryTimezone";
+import type { LocationResult } from "@/lib/location/nominatim";
 
 type Tab = "flyer" | "url" | "manual";
 
@@ -195,6 +199,15 @@ export default function SubmitPage() {
   const [pasteFallback, setPasteFallback] = useState<{ message: string; status: number } | null>(null);
   const [pasteText, setPasteText] = useState("");
 
+  // Smart-defaults bookkeeping — once the user touches these fields directly,
+  // we stop overwriting them from location pick / start-date change.
+  const tzTouchedRef = useRef(false);
+  const deadlineTouchedRef = useRef(false);
+
+  // Debounced AI SDG suggestion in manual-entry mode.
+  const [sdgSuggestion, setSdgSuggestion] = useState<{ sdg: number; label: string } | null>(null);
+  const sdgTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Draft autosave
   const [showResumeBanner, setShowResumeBanner] = useState(false);
   const skipDraftRestoreRef = useRef(false);
@@ -261,6 +274,53 @@ export default function SubmitPage() {
       setForm(f => ({ ...f, submitter_email: userEmail }));
     }
   }, [userEmail]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Smart default: registration_deadline = start_date − 7 days ──────
+  useEffect(() => {
+    if (deadlineTouchedRef.current) return;
+    if (!form.start_date || form.registration_deadline) return;
+    const start = new Date(form.start_date);
+    if (isNaN(start.getTime())) return;
+    const deadline = new Date(start.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const pad = (n: number) => n.toString().padStart(2, "0");
+    const local = `${deadline.getFullYear()}-${pad(deadline.getMonth() + 1)}-${pad(deadline.getDate())}T${pad(deadline.getHours())}:${pad(deadline.getMinutes())}`;
+    setForm(f => ({ ...f, registration_deadline: local }));
+  }, [form.start_date, form.registration_deadline]);
+
+  // ── Debounced AI SDG suggestion in manual mode ──────────────────────
+  useEffect(() => {
+    // Only run on the manual tab. The flyer/url tabs already get an SDG from extraction.
+    if (tab !== "manual") return;
+    if (form.primary_sdg !== null) {
+      setSdgSuggestion(null);
+      return;
+    }
+    if (form.title.trim().length <= 5 || form.description.trim().length <= 20) {
+      setSdgSuggestion(null);
+      return;
+    }
+    if (sdgTimerRef.current) clearTimeout(sdgTimerRef.current);
+    sdgTimerRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch("/api/events/extract", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: `${form.title}\n\n${form.description}` }),
+        });
+        const parsed = await parseApiResponse<{ data: { primary_sdg: number | null } }>(res);
+        if (!parsed.ok) return;
+        const sdg = parsed.data.data?.primary_sdg;
+        if (sdg && sdg >= 1 && sdg <= 17) {
+          setSdgSuggestion({ sdg, label: SDG_LABELS[sdg] });
+        }
+      } catch {
+        // silently ignore — non-essential helper
+      }
+    }, 2000);
+    return () => {
+      if (sdgTimerRef.current) clearTimeout(sdgTimerRef.current);
+    };
+  }, [tab, form.title, form.description, form.primary_sdg]);
 
   // ── Load past events for logged-in users ────────────────────────────
   useEffect(() => {
@@ -376,6 +436,22 @@ export default function SubmitPage() {
       setExtractError(err instanceof Error ? err.message : String(err));
     } finally {
       setExtracting(false);
+    }
+  }
+
+  function handleLocationPicked(loc: LocationResult) {
+    setAiFilled(a => ({ ...a, location: false }));
+    // Auto-set timezone unless the user has touched it manually.
+    if (!tzTouchedRef.current) {
+      const tz = timezoneForCountry(loc.country_code);
+      if (tz) setForm(f => ({ ...f, timezone: tz }));
+    }
+    // Auto-add the country's primary language if not already in the list.
+    const lang = languageForCountry(loc.country_code);
+    if (lang) {
+      setForm(f =>
+        f.event_languages.includes(lang) ? f : { ...f, event_languages: [...f.event_languages, lang] }
+      );
     }
   }
 
@@ -864,22 +940,17 @@ export default function SubmitPage() {
                 Hosting organization <span className="text-red-500">*</span>
                 {aiFilled.organization && aiBadge}
               </label>
-              <input
-                list="forahub-orgs"
+              <OrgCombobox
                 value={form.organization}
-                onChange={e => { setForm(f => ({ ...f, organization: e.target.value })); setAiFilled(a => ({ ...a, organization: false })); }}
+                onChange={v => { setForm(f => ({ ...f, organization: v })); setAiFilled(a => ({ ...a, organization: false })); }}
                 placeholder="e.g. World Health Organization"
-                className={inputClass}
               />
-              <datalist id="forahub-orgs">
-                {ORG_LIST.map(o => <option key={o.slug} value={o.name} />)}
-              </datalist>
             </div>
             <div>
               <label className={labelClass}>Primary SDG (optional){aiFilled.primary_sdg && aiBadge}</label>
               <select
                 value={form.primary_sdg ?? ""}
-                onChange={e => { setForm(f => ({ ...f, primary_sdg: e.target.value ? Number(e.target.value) : null })); setAiFilled(a => ({ ...a, primary_sdg: false })); }}
+                onChange={e => { setForm(f => ({ ...f, primary_sdg: e.target.value ? Number(e.target.value) : null })); setAiFilled(a => ({ ...a, primary_sdg: false })); setSdgSuggestion(null); }}
                 className={inputClass}
               >
                 <option value="">Not sure / not applicable</option>
@@ -887,6 +958,31 @@ export default function SubmitPage() {
                   <option key={n} value={n}>SDG {n}: {SDG_LABELS[n]}</option>
                 ))}
               </select>
+              {sdgSuggestion && (
+                <div className="mt-2 flex items-center gap-2 text-xs">
+                  <span className="text-gray-600">
+                    ✨ AI suggests: <span className="font-semibold">SDG {sdgSuggestion.sdg} — {sdgSuggestion.label}</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForm(f => ({ ...f, primary_sdg: sdgSuggestion.sdg }));
+                      setAiFilled(a => ({ ...a, primary_sdg: true }));
+                      setSdgSuggestion(null);
+                    }}
+                    className="bg-amber-100 hover:bg-amber-200 text-amber-900 font-semibold px-2 py-0.5 rounded text-[11px] border border-amber-300/60"
+                  >
+                    Use
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSdgSuggestion(null)}
+                    className="text-gray-400 hover:text-gray-600 text-[11px]"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -934,10 +1030,11 @@ export default function SubmitPage() {
             <label className={labelClass}>Timezone</label>
             <input
               value={form.timezone}
-              onChange={e => setForm(f => ({ ...f, timezone: e.target.value }))}
+              onChange={e => { tzTouchedRef.current = true; setForm(f => ({ ...f, timezone: e.target.value })); }}
               placeholder="e.g. America/New_York"
               className={inputClass}
             />
+            <p className="text-[11px] text-gray-400 mt-1">Auto-set from the selected location. Override if needed.</p>
           </div>
 
           <div>
@@ -969,15 +1066,12 @@ export default function SubmitPage() {
           {(form.format === "in_person" || form.format === "hybrid") && (
             <div>
               <label className={labelClass}>Location {aiFilled.location && aiBadge}</label>
-              <div className="relative">
-                <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  value={form.location}
-                  onChange={e => { setForm(f => ({ ...f, location: e.target.value })); setAiFilled(a => ({ ...a, location: false })); }}
-                  placeholder="e.g. Geneva, Switzerland"
-                  className={`${inputClass} pl-9`}
-                />
-              </div>
+              <LocationCombobox
+                value={form.location}
+                onChange={v => { setForm(f => ({ ...f, location: v })); setAiFilled(a => ({ ...a, location: false })); }}
+                onPickedLocation={handleLocationPicked}
+                placeholder="Start typing a city — e.g. Brussels"
+              />
             </div>
           )}
 
@@ -1101,21 +1195,21 @@ export default function SubmitPage() {
             <input
               type="datetime-local"
               value={form.registration_deadline}
-              onChange={e => { setForm(f => ({ ...f, registration_deadline: e.target.value })); setAiFilled(a => ({ ...a, registration_deadline: false })); }}
+              onChange={e => { deadlineTouchedRef.current = true; setForm(f => ({ ...f, registration_deadline: e.target.value })); setAiFilled(a => ({ ...a, registration_deadline: false })); }}
               className={inputClass}
             />
+            <p className="text-[11px] text-gray-400 mt-1">Default: 7 days before the event start. Adjust or clear if not applicable.</p>
           </div>
 
           {/* ── Co-organizers / partners ─────────────────────────── */}
           <div>
             <label className={labelClass}>Co-organizers / partners (optional) {aiFilled.co_organizers && aiBadge}</label>
-            <input
+            <OrgChipInput
               value={form.co_organizers}
-              onChange={e => { setForm(f => ({ ...f, co_organizers: e.target.value })); setAiFilled(a => ({ ...a, co_organizers: false })); }}
-              placeholder="e.g. UNICEF, Gates Foundation, Wellcome Trust"
-              className={inputClass}
+              onChange={v => { setForm(f => ({ ...f, co_organizers: v })); setAiFilled(a => ({ ...a, co_organizers: false })); }}
+              placeholder="Type to search organizations, press Enter to add"
             />
-            <p className="text-[11px] text-gray-400 mt-1">Separate multiple organizations with commas.</p>
+            <p className="text-[11px] text-gray-400 mt-1">Picks from our registry first; you can also type any free-form name.</p>
           </div>
 
           {/* ── Speakers / panelists ─────────────────────────────── */}
