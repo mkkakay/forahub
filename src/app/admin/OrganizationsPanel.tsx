@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Building2, ChevronDown, ChevronRight, Loader2, Search, RefreshCw,
-  AlertCircle, Check, Star, Moon, X,
+  AlertCircle, Check, Star, Moon, X, Upload,
 } from "lucide-react";
 
 interface ResolvedOrg {
@@ -52,6 +52,7 @@ export default function OrganizationsPanel({ adminSecret }: { adminSecret: strin
   const [drafts, setDrafts] = useState<Record<string, RowDraft>>({});
   const [savingSlug, setSavingSlug] = useState<string | null>(null);
   const [refreshingSlug, setRefreshingSlug] = useState<string | null>(null);
+  const [uploadingSlug, setUploadingSlug] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savedFlash, setSavedFlash] = useState<string | null>(null);
@@ -117,6 +118,30 @@ export default function OrganizationsPanel({ adminSecret }: { adminSecret: strin
       setError(String(err instanceof Error ? err.message : err));
     } finally {
       setSavingSlug(null);
+    }
+  }
+
+  async function uploadLogo(slug: string, file: File) {
+    setUploadingSlug(slug);
+    setError(null);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("slug", slug);
+      const res = await fetch("/api/admin/organizations/upload-logo", {
+        method: "POST",
+        headers,
+        body: fd,
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
+      setSavedFlash(slug);
+      setTimeout(() => setSavedFlash(s => (s === slug ? null : s)), 2500);
+      await refresh();
+    } catch (err) {
+      setError(String(err instanceof Error ? err.message : err));
+    } finally {
+      setUploadingSlug(null);
     }
   }
 
@@ -270,12 +295,36 @@ export default function OrganizationsPanel({ adminSecret }: { adminSecret: strin
                       </div>
                       <div className="md:col-span-2">
                         <label className={labelClass}>Logo URL override (empty = use Brandfetch cache)</label>
-                        <input
-                          value={draft.manual_logo_url}
-                          onChange={e => updateDraft(org.slug, { manual_logo_url: e.target.value })}
-                          placeholder="https://… (leave blank to let Brandfetch resolve)"
-                          className={inputClass}
-                        />
+                        <div className="flex items-center gap-2">
+                          <input
+                            value={draft.manual_logo_url}
+                            onChange={e => updateDraft(org.slug, { manual_logo_url: e.target.value })}
+                            placeholder="https://… (or upload a file →)"
+                            className={inputClass}
+                          />
+                          <label className="shrink-0 cursor-pointer inline-flex items-center gap-1 text-[11px] font-semibold text-white bg-[#0d2240] hover:bg-[#1a3f6e] border border-blue-900/40 hover:border-[#4ea8de]/50 rounded px-2 py-1.5 transition-colors">
+                            {uploadingSlug === org.slug ? (
+                              <Loader2 size={12} className="animate-spin" />
+                            ) : (
+                              <Upload size={12} />
+                            )}
+                            {uploadingSlug === org.slug ? "Uploading…" : "Upload"}
+                            <input
+                              type="file"
+                              accept="image/jpeg,image/png,image/webp,image/svg+xml"
+                              className="hidden"
+                              disabled={uploadingSlug === org.slug}
+                              onChange={e => {
+                                const f = e.target.files?.[0];
+                                if (f) {
+                                  uploadLogo(org.slug, f);
+                                  e.target.value = "";
+                                }
+                              }}
+                            />
+                          </label>
+                        </div>
+                        <p className="text-[10px] text-blue-500 mt-1">Upload: PNG/JPG/SVG/WebP, max 2MB — replaces the URL and auto-saves.</p>
                       </div>
                       <div>
                         <label className={labelClass}>Brand color</label>
