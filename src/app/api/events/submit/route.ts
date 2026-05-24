@@ -13,18 +13,32 @@ interface SubmitBody {
   organization?: string;
   start_date?: string;
   end_date?: string | null;
+  registration_deadline?: string | null;
   timezone?: string;
   format?: "in_person" | "virtual" | "hybrid";
   location?: string | null;
   registration_url?: string | null;
   primary_sdg?: number | null;
   banner_image_url?: string | null;
+  uploaded_flyer_url?: string | null;
+  cost_type?: "free" | "paid" | "sliding_scale" | "donor_funded" | null;
+  cost_details?: string | null;
+  target_audience?: string[] | null;
+  co_organizers?: string | null;
+  speakers?: string | null; // textarea — serialized to text[] on insert
+  event_languages?: string[] | null;
   source?: Source;
   // Anonymous-only:
   submitter_email?: string;
   // Logged-in:
   submitted_by_user_id?: string;
 }
+
+const ALLOWED_COST = new Set(["free", "paid", "sliding_scale", "donor_funded"]);
+const ALLOWED_AUDIENCE = new Set([
+  "all", "researchers", "government", "civil_society",
+  "private_sector", "youth", "donors", "invite_only",
+]);
 
 function isEmail(s: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
@@ -122,6 +136,27 @@ export async function POST(req: NextRequest) {
     ? [body.primary_sdg]
     : [];
 
+  // ── Extended-field validation ─────────────────────────────────────
+  const costType =
+    body.cost_type && ALLOWED_COST.has(body.cost_type) ? body.cost_type : "free";
+  const audience = Array.isArray(body.target_audience)
+    ? body.target_audience.filter(a => typeof a === "string" && ALLOWED_AUDIENCE.has(a))
+    : null;
+  const languages = Array.isArray(body.event_languages)
+    ? body.event_languages
+        .filter(l => typeof l === "string" && l.trim().length > 0)
+        .map(l => l.trim())
+    : null;
+  // `speakers` is text[] in the DB; the submit form sends a textarea string.
+  // Split on newlines OR commas, trim each, drop empties.
+  const speakersArr = typeof body.speakers === "string" && body.speakers.trim()
+    ? body.speakers.split(/[\n,]/).map(s => s.trim()).filter(Boolean)
+    : null;
+  const regDeadline = body.registration_deadline ? new Date(body.registration_deadline) : null;
+  if (regDeadline && isNaN(regDeadline.getTime())) {
+    return NextResponse.json({ error: "registration_deadline is not a valid date" }, { status: 400 });
+  }
+
   // ── Insert ────────────────────────────────────────────────────────
   const insertRow: Record<string, unknown> = {
     title,
@@ -129,6 +164,7 @@ export async function POST(req: NextRequest) {
     organization,
     start_date: startParsed.toISOString(),
     end_date: endParsed ? endParsed.toISOString() : null,
+    registration_deadline: regDeadline ? regDeadline.toISOString() : null,
     timezone: (body.timezone ?? "UTC").trim() || "UTC",
     format,
     location: body.location?.trim() || null,
@@ -136,6 +172,13 @@ export async function POST(req: NextRequest) {
     sdg_goals: sdgGoals,
     banner_image_url: body.banner_image_url?.trim() || null,
     banner_fetched_at: body.banner_image_url ? new Date().toISOString() : null,
+    uploaded_flyer_url: body.uploaded_flyer_url?.trim() || null,
+    cost_type: costType,
+    cost_details: body.cost_details?.trim() || null,
+    target_audience: audience && audience.length > 0 ? audience : null,
+    co_organizers: body.co_organizers?.trim() || null,
+    speakers: speakersArr,
+    event_languages: languages && languages.length > 0 ? languages : ["en"],
     // Existing scraper-driven status — published if we're auto-approving, else pending.
     status: autoApprove ? "published" : "pending",
     // New user-driven submission moderation.

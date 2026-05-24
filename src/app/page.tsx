@@ -66,7 +66,7 @@ const fetchHeroImages = unstable_cache(
 
 type EventPreview = Pick<
   Database['public']['Tables']['events']['Row'],
-  'id' | 'title' | 'start_date' | 'end_date' | 'location' | 'organization' | 'sdg_goals' | 'is_featured' | 'format' | 'region' | 'banner_image_url' | 'banner_display_mode'
+  'id' | 'title' | 'start_date' | 'end_date' | 'location' | 'organization' | 'sdg_goals' | 'is_featured' | 'format' | 'region' | 'banner_image_url' | 'banner_display_mode' | 'cost_type'
 >;
 
 type HeroImageRow = {
@@ -90,7 +90,7 @@ export default async function Home() {
   const today = now.toISOString();
   const endOf2030 = '2030-12-31T23:59:59.999Z';
 
-  const COLS = "id, title, start_date, end_date, location, organization, sdg_goals, is_featured, format, region, banner_image_url, banner_display_mode";
+  const COLS = "id, title, start_date, end_date, location, organization, sdg_goals, is_featured, format, region, banner_image_url, banner_display_mode, cost_type";
 
   const [
     slideImages,

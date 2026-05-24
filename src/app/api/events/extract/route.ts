@@ -17,10 +17,17 @@ const EXTRACTION_PROMPT = `You are extracting event information for ForaHub, a g
   "organization": string (hosting org name),
   "start_date": string (ISO 8601 with timezone if possible),
   "end_date": string (ISO 8601 or null if same day),
+  "registration_deadline": string (ISO 8601) or null,
   "location": string (city, country) OR "Online",
   "is_online": boolean,
   "registration_url": string (where to register/learn more) or null,
   "primary_sdg": number (1-17, best fit) or null,
+  "cost_type": "free" | "paid" | "sliding_scale" | "donor_funded" | null,
+  "cost_details": string (e.g., "$50 USD", "Free for low-income countries") or null,
+  "target_audience": array of strings from this set or null: ["all", "researchers", "government", "civil_society", "private_sector", "youth", "donors", "invite_only"],
+  "co_organizers": string (comma-separated partner org names) or null,
+  "speakers": string (newline or comma separated featured speakers) or null,
+  "event_languages": array of ISO 639-1 codes (e.g., ["en", "fr"]) or null,
   "confidence": "high" | "medium" | "low"
 }
 If you can't find a field, set it to null. Don't fabricate. Set confidence based on how much was explicit in the source.`;
@@ -31,10 +38,17 @@ interface ExtractedFields {
   organization: string | null;
   start_date: string | null;
   end_date: string | null;
+  registration_deadline: string | null;
   location: string | null;
   is_online: boolean | null;
   registration_url: string | null;
   primary_sdg: number | null;
+  cost_type: "free" | "paid" | "sliding_scale" | "donor_funded" | null;
+  cost_details: string | null;
+  target_audience: string[] | null;
+  co_organizers: string | null;
+  speakers: string | null;
+  event_languages: string[] | null;
   confidence: "high" | "medium" | "low";
 }
 
@@ -45,6 +59,12 @@ function extractFirstText(message: Anthropic.Message): string {
   return "";
 }
 
+const ALLOWED_AUDIENCE = new Set([
+  "all", "researchers", "government", "civil_society",
+  "private_sector", "youth", "donors", "invite_only",
+]);
+const ALLOWED_COST_TYPES = new Set(["free", "paid", "sliding_scale", "donor_funded"]);
+
 function parseExtraction(raw: string): ExtractedFields | null {
   const trimmed = raw.trim();
   const start = trimmed.indexOf("{");
@@ -52,12 +72,21 @@ function parseExtraction(raw: string): ExtractedFields | null {
   if (start < 0 || end < 0 || end <= start) return null;
   try {
     const parsed = JSON.parse(trimmed.slice(start, end + 1)) as Partial<ExtractedFields>;
+    const audience = Array.isArray(parsed.target_audience)
+      ? (parsed.target_audience.filter(
+          (a): a is string => typeof a === "string" && ALLOWED_AUDIENCE.has(a)
+        ))
+      : null;
+    const langs = Array.isArray(parsed.event_languages)
+      ? parsed.event_languages.filter((l): l is string => typeof l === "string" && l.length > 0)
+      : null;
     return {
       title: typeof parsed.title === "string" ? parsed.title : null,
       description: typeof parsed.description === "string" ? parsed.description : null,
       organization: typeof parsed.organization === "string" ? parsed.organization : null,
       start_date: typeof parsed.start_date === "string" ? parsed.start_date : null,
       end_date: typeof parsed.end_date === "string" ? parsed.end_date : null,
+      registration_deadline: typeof parsed.registration_deadline === "string" ? parsed.registration_deadline : null,
       location: typeof parsed.location === "string" ? parsed.location : null,
       is_online: typeof parsed.is_online === "boolean" ? parsed.is_online : null,
       registration_url: typeof parsed.registration_url === "string" ? parsed.registration_url : null,
@@ -65,6 +94,15 @@ function parseExtraction(raw: string): ExtractedFields | null {
         typeof parsed.primary_sdg === "number" && parsed.primary_sdg >= 1 && parsed.primary_sdg <= 17
           ? parsed.primary_sdg
           : null,
+      cost_type:
+        typeof parsed.cost_type === "string" && ALLOWED_COST_TYPES.has(parsed.cost_type)
+          ? (parsed.cost_type as ExtractedFields["cost_type"])
+          : null,
+      cost_details: typeof parsed.cost_details === "string" ? parsed.cost_details : null,
+      target_audience: audience && audience.length > 0 ? audience : null,
+      co_organizers: typeof parsed.co_organizers === "string" ? parsed.co_organizers : null,
+      speakers: typeof parsed.speakers === "string" ? parsed.speakers : null,
+      event_languages: langs && langs.length > 0 ? langs : null,
       confidence:
         parsed.confidence === "high" || parsed.confidence === "low" ? parsed.confidence : "medium",
     };
@@ -234,40 +272,34 @@ export async function POST(req: NextRequest) {
           },
         });
         if (!res.ok) {
-          return NextResponse.json(
-            {
-              error: "fetch_blocked",
-              message: `Page returned HTTP ${res.status}`,
-              status_code: res.status,
-              allow_paste: true,
-            },
-            { status: 502 }
-          );
+          // Return HTTP 200 with a structured fetch_blocked payload so the
+          // client UI can show the paste-text fallback without treating this
+          // as an unexpected error.
+          return NextResponse.json({
+            error: "fetch_blocked",
+            message: `Page returned HTTP ${res.status}`,
+            status_code: res.status,
+            allow_paste: true,
+          });
         }
         const ct = (res.headers.get("content-type") ?? "").toLowerCase();
         if (!ct.includes("text/html") && !ct.includes("application/xhtml")) {
-          return NextResponse.json(
-            {
-              error: "fetch_blocked",
-              message: `URL returned non-HTML content (${ct || "unknown"})`,
-              status_code: 415,
-              allow_paste: true,
-            },
-            { status: 400 }
-          );
+          return NextResponse.json({
+            error: "fetch_blocked",
+            message: `URL returned non-HTML content (${ct || "unknown"})`,
+            status_code: 415,
+            allow_paste: true,
+          });
         }
         html = await res.text();
       } catch (err) {
         const isTimeout = err instanceof Error && err.name === "AbortError";
-        return NextResponse.json(
-          {
-            error: "fetch_blocked",
-            message: isTimeout ? "Page fetch timed out" : `Page fetch failed: ${err instanceof Error ? err.message : String(err)}`,
-            status_code: isTimeout ? 408 : 0,
-            allow_paste: true,
-          },
-          { status: 502 }
-        );
+        return NextResponse.json({
+          error: "fetch_blocked",
+          message: isTimeout ? "Page fetch timed out" : `Page fetch failed: ${err instanceof Error ? err.message : String(err)}`,
+          status_code: isTimeout ? 408 : 0,
+          allow_paste: true,
+        });
       } finally {
         clearTimeout(timeout);
       }

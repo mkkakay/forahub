@@ -14,18 +14,29 @@ import { parseApiResponse } from "@/lib/admin/fetchJson";
 
 type Tab = "flyer" | "url" | "manual";
 
+type CostType = "free" | "paid" | "sliding_scale" | "donor_funded";
+
 interface FormState {
   title: string;
   organization: string;
   description: string;
   start_date: string; // ISO local
   end_date: string;   // ISO local, optional
+  registration_deadline: string; // ISO local, optional
   timezone: string;
   format: "in_person" | "virtual" | "hybrid";
   location: string;
   registration_url: string;
   primary_sdg: number | null;
   banner_image_url: string;
+  uploaded_flyer_url: string;
+  cost_type: CostType;
+  cost_details: string;
+  target_audience: string[];
+  co_organizers: string;
+  speakers: string;
+  event_languages: string[];
+  language_other: string; // free-text "Other" language label
   submitter_email: string;
 }
 
@@ -35,11 +46,45 @@ interface AiFilled {
   description: boolean;
   start_date: boolean;
   end_date: boolean;
+  registration_deadline: boolean;
   location: boolean;
   registration_url: boolean;
   primary_sdg: boolean;
   banner_image_url: boolean;
+  cost_type: boolean;
+  cost_details: boolean;
+  target_audience: boolean;
+  co_organizers: boolean;
+  speakers: boolean;
+  event_languages: boolean;
 }
+
+const AUDIENCE_OPTIONS: { value: string; label: string }[] = [
+  { value: "all", label: "Open to all" },
+  { value: "researchers", label: "Researchers / Academics" },
+  { value: "government", label: "Government officials" },
+  { value: "civil_society", label: "Civil society / NGOs" },
+  { value: "private_sector", label: "Private sector" },
+  { value: "youth", label: "Youth (under 30)" },
+  { value: "donors", label: "Donors / Funders" },
+  { value: "invite_only", label: "Invitation only" },
+];
+
+const LANGUAGE_OPTIONS: { code: string; label: string }[] = [
+  { code: "en", label: "English" },
+  { code: "fr", label: "French" },
+  { code: "es", label: "Spanish" },
+  { code: "ar", label: "Arabic" },
+  { code: "pt", label: "Portuguese" },
+  { code: "zh", label: "Mandarin" },
+];
+
+const COST_OPTIONS: { value: CostType; label: string }[] = [
+  { value: "free", label: "Free" },
+  { value: "paid", label: "Paid" },
+  { value: "sliding_scale", label: "Sliding scale" },
+  { value: "donor_funded", label: "Donor-funded" },
+];
 
 interface ExtractedFields {
   title: string | null;
@@ -47,10 +92,17 @@ interface ExtractedFields {
   organization: string | null;
   start_date: string | null;
   end_date: string | null;
+  registration_deadline: string | null;
   location: string | null;
   is_online: boolean | null;
   registration_url: string | null;
   primary_sdg: number | null;
+  cost_type: CostType | null;
+  cost_details: string | null;
+  target_audience: string[] | null;
+  co_organizers: string | null;
+  speakers: string | null;
+  event_languages: string[] | null;
   confidence: "high" | "medium" | "low";
 }
 
@@ -84,12 +136,21 @@ function emptyForm(): FormState {
     description: "",
     start_date: "",
     end_date: "",
+    registration_deadline: "",
     timezone: tz || "UTC",
     format: "in_person",
     location: "",
     registration_url: "",
     primary_sdg: null,
     banner_image_url: "",
+    uploaded_flyer_url: "",
+    cost_type: "free",
+    cost_details: "",
+    target_audience: [],
+    co_organizers: "",
+    speakers: "",
+    event_languages: ["en"],
+    language_other: "",
     submitter_email: "",
   };
 }
@@ -97,8 +158,10 @@ function emptyForm(): FormState {
 function emptyAi(): AiFilled {
   return {
     title: false, organization: false, description: false, start_date: false,
-    end_date: false, location: false, registration_url: false, primary_sdg: false,
-    banner_image_url: false,
+    end_date: false, registration_deadline: false, location: false,
+    registration_url: false, primary_sdg: false, banner_image_url: false,
+    cost_type: false, cost_details: false, target_audience: false,
+    co_organizers: false, speakers: false, event_languages: false,
   };
 }
 
@@ -235,13 +298,48 @@ export default function SubmitPage() {
       const local = toLocalInput(extracted.end_date);
       if (local) { next.end_date = local; filled.end_date = true; }
     }
+    if (extracted.registration_deadline) {
+      const local = toLocalInput(extracted.registration_deadline);
+      if (local) { next.registration_deadline = local; filled.registration_deadline = true; }
+    }
     if (extracted.location) { next.location = extracted.location; filled.location = true; }
     if (extracted.registration_url) { next.registration_url = extracted.registration_url; filled.registration_url = true; }
     if (typeof extracted.primary_sdg === "number") { next.primary_sdg = extracted.primary_sdg; filled.primary_sdg = true; }
     if (extracted.is_online === true && next.format === "in_person") next.format = "virtual";
+    if (extracted.cost_type) { next.cost_type = extracted.cost_type; filled.cost_type = true; }
+    if (extracted.cost_details) { next.cost_details = extracted.cost_details; filled.cost_details = true; }
+    if (extracted.target_audience && extracted.target_audience.length > 0) {
+      next.target_audience = extracted.target_audience;
+      filled.target_audience = true;
+    }
+    if (extracted.co_organizers) { next.co_organizers = extracted.co_organizers; filled.co_organizers = true; }
+    if (extracted.speakers) { next.speakers = extracted.speakers; filled.speakers = true; }
+    if (extracted.event_languages && extracted.event_languages.length > 0) {
+      next.event_languages = extracted.event_languages;
+      filled.event_languages = true;
+    }
     if (ogImage && !next.banner_image_url) { next.banner_image_url = ogImage; filled.banner_image_url = true; }
     setForm(next);
     setAiFilled(filled);
+  }
+
+  /** Uploads any image file (flyer or explicit banner) to Supabase Storage via
+   *  the public /api/events/upload-asset endpoint. Returns the public URL.
+   *  PDF flyers are NOT uploaded as banners (banners must be photos/images). */
+  async function uploadAsset(file: File, purpose: "flyer" | "banner"): Promise<string | null> {
+    if (file.type === "application/pdf") return null;
+    if (file.size > 5 * 1024 * 1024) return null; // 5MB cap on upload-asset
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("purpose", purpose);
+      const res = await fetch("/api/events/upload-asset", { method: "POST", body: fd });
+      const parsed = await parseApiResponse<{ url: string }>(res);
+      if (!parsed.ok) return null;
+      return parsed.data.url;
+    } catch {
+      return null;
+    }
   }
 
   async function handleFlyerFile(file: File) {
@@ -252,17 +350,44 @@ export default function SubmitPage() {
     }
     setExtracting(true);
     try {
+      // Run extraction + asset upload in parallel — the upload reuses the same
+      // file so the flyer becomes the default banner without a second user step.
       const fd = new FormData();
       fd.append("file", file);
-      const res = await fetch("/api/events/extract", { method: "POST", body: fd });
-      const parsed = await parseApiResponse<{ data: ExtractedFields }>(res);
+      const [extractRes, bannerUrl] = await Promise.all([
+        fetch("/api/events/extract", { method: "POST", body: fd }),
+        uploadAsset(file, "flyer"),
+      ]);
+      const parsed = await parseApiResponse<{ data: ExtractedFields }>(extractRes);
       if (!parsed.ok) throw new Error(parsed.error);
       applyExtraction(parsed.data.data);
+
+      // If the upload succeeded AND the user hasn't set a banner yet, use the
+      // flyer as both the cached flyer reference and the default banner.
+      if (bannerUrl) {
+        setForm(f => ({
+          ...f,
+          uploaded_flyer_url: bannerUrl,
+          banner_image_url: f.banner_image_url || bannerUrl,
+        }));
+        setAiFilled(a => ({ ...a, banner_image_url: a.banner_image_url || !form.banner_image_url }));
+      }
     } catch (err) {
       setExtractError(err instanceof Error ? err.message : String(err));
     } finally {
       setExtracting(false);
     }
+  }
+
+  async function handleBannerFileUpload(file: File) {
+    setExtractError(null);
+    const url = await uploadAsset(file, "banner");
+    if (!url) {
+      setExtractError("Banner upload failed. Try a different file (max 5MB, JPG/PNG/WebP).");
+      return;
+    }
+    setForm(f => ({ ...f, banner_image_url: url }));
+    setAiFilled(a => ({ ...a, banner_image_url: false }));
   }
 
   /** Map a fetch_blocked status code to a friendly message. */
@@ -387,18 +512,32 @@ export default function SubmitPage() {
 
     setSubmitting(true);
     try {
+      // Include any free-text "Other" language as `other:<label>`.
+      const languages = [...form.event_languages];
+      if (form.language_other.trim() && !languages.includes(`other:${form.language_other.trim()}`)) {
+        languages.push(`other:${form.language_other.trim()}`);
+      }
+
       const payload = {
         title: form.title.trim(),
         organization: form.organization.trim(),
         description: form.description.trim(),
         start_date: new Date(form.start_date).toISOString(),
         end_date: form.end_date ? new Date(form.end_date).toISOString() : null,
+        registration_deadline: form.registration_deadline ? new Date(form.registration_deadline).toISOString() : null,
         timezone: form.timezone,
         format: form.format,
         location: form.location.trim() || null,
         registration_url: form.registration_url.trim() || null,
         primary_sdg: form.primary_sdg,
         banner_image_url: form.banner_image_url.trim() || null,
+        uploaded_flyer_url: form.uploaded_flyer_url.trim() || null,
+        cost_type: form.cost_type,
+        cost_details: form.cost_details.trim() || null,
+        target_audience: form.target_audience.length > 0 ? form.target_audience : null,
+        co_organizers: form.co_organizers.trim() || null,
+        speakers: form.speakers.trim() || null,
+        event_languages: languages.length > 0 ? languages : ["en"],
         source,
         submitted_by_user_id: userId ?? undefined,
         submitter_email: userId ? undefined : form.submitter_email.trim(),
@@ -856,14 +995,171 @@ export default function SubmitPage() {
             </div>
           </div>
 
+          {/* ── Banner ───────────────────────────────────────────── */}
           <div>
-            <label className={labelClass}>Banner image URL (optional) {aiFilled.banner_image_url && aiBadge}</label>
+            <label className={labelClass}>Banner image (optional) {aiFilled.banner_image_url && aiBadge}</label>
+            <div className="flex flex-col md:flex-row gap-2 items-start">
+              <input
+                type="url"
+                value={form.banner_image_url}
+                onChange={e => { setForm(f => ({ ...f, banner_image_url: e.target.value })); setAiFilled(a => ({ ...a, banner_image_url: false })); }}
+                placeholder="https://… (paste an image URL, or upload below)"
+                className={inputClass}
+              />
+              <label className="shrink-0 cursor-pointer inline-flex items-center gap-1.5 bg-[#0f2a4a] hover:bg-[#1a3f6e] text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors">
+                <Upload size={14} /> Upload banner
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={e => {
+                    const f = e.target.files?.[0];
+                    if (f) handleBannerFileUpload(f);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+            </div>
+            {form.banner_image_url && (
+              <div className="mt-2 rounded-xl border border-gray-200 overflow-hidden bg-white">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={form.banner_image_url} alt="Banner preview" className="w-full max-h-48 object-cover" />
+              </div>
+            )}
+            <p className="text-[11px] text-gray-400 mt-1">
+              {form.uploaded_flyer_url && form.banner_image_url === form.uploaded_flyer_url
+                ? "✨ Using your uploaded flyer as the banner. Paste a URL or upload a different image to override."
+                : "Leave blank and we'll auto-fetch a relevant Pexels image."}
+            </p>
+          </div>
+
+          {/* ── Cost ─────────────────────────────────────────────── */}
+          <div>
+            <label className={labelClass}>Cost {aiFilled.cost_type && aiBadge}</label>
+            <div className="flex flex-wrap gap-2">
+              {COST_OPTIONS.map(o => (
+                <label
+                  key={o.value}
+                  className={`cursor-pointer inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border text-sm font-medium transition-colors ${
+                    form.cost_type === o.value
+                      ? "bg-[#0f2a4a] text-white border-[#0f2a4a]"
+                      : "bg-white text-gray-700 border-gray-200 hover:border-[#0f2a4a]"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="cost_type"
+                    value={o.value}
+                    checked={form.cost_type === o.value}
+                    onChange={() => { setForm(f => ({ ...f, cost_type: o.value })); setAiFilled(a => ({ ...a, cost_type: false })); }}
+                    className="hidden"
+                  />
+                  {o.label}
+                </label>
+              ))}
+            </div>
+            {(form.cost_type === "paid" || form.cost_type === "sliding_scale") && (
+              <input
+                value={form.cost_details}
+                onChange={e => { setForm(f => ({ ...f, cost_details: e.target.value })); setAiFilled(a => ({ ...a, cost_details: false })); }}
+                placeholder="e.g. $50 USD, free for low-income countries"
+                className={`${inputClass} mt-2`}
+              />
+            )}
+          </div>
+
+          {/* ── Target audience ──────────────────────────────────── */}
+          <div>
+            <label className={labelClass}>Target audience {aiFilled.target_audience && aiBadge}</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+              {AUDIENCE_OPTIONS.map(o => (
+                <label key={o.value} className="flex items-center gap-2 text-sm text-gray-700 px-2 py-1 rounded hover:bg-gray-50">
+                  <input
+                    type="checkbox"
+                    checked={form.target_audience.includes(o.value)}
+                    onChange={e => {
+                      setForm(f => ({
+                        ...f,
+                        target_audience: e.target.checked
+                          ? Array.from(new Set([...f.target_audience, o.value]))
+                          : f.target_audience.filter(a => a !== o.value),
+                      }));
+                      setAiFilled(a => ({ ...a, target_audience: false }));
+                    }}
+                    className="accent-[#4ea8de]"
+                  />
+                  {o.label}
+                </label>
+              ))}
+            </div>
+            <p className="text-[11px] text-gray-400 mt-1">Leave all unchecked = open to everyone (default).</p>
+          </div>
+
+          {/* ── Registration deadline ────────────────────────────── */}
+          <div>
+            <label className={labelClass}>Registration deadline (optional) {aiFilled.registration_deadline && aiBadge}</label>
             <input
-              type="url"
-              value={form.banner_image_url}
-              onChange={e => { setForm(f => ({ ...f, banner_image_url: e.target.value })); setAiFilled(a => ({ ...a, banner_image_url: false })); }}
-              placeholder="https://images.unsplash.com/… (we'll auto-fetch a Pexels banner if you leave this blank)"
+              type="datetime-local"
+              value={form.registration_deadline}
+              onChange={e => { setForm(f => ({ ...f, registration_deadline: e.target.value })); setAiFilled(a => ({ ...a, registration_deadline: false })); }}
               className={inputClass}
+            />
+          </div>
+
+          {/* ── Co-organizers / partners ─────────────────────────── */}
+          <div>
+            <label className={labelClass}>Co-organizers / partners (optional) {aiFilled.co_organizers && aiBadge}</label>
+            <input
+              value={form.co_organizers}
+              onChange={e => { setForm(f => ({ ...f, co_organizers: e.target.value })); setAiFilled(a => ({ ...a, co_organizers: false })); }}
+              placeholder="e.g. UNICEF, Gates Foundation, Wellcome Trust"
+              className={inputClass}
+            />
+            <p className="text-[11px] text-gray-400 mt-1">Separate multiple organizations with commas.</p>
+          </div>
+
+          {/* ── Speakers / panelists ─────────────────────────────── */}
+          <div>
+            <label className={labelClass}>Speakers / panelists (optional) {aiFilled.speakers && aiBadge}</label>
+            <textarea
+              value={form.speakers}
+              onChange={e => { setForm(f => ({ ...f, speakers: e.target.value })); setAiFilled(a => ({ ...a, speakers: false })); }}
+              placeholder={"Dr. Jane Smith, WHO\nDr. John Doe, UNICEF\n…"}
+              rows={3}
+              className={inputClass}
+            />
+            <p className="text-[11px] text-gray-400 mt-1">One per line or comma-separated.</p>
+          </div>
+
+          {/* ── Event languages ──────────────────────────────────── */}
+          <div>
+            <label className={labelClass}>Event language(s) {aiFilled.event_languages && aiBadge}</label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+              {LANGUAGE_OPTIONS.map(o => (
+                <label key={o.code} className="flex items-center gap-2 text-sm text-gray-700 px-2 py-1 rounded hover:bg-gray-50">
+                  <input
+                    type="checkbox"
+                    checked={form.event_languages.includes(o.code)}
+                    onChange={e => {
+                      setForm(f => ({
+                        ...f,
+                        event_languages: e.target.checked
+                          ? Array.from(new Set([...f.event_languages, o.code]))
+                          : f.event_languages.filter(l => l !== o.code),
+                      }));
+                      setAiFilled(a => ({ ...a, event_languages: false }));
+                    }}
+                    className="accent-[#4ea8de]"
+                  />
+                  {o.label}
+                </label>
+              ))}
+            </div>
+            <input
+              value={form.language_other}
+              onChange={e => setForm(f => ({ ...f, language_other: e.target.value }))}
+              placeholder="Other language (e.g. Swahili)"
+              className={`${inputClass} mt-2`}
             />
           </div>
 

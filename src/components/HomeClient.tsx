@@ -58,6 +58,7 @@ export interface EventPreview {
   region: string | null;
   banner_image_url?: string | null;
   banner_display_mode?: "contain" | "cover" | null;
+  cost_type?: "free" | "paid" | "sliding_scale" | "donor_funded" | null;
 }
 
 function formatDate(d: string) {
@@ -340,11 +341,21 @@ export function EventCard({ event }: { event: EventPreview }) {
 
         {/* Body */}
         <div className="p-5 flex flex-col gap-3 flex-1">
-          {formatLabel && (
-            <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full self-start ${formatColor}`}>
-              {formatLabel}
-            </span>
-          )}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {formatLabel && (
+              <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${formatColor}`}>
+                {formatLabel}
+              </span>
+            )}
+            {event.cost_type && event.cost_type !== "free" && (
+              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 inline-flex items-center gap-0.5">
+                $
+                <span>
+                  {event.cost_type === "paid" ? "Paid" : event.cost_type === "sliding_scale" ? "Sliding scale" : "Donor-funded"}
+                </span>
+              </span>
+            )}
+          </div>
           <h3 className="text-[#0f2a4a] dark:text-white font-semibold text-base leading-snug group-hover:text-[#4ea8de] transition-colors line-clamp-2">
             {event.title}
           </h3>

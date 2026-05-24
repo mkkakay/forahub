@@ -44,8 +44,13 @@ export interface EventRow {
   series_name: string | null
   sdg_inferred: boolean
   region: string | null
-  cost_type: 'free' | 'paid' | null
+  cost_type: 'free' | 'paid' | 'sliding_scale' | 'donor_funded' | null
   cost_amount: string | null
+  cost_details: string | null
+  target_audience: string[] | null
+  co_organizers: string | null
+  event_languages: string[] | null
+  uploaded_flyer_url: string | null
   audience_level: AudienceLevel | null
   is_public: boolean
   expected_attendance: string | null
