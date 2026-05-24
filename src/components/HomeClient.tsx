@@ -42,14 +42,6 @@ const SDG_LABELS: Record<number, string> = {
 // Region tiles are admin-managed via the regions DB table; the homepage
 // receives the active list as a prop from page.tsx (see HomeRegion below).
 
-const ACTIVITY_FEED = [
-  "A researcher from Kenya just saved World Health Summit 2027",
-  "A policy officer from Nigeria bookmarked WHA 79th Session",
-  "A programme manager from Bangladesh set an alert for SDG 3 events",
-  "A health economist from South Africa found 12 events in Geneva",
-  "A student from India discovered travel grants for COP31",
-];
-
 // Provides cached Brandfetch logo URLs to EventCard. page.tsx populates this server-side.
 const OrgLogosContext = createContext<Record<string, string>>({});
 
@@ -458,25 +450,7 @@ export default function HomeClient({
   regions?: HomeRegion[];
 }) {
   const { lang } = useLanguage();
-  const [activityIdx, setActivityIdx] = useState(0);
-  const [activityVisible, setActivityVisible] = useState(true);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
-
   const [sdgCounts, setSdgCounts] = useState<Record<number, number>>({});
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      setActivityVisible(false);
-      timeoutRef.current = setTimeout(() => {
-        setActivityIdx(i => (i + 1) % ACTIVITY_FEED.length);
-        setActivityVisible(true);
-      }, 400);
-    }, 4000);
-    return () => {
-      clearInterval(id);
-      clearTimeout(timeoutRef.current);
-    };
-  }, []);
 
   useEffect(() => {
     async function fetchSdgCounts() {
@@ -657,51 +631,6 @@ export default function HomeClient({
           </div>
         </div>
       </section>
-
-      {/* Submit CTA */}
-      <section
-        className="relative py-4 px-4 overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #0f2a4a 0%, #1a3f6e 50%, #0f2a4a 100%)" }}
-      >
-        <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-          {([1, 3, 5, 7, 13, 16] as const).map((sdg, i) => (
-            <div
-              key={sdg}
-              className="absolute rounded-full opacity-10"
-              style={{
-                backgroundColor: SDG_COLORS[sdg],
-                width: 80 + i * 24,
-                height: 80 + i * 24,
-                top: `${8 + i * 14}%`,
-                left: `${3 + i * 16}%`,
-              }}
-            />
-          ))}
-        </div>
-        <div className="max-w-3xl mx-auto text-center relative">
-          <h2 className="text-3xl font-bold text-white mb-3 tracking-tight">{t(lang, "home.submit.cta")}</h2>
-          <p className="text-blue-200 text-base mb-2">{t(lang, "home.submit.sub")}</p>
-          <p className="text-blue-300/70 text-sm mb-5">Join 1,000+ organizations already listed on ForaHub</p>
-          <Link
-            href="/events/create"
-            className="inline-flex items-center gap-2 bg-[#4ea8de] hover:bg-[#3a95cc] text-white font-bold px-8 py-4 rounded-2xl transition-all duration-200 shadow-lg hover:shadow-xl text-base"
-          >
-            {t(lang, "home.submit.btn")} <ArrowRight size={18} />
-          </Link>
-        </div>
-      </section>
-
-      {/* Activity feed */}
-      <div className="bg-gray-50 dark:bg-[#0f172a] border-t border-gray-200 dark:border-[#334155] py-3 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <p
-            className="text-sm text-gray-500 dark:text-gray-400 truncate transition-opacity duration-300"
-            style={{ opacity: activityVisible ? 1 : 0 }}
-          >
-            🌍 {ACTIVITY_FEED[activityIdx]}
-          </p>
-        </div>
-      </div>
 
     </main>
     </OrgLogosContext.Provider>
