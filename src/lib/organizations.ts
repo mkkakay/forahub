@@ -16,6 +16,7 @@ export interface OrgConfig {
   logo: string;
   description: string;
   matchPatterns: string[];
+  domain: string;
 }
 
 const bf = (domain: string) =>
@@ -29,6 +30,7 @@ const RAW: Omit<OrgConfig, "slug">[] = [
     logo: "/images/logos/who.svg",
     description: "Specialized UN agency leading global public health, coordinating health emergencies, and setting international health standards.",
     matchPatterns: ["WHO", "World Health Organization"],
+    domain: "who.int",
   },
   {
     name: "Bill and Melinda Gates Foundation",
@@ -37,6 +39,7 @@ const RAW: Omit<OrgConfig, "slug">[] = [
     logo: bf("gatesfoundation.org"),
     description: "One of the world's largest private philanthropies, funding global health, development, and education programs.",
     matchPatterns: ["Gates Foundation", "Bill & Melinda Gates", "Bill and Melinda Gates"],
+    domain: "gatesfoundation.org",
   },
   {
     name: "World Bank Group",
@@ -45,6 +48,7 @@ const RAW: Omit<OrgConfig, "slug">[] = [
     logo: "/images/logos/worldbank.svg",
     description: "International financial institution providing loans and grants to developing economies to reduce poverty.",
     matchPatterns: ["World Bank"],
+    domain: "worldbank.org",
   },
   {
     name: "UNICEF",
@@ -53,6 +57,7 @@ const RAW: Omit<OrgConfig, "slug">[] = [
     logo: "/images/logos/unicef.svg",
     description: "UN agency working in over 190 countries to protect the rights and improve the wellbeing of every child.",
     matchPatterns: ["UNICEF"],
+    domain: "unicef.org",
   },
   {
     name: "African Development Bank",
@@ -61,6 +66,7 @@ const RAW: Omit<OrgConfig, "slug">[] = [
     logo: bf("afdb.org"),
     description: "Regional multilateral development finance institution serving 54 African countries.",
     matchPatterns: ["African Development Bank", "AfDB"],
+    domain: "afdb.org",
   },
   {
     name: "World Economic Forum",
@@ -69,6 +75,7 @@ const RAW: Omit<OrgConfig, "slug">[] = [
     logo: bf("weforum.org"),
     description: "International organization for public-private cooperation, best known for its annual Davos meeting.",
     matchPatterns: ["World Economic Forum", "WEF"],
+    domain: "weforum.org",
   },
   {
     name: "Gavi the Vaccine Alliance",
@@ -77,6 +84,7 @@ const RAW: Omit<OrgConfig, "slug">[] = [
     logo: bf("gavi.org"),
     description: "Global health partnership increasing access to immunisation in low-income countries.",
     matchPatterns: ["Gavi"],
+    domain: "gavi.org",
   },
   {
     name: "The Global Fund",
@@ -85,6 +93,7 @@ const RAW: Omit<OrgConfig, "slug">[] = [
     logo: "/images/logos/globalfund.svg",
     description: "Partnership designed to accelerate the end of AIDS, tuberculosis and malaria as epidemics.",
     matchPatterns: ["Global Fund"],
+    domain: "theglobalfund.org",
   },
   {
     name: "Medecins Sans Frontieres",
@@ -93,6 +102,7 @@ const RAW: Omit<OrgConfig, "slug">[] = [
     logo: "/images/logos/msf.svg",
     description: "International humanitarian medical NGO providing emergency aid in conflict zones and during epidemics.",
     matchPatterns: ["MSF", "Medecins Sans Frontieres", "Médecins Sans Frontières", "Doctors Without Borders"],
+    domain: "msf.org",
   },
   {
     name: "African Union",
@@ -101,6 +111,7 @@ const RAW: Omit<OrgConfig, "slug">[] = [
     logo: "/images/logos/au.svg",
     description: "Continental union of 55 African states promoting unity, peace, and integrated development.",
     matchPatterns: ["African Union"],
+    domain: "au.int",
   },
   {
     name: "UN Development Programme",
@@ -109,6 +120,7 @@ const RAW: Omit<OrgConfig, "slug">[] = [
     logo: "/images/logos/undp.svg",
     description: "UN's global development network working in 170 countries to eradicate poverty and reduce inequalities.",
     matchPatterns: ["UNDP", "UN Development Programme", "United Nations Development Programme"],
+    domain: "undp.org",
   },
   {
     name: "Wellcome Trust",
@@ -117,6 +129,7 @@ const RAW: Omit<OrgConfig, "slug">[] = [
     logo: bf("wellcome.org"),
     description: "Independent biomedical research charity funding science to solve urgent health challenges.",
     matchPatterns: ["Wellcome"],
+    domain: "wellcome.org",
   },
   {
     name: "Save the Children",
@@ -125,6 +138,7 @@ const RAW: Omit<OrgConfig, "slug">[] = [
     logo: "/images/logos/savechildren.svg",
     description: "International NGO promoting children's rights, education, and humanitarian response in nearly 120 countries.",
     matchPatterns: ["Save the Children"],
+    domain: "savethechildren.org",
   },
   {
     name: "Chatham House",
@@ -133,6 +147,7 @@ const RAW: Omit<OrgConfig, "slug">[] = [
     logo: bf("chathamhouse.org"),
     description: "Royal Institute of International Affairs — independent policy institute analyzing global issues.",
     matchPatterns: ["Chatham House"],
+    domain: "chathamhouse.org",
   },
   {
     name: "Asian Development Bank",
@@ -141,6 +156,7 @@ const RAW: Omit<OrgConfig, "slug">[] = [
     logo: bf("adb.org"),
     description: "Regional development bank supporting sustainable, inclusive growth in Asia and the Pacific.",
     matchPatterns: ["Asian Development Bank", "ADB"],
+    domain: "adb.org",
   },
   {
     name: "Association of Southeast Asian Nations",
@@ -149,6 +165,7 @@ const RAW: Omit<OrgConfig, "slug">[] = [
     logo: "/images/logos/asean.svg",
     description: "Regional intergovernmental organization of 10 Southeast Asian states promoting cooperation and integration.",
     matchPatterns: ["ASEAN"],
+    domain: "asean.org",
   },
   {
     name: "Oxfam International",
@@ -157,6 +174,7 @@ const RAW: Omit<OrgConfig, "slug">[] = [
     logo: "/images/logos/oxfam.svg",
     description: "Confederation of charitable organizations focused on the alleviation of global poverty.",
     matchPatterns: ["Oxfam"],
+    domain: "oxfam.org",
   },
   {
     name: "Brookings Institution",
@@ -165,6 +183,7 @@ const RAW: Omit<OrgConfig, "slug">[] = [
     logo: bf("brookings.edu"),
     description: "American research group conducting research and education in social sciences and public policy.",
     matchPatterns: ["Brookings"],
+    domain: "brookings.edu",
   },
   {
     name: "World Food Programme",
@@ -173,6 +192,7 @@ const RAW: Omit<OrgConfig, "slug">[] = [
     logo: "/images/logos/wfp.svg",
     description: "World's largest humanitarian organization addressing hunger and promoting food security.",
     matchPatterns: ["WFP", "World Food Programme"],
+    domain: "wfp.org",
   },
   {
     name: "UN Climate Change Secretariat",
@@ -181,6 +201,7 @@ const RAW: Omit<OrgConfig, "slug">[] = [
     logo: "/images/logos/unfccc.svg",
     description: "UN body supporting the global climate response, including the Paris Agreement and the annual COP.",
     matchPatterns: ["UNFCCC", "UN Climate Change", "UN Framework Convention on Climate Change"],
+    domain: "unfccc.int",
   },
 ];
 

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { Calendar, Flag, MapPin, Flame, ArrowRight, ChevronRight, Globe, X } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { useLanguage } from "@/context/LanguageContext";
@@ -24,31 +24,6 @@ const SDG_LABELS: Record<number, string> = {
 };
 
 
-
-const ORG_DOMAINS: Record<string, string> = {
-  "WHO": "who.int", "World Health Organization": "who.int",
-  "UNICEF": "unicef.org",
-  "World Bank": "worldbank.org",
-  "UN Women": "unwomen.org",
-  "WFP": "wfp.org", "World Food Programme": "wfp.org",
-  "UNAIDS": "unaids.org",
-  "UNEP": "unep.org",
-  "UNDP": "undp.org",
-  "UNESCO": "unesco.org",
-  "UNHCR": "unhcr.org",
-  "FAO": "fao.org",
-  "ILO": "ilo.org",
-  "UNFCCC": "unfccc.int",
-  "UN DESA": "un.org",
-  "UNDESA": "un.org",
-  "African Union": "au.int",
-  "ECOWAS": "ecowas.int",
-  "ASEAN": "asean.org",
-  "Gates Foundation": "gatesfoundation.org",
-  "Oxfam": "oxfam.org",
-  "CARE": "care.org",
-  "World Vision": "worldvision.org",
-};
 
 const REGIONS = [
   { name: "Africa", query: "Africa", photo: "https://images.unsplash.com/photo-1489392191049-fc10c97e64b6?w=600&q=80", cities: ["Nairobi", "Addis Ababa", "Accra"], events: 180 },
@@ -93,14 +68,8 @@ const ACTIVITY_FEED = [
   "A student from India discovered travel grants for COP31",
 ];
 
-function getOrgDomain(org: string | null): string | null {
-  if (!org) return null;
-  if (ORG_DOMAINS[org]) return ORG_DOMAINS[org];
-  for (const [key, domain] of Object.entries(ORG_DOMAINS)) {
-    if (org.toLowerCase().includes(key.toLowerCase())) return domain;
-  }
-  return null;
-}
+// Provides cached Brandfetch logo URLs to EventCard. page.tsx populates this server-side.
+const OrgLogosContext = createContext<Record<string, string>>({});
 
 function getEventCoverImage(org: string | null, sdgGoals: number[]): string {
   const o = (org ?? "").toLowerCase();
@@ -185,32 +154,41 @@ function CountUp({ target, suffix = "" }: { target: number; suffix?: string }) {
   return <span ref={ref}>{count.toLocaleString()}{suffix}</span>;
 }
 
-function OrgFavicon({ initial, color }: { domain: string; initial: string; color: string }) {
+function OrgLogo({
+  logoUrl,
+  initial,
+  color,
+  alt,
+}: {
+  logoUrl: string | null;
+  initial: string;
+  color: string;
+  alt: string;
+}) {
   const [failed, setFailed] = useState(false);
-  const logoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(initial)}&background=${color.replace("#", "")}&color=fff&size=128&bold=true`;
-  if (failed) {
+
+  if (logoUrl && !failed) {
     return (
-      <span
-        className="w-6 h-6 rounded-md flex items-center justify-center text-white text-xs font-bold shrink-0"
-        style={{ backgroundColor: color }}
-      >
-        {initial}
-      </span>
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={logoUrl}
+        alt={alt}
+        className="w-10 h-10 rounded-md bg-white border border-gray-200 object-contain p-1 shrink-0"
+        loading="lazy"
+        onError={() => setFailed(true)}
+      />
     );
   }
+
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={logoUrl}
-      alt=""
-      width={24}
-      height={24}
-      className="rounded-md shrink-0"
-      onError={() => setFailed(true)}
-    />
+    <span
+      className="w-6 h-6 rounded-md flex items-center justify-center text-white text-xs font-bold shrink-0"
+      style={{ backgroundColor: color }}
+    >
+      {initial}
+    </span>
   );
 }
-
 
 function FeaturedOrgCard({ org }: {
   org: { name: string; full: string; color: string; logo: string; events: number };
@@ -305,7 +283,8 @@ export function EventCard({ event }: { event: EventPreview }) {
   const sdg = event.sdg_goals?.[0];
   const color = sdg ? SDG_COLORS[sdg] : "#3b82f6";
   const orgInitial = event.organization?.trim()[0]?.toUpperCase() ?? "E";
-  const domain = getOrgDomain(event.organization);
+  const orgLogos = useContext(OrgLogosContext);
+  const logoUrl = event.organization ? orgLogos[event.organization] ?? null : null;
   const formatLabel =
     event.format === "in_person" ? "In-Person" :
     event.format === "virtual" ? "Virtual" :
@@ -370,18 +349,14 @@ export function EventCard({ event }: { event: EventPreview }) {
             </>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-black/10 pointer-events-none" />
-          {/* Org favicon or initial + name */}
+          {/* Org logo (Brandfetch) or initial fallback */}
           <div className="absolute bottom-2 left-2 flex items-center gap-1.5">
-            {domain ? (
-              <OrgFavicon domain={domain} initial={orgInitial} color={color} />
-            ) : (
-              <span
-                className="w-6 h-6 rounded-md flex items-center justify-center text-white text-xs font-bold shrink-0"
-                style={{ backgroundColor: color }}
-              >
-                {orgInitial}
-              </span>
-            )}
+            <OrgLogo
+              logoUrl={logoUrl}
+              initial={orgInitial}
+              color={color}
+              alt={event.organization ?? ""}
+            />
             {event.organization && (
               <span className="text-white text-xs font-semibold truncate max-w-[130px] drop-shadow-sm">
                 {event.organization}
@@ -496,11 +471,13 @@ export default function HomeClient({
   thisWeekEvents,
   pastEvents,
   totalCount,
+  orgLogos = {},
 }: {
   events: EventPreview[];
   thisWeekEvents: EventPreview[];
   pastEvents: EventPreview[];
   totalCount: number;
+  orgLogos?: Record<string, string>;
 }) {
   const { lang } = useLanguage();
   const [activityIdx, setActivityIdx] = useState(0);
@@ -561,6 +538,7 @@ export default function HomeClient({
   }
 
   return (
+    <OrgLogosContext.Provider value={orgLogos}>
     <main className="flex-1">
       {/* This Week */}
       {thisWeekEvents.length > 0 && (
@@ -893,5 +871,6 @@ export default function HomeClient({
         </div>
       )}
     </main>
+    </OrgLogosContext.Provider>
   );
 }

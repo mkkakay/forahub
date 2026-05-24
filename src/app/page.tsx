@@ -9,6 +9,7 @@ import TrustStrip from "@/components/TrustStrip";
 import LiveActivityTicker from "@/components/LiveActivityTicker";
 import SubmitEventBanner from "@/components/SubmitEventBanner";
 import HomeClient from "@/components/HomeClient";
+import { batchGetLogos } from "@/lib/organizations/getLogoUrl";
 
 // Search queries aligned to each slide's content — specific enough for accurate Pexels results
 const SLIDE_QUERIES = [
@@ -125,6 +126,12 @@ export default async function Home() {
   const thisWeekEvents = (thisWeekData as EventPreview[] | null) ?? [];
   const heroImages = ((heroImagesData ?? []) as HeroImageRow[]);
 
+  const orgLogos = await batchGetLogos(
+    [...events, ...thisWeekEvents]
+      .map(e => e.organization)
+      .filter((o): o is string => typeof o === "string" && o.trim().length > 0)
+  ).catch(() => ({}));
+
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -136,6 +143,7 @@ export default async function Home() {
         thisWeekEvents={thisWeekEvents}
         pastEvents={[]}
         totalCount={totalCount ?? 0}
+        orgLogos={orgLogos}
       />
       <SubmitEventBanner />
     </div>
