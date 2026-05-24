@@ -127,6 +127,11 @@ export default function SubmitPage() {
   const [urlInput, setUrlInput] = useState("");
   const [dragOver, setDragOver] = useState(false);
 
+  // URL-fetch fallback: when a page blocks our request, we let the user paste
+  // the content directly into a textarea that hits the same endpoint with `text`.
+  const [pasteFallback, setPasteFallback] = useState<{ message: string; status: number } | null>(null);
+  const [pasteText, setPasteText] = useState("");
+
   // Draft autosave
   const [showResumeBanner, setShowResumeBanner] = useState(false);
   const skipDraftRestoreRef = useRef(false);
@@ -260,10 +265,66 @@ export default function SubmitPage() {
     }
   }
 
+  /** Map a fetch_blocked status code to a friendly message. */
+  function friendlyFetchError(status: number, raw: string): string {
+    if (status === 403 || status === 401) return "This page blocks automated access. Try pasting the event details directly below.";
+    if (status === 404) return "Page not found. Check the URL or paste details directly below.";
+    if (status === 408) return "Page took too long to load. Try pasting details directly below.";
+    return raw || "Couldn't read the page. Try pasting details directly below.";
+  }
+
   async function handleUrlExtract() {
     const u = urlInput.trim();
     if (!u) {
       setExtractError("Paste a URL first");
+      return;
+    }
+    setExtractError(null);
+    setPasteFallback(null);
+    setExtracting(true);
+    try {
+      const res = await fetch("/api/events/extract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ source_url: u }),
+      });
+      // Read raw body so we can distinguish fetch_blocked from other errors
+      // — and from Vercel platform-level errors that may not be JSON at all.
+      const rawText = await res.text();
+      let body: {
+        data?: ExtractedFields;
+        og_image?: string | null;
+        error?: string;
+        message?: string;
+        status_code?: number;
+        allow_paste?: boolean;
+      } | null = null;
+      try { body = JSON.parse(rawText); } catch { /* non-JSON: handled below */ }
+
+      if (res.ok && body?.data) {
+        applyExtraction(body.data, body.og_image ?? null);
+        return;
+      }
+      if (!res.ok && body?.error === "fetch_blocked") {
+        const status = body.status_code ?? res.status;
+        setPasteFallback({
+          message: friendlyFetchError(status, body.message ?? ""),
+          status,
+        });
+        return;
+      }
+      throw new Error(body?.error ?? body?.message ?? (rawText.slice(0, 200) || `HTTP ${res.status}`));
+    } catch (err) {
+      setExtractError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setExtracting(false);
+    }
+  }
+
+  async function handleTextExtract() {
+    const t = pasteText.trim();
+    if (!t) {
+      setExtractError("Paste the event details first");
       return;
     }
     setExtractError(null);
@@ -272,11 +333,18 @@ export default function SubmitPage() {
       const res = await fetch("/api/events/extract", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ source_url: u }),
+        body: JSON.stringify({ text: t }),
       });
-      const parsed = await parseApiResponse<{ data: ExtractedFields; og_image: string | null }>(res);
+      const parsed = await parseApiResponse<{ data: ExtractedFields }>(res);
       if (!parsed.ok) throw new Error(parsed.error);
-      applyExtraction(parsed.data.data, parsed.data.og_image);
+      applyExtraction(parsed.data.data);
+      // Pre-fill the registration URL with what the user originally pasted —
+      // so they don't lose the link they were trying to extract from.
+      if (urlInput.trim()) {
+        setForm(f => ({ ...f, registration_url: f.registration_url || urlInput.trim() }));
+      }
+      setPasteFallback(null);
+      setPasteText("");
     } catch (err) {
       setExtractError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -573,6 +641,45 @@ export default function SubmitPage() {
                     {extracting ? "Reading…" : "Extract"}
                   </button>
                 </div>
+
+                {pasteFallback && (
+                  <div className="mt-2 border border-amber-200 bg-amber-50 rounded-xl p-4 space-y-3">
+                    <div className="flex items-start gap-2 text-sm text-amber-900">
+                      <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                      <div className="flex-1">
+                        <p className="font-semibold">Couldn&apos;t access the page</p>
+                        <p className="text-amber-800 mt-0.5">{pasteFallback.message}</p>
+                      </div>
+                      <button
+                        onClick={() => setPasteFallback(null)}
+                        className="text-amber-700 hover:text-amber-900 shrink-0"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-amber-900 mb-1">
+                        Paste the event details here — copy whatever description, dates, location are on that page
+                      </label>
+                      <textarea
+                        value={pasteText}
+                        onChange={e => setPasteText(e.target.value)}
+                        rows={8}
+                        placeholder="Title, hosting org, date and time, location, registration link, short description…"
+                        className="w-full bg-white border border-amber-200 rounded-xl px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400/60 focus:border-amber-400 transition-colors"
+                      />
+                      <p className="text-[11px] text-amber-700 mt-1">{pasteText.length}/8000 characters</p>
+                    </div>
+                    <button
+                      onClick={handleTextExtract}
+                      disabled={extracting || !pasteText.trim()}
+                      className="inline-flex items-center gap-1.5 bg-amber-600 hover:bg-amber-700 disabled:bg-gray-300 text-white font-semibold px-4 py-2 rounded-xl text-sm transition-colors"
+                    >
+                      {extracting ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                      {extracting ? "Reading…" : "Extract from text"}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 

@@ -176,10 +176,35 @@ export async function POST(req: NextRequest) {
     }
 
     if (contentType.includes("application/json")) {
+      const body = (await req.json()) as { source_url?: string; text?: string };
+
+      // ── Text path: caller provides raw event text directly ───────
+      if (typeof body.text === "string" && body.text.trim().length > 0) {
+        const text = body.text.trim().slice(0, 8000); // cap input
+        const message = await client.messages.create({
+          model: MODEL,
+          max_tokens: 800,
+          messages: [
+            {
+              role: "user",
+              content: `${EXTRACTION_PROMPT}\n\n---\nPasted event details:\n${text}`,
+            },
+          ],
+        });
+        const extracted = parseExtraction(extractFirstText(message));
+        if (!extracted) {
+          return NextResponse.json({ error: "Model returned unparseable output" }, { status: 502 });
+        }
+        return NextResponse.json({
+          data: extracted,
+          source_type: "text",
+          usage: { input_tokens: message.usage.input_tokens, output_tokens: message.usage.output_tokens },
+        });
+      }
+
       // ── URL path ──────────────────────────────────────────────────
-      const body = (await req.json()) as { source_url?: string };
       const sourceUrl = (body.source_url ?? "").trim();
-      if (!sourceUrl) return NextResponse.json({ error: "source_url required" }, { status: 400 });
+      if (!sourceUrl) return NextResponse.json({ error: "source_url or text required" }, { status: 400 });
 
       let parsedUrl: URL;
       try {
@@ -200,21 +225,47 @@ export async function POST(req: NextRequest) {
           signal: controller.signal,
           redirect: "follow",
           headers: {
-            "User-Agent": "Mozilla/5.0 ForaHubBot/1.0 (+event-extract)",
-            Accept: "text/html,*/*;q=0.5",
+            // Realistic desktop Chrome UA — many institutional sites (afdb.org,
+            // un.org, who.int, university calendars) hard-block the Node default UA.
+            "User-Agent":
+              "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
           },
         });
         if (!res.ok) {
-          return NextResponse.json({ error: `Page returned HTTP ${res.status}` }, { status: 502 });
+          return NextResponse.json(
+            {
+              error: "fetch_blocked",
+              message: `Page returned HTTP ${res.status}`,
+              status_code: res.status,
+              allow_paste: true,
+            },
+            { status: 502 }
+          );
         }
         const ct = (res.headers.get("content-type") ?? "").toLowerCase();
         if (!ct.includes("text/html") && !ct.includes("application/xhtml")) {
-          return NextResponse.json({ error: `URL returned non-HTML content (${ct || "unknown"})` }, { status: 400 });
+          return NextResponse.json(
+            {
+              error: "fetch_blocked",
+              message: `URL returned non-HTML content (${ct || "unknown"})`,
+              status_code: 415,
+              allow_paste: true,
+            },
+            { status: 400 }
+          );
         }
         html = await res.text();
       } catch (err) {
+        const isTimeout = err instanceof Error && err.name === "AbortError";
         return NextResponse.json(
-          { error: err instanceof Error && err.name === "AbortError" ? "Page fetch timed out" : `Page fetch failed: ${err instanceof Error ? err.message : String(err)}` },
+          {
+            error: "fetch_blocked",
+            message: isTimeout ? "Page fetch timed out" : `Page fetch failed: ${err instanceof Error ? err.message : String(err)}`,
+            status_code: isTimeout ? 408 : 0,
+            allow_paste: true,
+          },
           { status: 502 }
         );
       } finally {
