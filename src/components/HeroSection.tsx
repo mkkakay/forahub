@@ -355,13 +355,6 @@ export default function HeroSection({
                       unoptimized={remoteBg}
                     />
                   </div>
-                  <div
-                    className="absolute inset-0 pointer-events-none"
-                    style={{
-                      background:
-                        "linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(15,42,74,0.85) 100%)",
-                    }}
-                  />
                   <div className="hero-slide-text absolute bottom-0 left-0 right-0 pb-24 md:pb-28 pl-6 md:pl-10 pr-6 md:pr-10">
                     {slide.badge && (
                       <span
@@ -372,17 +365,23 @@ export default function HeroSection({
                       </span>
                     )}
                     {slide.org && (
-                      <p className="text-xs text-white/60 uppercase tracking-widest mb-1 font-medium">
+                      <p
+                        className="text-xs text-white/80 uppercase tracking-widest mb-1 font-medium"
+                        style={{ textShadow: "0 1px 6px rgba(0,0,0,0.7)" }}
+                      >
                         {slide.org}
                       </p>
                     )}
                     <h2
                       className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight tracking-tight max-w-3xl"
-                      style={{ textShadow: "0 2px 20px rgba(0,0,0,0.6)" }}
+                      style={{ textShadow: "0 2px 4px rgba(0,0,0,0.55), 0 4px 24px rgba(0,0,0,0.65)" }}
                     >
                       {slide.headline}
                     </h2>
-                    <p className="text-base md:text-lg text-white/80 mt-3 max-w-xl font-medium">
+                    <p
+                      className="text-base md:text-lg text-white mt-3 max-w-xl font-medium"
+                      style={{ textShadow: "0 1px 4px rgba(0,0,0,0.55), 0 2px 12px rgba(0,0,0,0.55)" }}
+                    >
                       {slide.subtext}
                     </p>
                     <Link
