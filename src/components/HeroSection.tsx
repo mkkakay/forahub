@@ -351,10 +351,17 @@ export default function HeroSection({
                       priority={i === 0}
                       sizes="100vw"
                       className="object-cover object-center"
-                      style={{ filter: "brightness(0.65) saturate(0.9)" }}
                       unoptimized={remoteBg}
                     />
                   </div>
+                  {/* Subtle gradient panel behind ONLY the text block (bottom ~45% of slide) */}
+                  <div
+                    className="absolute bottom-0 left-0 right-0 h-[45%] pointer-events-none"
+                    style={{
+                      background:
+                        "linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.30) 45%, rgba(0,0,0,0) 100%)",
+                    }}
+                  />
                   <div className="hero-slide-text absolute bottom-0 left-0 right-0 pb-24 md:pb-28 pl-6 md:pl-10 pr-6 md:pr-10">
                     {slide.badge && (
                       <span
