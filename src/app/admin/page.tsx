@@ -7,6 +7,7 @@ import {
 import ScraperPanel from './ScraperPanel'
 import HeroImagesPanel from './HeroImagesPanel'
 import OrganizationsPanel from './OrganizationsPanel'
+import RegionsPanel from './RegionsPanel'
 
 export const dynamic = 'force-dynamic'
 
@@ -236,6 +237,11 @@ export default async function AdminDashboard() {
       {/* Organizations section */}
       <div className="mt-6">
         <OrganizationsPanel adminSecret={process.env.ADMIN_SECRET ?? ''} />
+      </div>
+
+      {/* Regions section */}
+      <div className="mt-6">
+        <RegionsPanel adminSecret={process.env.ADMIN_SECRET ?? ''} />
       </div>
 
       {/* Quick nav */}

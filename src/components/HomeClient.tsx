@@ -19,6 +19,12 @@ export interface FeaturedOrg {
   needs_dark_background: boolean;
   logo_url: string | null;
 }
+
+export interface HomeRegion {
+  slug: string;
+  name: string;
+  banner_image_url: string | null;
+}
 import { getEventAssets } from "@/lib/assets/eventAssetService";
 import { SDG_COLORS } from "@/lib/assets/sdgFallbacks";
 
@@ -32,15 +38,8 @@ const SDG_LABELS: Record<number, string> = {
 
 
 
-const REGIONS = [
-  { name: "Africa", query: "Africa", photo: "https://images.unsplash.com/photo-1489392191049-fc10c97e64b6?w=600&q=80", cities: ["Nairobi", "Addis Ababa", "Accra"], events: 180 },
-  { name: "Asia Pacific", query: "Asia", photo: "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=600&q=80", cities: ["Singapore", "Bangkok", "Tokyo"], events: 220 },
-  { name: "Middle East", query: "Middle East", photo: "https://images.unsplash.com/photo-1518684079-3c830dcef090?w=600&q=80", cities: ["Dubai", "Amman", "Istanbul"], events: 95 },
-  { name: "Americas", query: "Americas", photo: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=600&q=80", cities: ["New York", "Washington", "Brasília"], events: 310 },
-  { name: "Europe", query: "Europe", photo: "https://images.unsplash.com/photo-1530521954074-e64f6810b32d?w=600&q=80", cities: ["Geneva", "Brussels", "Berlin"], events: 280 },
-  { name: "Pacific Islands", query: "Pacific", photo: "https://images.unsplash.com/photo-1559628233-100c798642d8?w=600&q=80", cities: ["Fiji", "Samoa", "Tonga"], events: 40 },
-];
-
+// Region tiles are admin-managed via the regions DB table; the homepage
+// receives the active list as a prop from page.tsx (see HomeRegion below).
 
 const ACTIVITY_FEED = [
   "A researcher from Kenya just saved World Health Summit 2027",
@@ -149,13 +148,21 @@ function FeaturedOrgCard({ org }: { org: FeaturedOrg }) {
   const [logoFailed, setLogoFailed] = useState(false);
   const showLogo = logoUrl && !logoFailed;
 
+  // Tinted brand background by default; full-color when needs_dark_background
+  // (for orgs whose logos are light/white and would disappear on a faint tint).
+  const headerBg = org.needs_dark_background ? org.color : `${org.color}14`;
+  const fallbackTextColor = org.needs_dark_background ? "#ffffff" : org.color;
+
   return (
     <Link
       href={`/organizations/${org.slug}`}
-      className="shrink-0 w-52 snap-start bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-[#334155] hover:shadow-lg transition-all duration-200 group overflow-hidden flex flex-col"
+      className="shrink-0 w-52 snap-start bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-100 dark:border-[#334155] shadow-sm hover:shadow-lg transition-all duration-200 group overflow-hidden flex flex-col"
     >
-      {/* Uniform white logo tile — consistent backdrop across all orgs */}
-      <div className="h-32 flex items-center justify-center p-6 bg-white border border-gray-200 shadow-sm rounded-t-2xl">
+      {/* Tinted brand-color logo tile (or full color when dark mode is on) */}
+      <div
+        className="h-32 flex items-center justify-center p-6 border-b border-gray-100 dark:border-[#334155]"
+        style={{ backgroundColor: headerBg }}
+      >
         {showLogo ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -166,7 +173,7 @@ function FeaturedOrgCard({ org }: { org: FeaturedOrg }) {
             onError={() => setLogoFailed(true)}
           />
         ) : (
-          <span className="text-lg font-bold text-center leading-tight" style={{ color: org.color }}>
+          <span className="text-lg font-bold text-center leading-tight" style={{ color: fallbackTextColor }}>
             {org.short}
           </span>
         )}
@@ -428,12 +435,14 @@ export default function HomeClient({
   totalCount,
   orgLogos = {},
   featuredCalendars,
+  regions = [],
 }: {
   events: EventPreview[];
   pastEvents: EventPreview[];
   totalCount: number;
   orgLogos?: Record<string, string>;
   featuredCalendars?: FeaturedOrg[];
+  regions?: HomeRegion[];
 }) {
   const { lang } = useLanguage();
   const [activityIdx, setActivityIdx] = useState(0);
@@ -571,50 +580,45 @@ export default function HomeClient({
       </section>
 
       {/* Explore by Region */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div className="flex items-baseline justify-between mb-3">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{t(lang, "region.explore")}</h2>
-          <Link href="/events" className="text-sm text-[#4ea8de] hover:underline flex items-center gap-1 font-medium">
-            View All <ChevronRight size={14} />
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {REGIONS.map(region => (
-            <Link
-              key={region.name}
-              href={`/events?region=${encodeURIComponent(region.query)}`}
-              className="relative rounded-2xl overflow-hidden h-44 md:h-56 group cursor-pointer"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={region.photo}
-                alt={region.name}
-                className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-              <div className="absolute top-3 right-3 bg-black/50 backdrop-blur-sm text-white text-xs font-bold px-2.5 py-1 rounded-full">
-                {region.events}+ events
-              </div>
-              <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                  <ArrowRight size={14} className="text-white" />
-                </div>
-              </div>
-              <div className="absolute bottom-3 left-3 right-3">
-                <p className="text-white font-bold text-xl mb-2">{region.name}</p>
-                <div className="flex flex-wrap gap-1">
-                  {region.cities.map(city => (
-                    <span key={city} className="text-xs text-white/90 bg-white/20 backdrop-blur-sm px-2 py-0.5 rounded-full">
-                      {city}
-                    </span>
-                  ))}
-                </div>
-              </div>
+      {regions.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-baseline justify-between mb-3">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{t(lang, "region.explore")}</h2>
+            <Link href="/events" className="text-sm text-[#4ea8de] hover:underline flex items-center gap-1 font-medium">
+              View All <ChevronRight size={14} />
             </Link>
-          ))}
-        </div>
-      </section>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {regions.map(region => (
+              <Link
+                key={region.slug}
+                href={`/events?region=${encodeURIComponent(region.name)}`}
+                className="relative rounded-2xl overflow-hidden h-44 md:h-56 group cursor-pointer"
+                style={!region.banner_image_url ? { background: "linear-gradient(135deg, #0f2a4a 0%, #4ea8de 100%)" } : undefined}
+              >
+                {region.banner_image_url && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={region.banner_image_url}
+                    alt={region.name}
+                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
+                    loading="lazy"
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
+                <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <ArrowRight size={14} className="text-white" />
+                  </div>
+                </div>
+                <div className="absolute bottom-3 left-3 right-3">
+                  <p className="text-white font-bold text-xl drop-shadow-lg">{region.name}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Stats */}
       <section className="bg-white dark:bg-[#1e293b] border-t border-gray-100 border-b border-gray-200 dark:border-[#334155]">

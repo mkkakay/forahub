@@ -12,6 +12,7 @@ import HomeClient from "@/components/HomeClient";
 import { batchGetLogos } from "@/lib/organizations/getLogoUrl";
 import { backfillBannersAsync } from "@/lib/events/fetchEventBanner";
 import { getResolvedFeaturedCalendars } from "@/lib/organizations/getResolvedOrg";
+import { getActiveRegions } from "@/lib/regions/getActiveRegions";
 
 // Search queries aligned to each slide's content — specific enough for accurate Pexels results
 const SLIDE_QUERIES = [
@@ -120,6 +121,7 @@ export default async function Home() {
   const heroImages = ((heroImagesData ?? []) as HeroImageRow[]);
 
   const featuredCalendars = await getResolvedFeaturedCalendars().catch(() => []);
+  const regions = await getActiveRegions().catch(() => []);
 
   const orgLogos = await batchGetLogos([
     ...events
@@ -154,6 +156,11 @@ export default async function Home() {
           color: o.color,
           needs_dark_background: o.needs_dark_background,
           logo_url: o.logo_url,
+        }))}
+        regions={regions.map(r => ({
+          slug: r.slug,
+          name: r.name,
+          banner_image_url: r.banner_image_url,
         }))}
       />
       <SubmitEventBanner />
