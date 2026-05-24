@@ -2,11 +2,23 @@
 
 import Link from "next/link";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { Calendar, Flag, MapPin, ArrowRight, ChevronRight, Globe, X } from "lucide-react";
+import { Calendar, Flag, MapPin, ArrowRight, ChevronRight } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { useLanguage } from "@/context/LanguageContext";
 import { t } from "@/lib/i18n";
-import { FEATURED_CALENDARS, type OrgConfig } from "@/lib/organizations";
+import { FEATURED_CALENDARS as DEFAULT_FEATURED_CALENDARS } from "@/lib/organizations";
+
+// Subset of ResolvedOrg the homepage actually uses — defined here so HomeClient
+// stays a clean client component (no server-only imports).
+export interface FeaturedOrg {
+  slug: string;
+  name: string;
+  short: string;
+  description: string;
+  color: string;
+  needs_dark_background: boolean;
+  logo_url: string | null;
+}
 import { getEventAssets } from "@/lib/assets/eventAssetService";
 import { SDG_COLORS } from "@/lib/assets/sdgFallbacks";
 
@@ -129,22 +141,28 @@ function OrgLogo({
   );
 }
 
-function FeaturedOrgCard({ org }: { org: OrgConfig }) {
+function FeaturedOrgCard({ org }: { org: FeaturedOrg }) {
   const { lang } = useLanguage();
   const orgLogos = useContext(OrgLogosContext);
-  const logoUrl = orgLogos[org.name] ?? null;
+  // Override > prop logo_url > batch-cache context
+  const logoUrl = org.logo_url ?? orgLogos[org.name] ?? null;
   const [logoFailed, setLogoFailed] = useState(false);
   const showLogo = logoUrl && !logoFailed;
+
+  const headerBg = org.needs_dark_background
+    ? "#0f2a4a"
+    : `${org.color}14`;
+  const fallbackTextColor = org.needs_dark_background ? "#ffffff" : org.color;
 
   return (
     <Link
       href={`/organizations/${org.slug}`}
       className="shrink-0 w-52 snap-start bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-[#334155] hover:shadow-lg transition-all duration-200 group overflow-hidden flex flex-col"
     >
-      {/* Branded header: tinted background, large logo (or short-name fallback) */}
+      {/* Branded header: tinted (or dark navy) background, large logo (or short-name fallback) */}
       <div
         className="h-32 flex items-center justify-center p-6 border-b border-gray-100 dark:border-[#334155]"
-        style={{ backgroundColor: `${org.color}14` }}
+        style={{ backgroundColor: headerBg }}
       >
         {showLogo ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -156,7 +174,7 @@ function FeaturedOrgCard({ org }: { org: OrgConfig }) {
             onError={() => setLogoFailed(true)}
           />
         ) : (
-          <span className="text-lg font-bold text-center leading-tight" style={{ color: org.color }}>
+          <span className="text-lg font-bold text-center leading-tight" style={{ color: fallbackTextColor }}>
             {org.short}
           </span>
         )}
@@ -417,11 +435,13 @@ export default function HomeClient({
   pastEvents,
   totalCount,
   orgLogos = {},
+  featuredCalendars,
 }: {
   events: EventPreview[];
   pastEvents: EventPreview[];
   totalCount: number;
   orgLogos?: Record<string, string>;
+  featuredCalendars?: FeaturedOrg[];
 }) {
   const { lang } = useLanguage();
   const [activityIdx, setActivityIdx] = useState(0);
@@ -429,12 +449,6 @@ export default function HomeClient({
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   const [sdgCounts, setSdgCounts] = useState<Record<number, number>>({});
-
-  const [suggestOpen, setSuggestOpen] = useState(false);
-  const [suggestName, setSuggestName] = useState("");
-  const [suggestWebsite, setSuggestWebsite] = useState("");
-  const [suggestSubmitting, setSuggestSubmitting] = useState(false);
-  const [suggestDone, setSuggestDone] = useState(false);
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -466,20 +480,6 @@ export default function HomeClient({
     }
     fetchSdgCounts();
   }, []);
-
-  async function handleSuggestSubmit() {
-    if (!suggestName.trim()) return;
-    setSuggestSubmitting(true);
-    try {
-      await fetch("/api/suggest-org", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: suggestName.trim(), website: suggestWebsite.trim() }),
-      });
-    } catch { /* silent */ }
-    setSuggestSubmitting(false);
-    setSuggestDone(true);
-  }
 
   return (
     <OrgLogosContext.Provider value={orgLogos}>
@@ -532,22 +532,20 @@ export default function HomeClient({
             </Link>
           </div>
           <div className="flex gap-4 overflow-x-auto pb-0 no-scrollbar snap-x snap-mandatory pl-0.5">
-            {FEATURED_CALENDARS.map(org => (
+            {(featuredCalendars && featuredCalendars.length > 0
+              ? featuredCalendars
+              : DEFAULT_FEATURED_CALENDARS.map(o => ({
+                  slug: o.slug,
+                  name: o.name,
+                  short: o.short,
+                  description: o.description,
+                  color: o.color,
+                  needs_dark_background: false,
+                  logo_url: null,
+                }))
+            ).map(org => (
               <FeaturedOrgCard key={org.slug} org={org} />
             ))}
-            {/* Suggest organization CTA card */}
-            <div className="shrink-0 w-52 snap-start rounded-2xl border-2 border-dashed border-gray-300 dark:border-[#334155] bg-white dark:bg-[#1e293b] flex flex-col items-center justify-center p-6 gap-2 text-center">
-              <Globe size={28} className="text-gray-400" />
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300 leading-snug">
-                Can&apos;t find your organization?
-              </p>
-              <button
-                onClick={() => setSuggestOpen(true)}
-                className="text-xs text-blue-600 dark:text-blue-400 underline hover:text-blue-800 transition-colors"
-              >
-                Suggest one
-              </button>
-            </div>
           </div>
         </div>
       </section>
@@ -696,59 +694,6 @@ export default function HomeClient({
         </div>
       </div>
 
-      {/* Suggest organization modal */}
-      {suggestOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
-          onClick={() => { setSuggestOpen(false); setSuggestDone(false); setSuggestName(""); setSuggestWebsite(""); }}
-        >
-          <div
-            className="bg-white dark:bg-[#1e293b] rounded-2xl p-6 max-w-sm w-full shadow-2xl"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-bold text-[#0f2a4a] dark:text-white">Suggest an organization</h3>
-              <button
-                onClick={() => { setSuggestOpen(false); setSuggestDone(false); setSuggestName(""); setSuggestWebsite(""); }}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <X size={18} />
-              </button>
-            </div>
-            {suggestDone ? (
-              <div className="text-center py-4">
-                <p className="text-green-600 font-semibold text-sm">Thanks! We&apos;ll review your suggestion.</p>
-              </div>
-            ) : (
-              <>
-                <div className="space-y-3 mb-4">
-                  <input
-                    type="text"
-                    value={suggestName}
-                    onChange={e => setSuggestName(e.target.value)}
-                    placeholder="Organization name *"
-                    className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-[#334155] rounded-xl bg-gray-50 dark:bg-[#0f172a] text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#4ea8de]"
-                  />
-                  <input
-                    type="url"
-                    value={suggestWebsite}
-                    onChange={e => setSuggestWebsite(e.target.value)}
-                    placeholder="Website (optional)"
-                    className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-[#334155] rounded-xl bg-gray-50 dark:bg-[#0f172a] text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#4ea8de]"
-                  />
-                </div>
-                <button
-                  onClick={handleSuggestSubmit}
-                  disabled={!suggestName.trim() || suggestSubmitting}
-                  className="w-full py-2.5 rounded-xl bg-[#0f2a4a] hover:bg-[#1a3f6e] disabled:opacity-40 text-white text-sm font-semibold transition-colors"
-                >
-                  {suggestSubmitting ? "Sending…" : "Submit suggestion"}
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      )}
     </main>
     </OrgLogosContext.Provider>
   );

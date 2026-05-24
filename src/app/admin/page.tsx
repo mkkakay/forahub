@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import ScraperPanel from './ScraperPanel'
 import HeroImagesPanel from './HeroImagesPanel'
+import OrganizationsPanel from './OrganizationsPanel'
 
 export const dynamic = 'force-dynamic'
 
@@ -230,6 +231,11 @@ export default async function AdminDashboard() {
       {/* Hero Images section */}
       <div className="mt-6">
         <HeroImagesPanel adminSecret={process.env.ADMIN_SECRET ?? ''} />
+      </div>
+
+      {/* Organizations section */}
+      <div className="mt-6">
+        <OrganizationsPanel adminSecret={process.env.ADMIN_SECRET ?? ''} />
       </div>
 
       {/* Quick nav */}

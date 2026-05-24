@@ -1,6 +1,8 @@
 import { adminSupabase } from "@/lib/supabase/admin";
+import { slugify } from "@/lib/organizations";
 import { inferDomainFromOrg } from "./inferDomain";
 import { fetchFromBrandfetch } from "./fetchFromBrandfetch";
+import { readManualLogoOverrides } from "./getResolvedOrg";
 
 // Don't re-attempt a previously failed lookup more often than this.
 const RETRY_COOLDOWN_MS = 24 * 60 * 60 * 1000;
@@ -132,6 +134,9 @@ export async function batchGetLogos(orgNames: string[]): Promise<Record<string, 
   const unique = Array.from(new Set(orgNames.filter(n => typeof n === "string" && n.trim().length > 0)));
   if (unique.length === 0) return {};
 
+  // Override layer: admin-supplied manual URLs win, keyed by slug.
+  const overrideBySlug = await readManualLogoOverrides().catch(() => new Map<string, string>());
+
   const { data } = await adminSupabase
     .from("organization_logos")
     .select("organization_name, logo_url, status, last_attempted_at")
@@ -142,6 +147,12 @@ export async function batchGetLogos(orgNames: string[]): Promise<Record<string, 
 
   const out: Record<string, string> = {};
   for (const name of unique) {
+    const slug = slugify(name);
+    const overrideUrl = overrideBySlug.get(slug);
+    if (overrideUrl) {
+      out[name] = overrideUrl;
+      continue;
+    }
     const row = byName.get(name);
     if (row?.status === "success" && row.logo_url) {
       out[name] = row.logo_url;

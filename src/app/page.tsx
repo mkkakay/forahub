@@ -11,7 +11,7 @@ import SubmitEventBanner from "@/components/SubmitEventBanner";
 import HomeClient from "@/components/HomeClient";
 import { batchGetLogos } from "@/lib/organizations/getLogoUrl";
 import { backfillBannersAsync } from "@/lib/events/fetchEventBanner";
-import { FEATURED_CALENDARS } from "@/lib/organizations";
+import { getResolvedFeaturedCalendars } from "@/lib/organizations/getResolvedOrg";
 
 // Search queries aligned to each slide's content — specific enough for accurate Pexels results
 const SLIDE_QUERIES = [
@@ -119,11 +119,13 @@ export default async function Home() {
   const events = (upcomingData as EventPreview[] | null) ?? [];
   const heroImages = ((heroImagesData ?? []) as HeroImageRow[]);
 
+  const featuredCalendars = await getResolvedFeaturedCalendars().catch(() => []);
+
   const orgLogos = await batchGetLogos([
     ...events
       .map(e => e.organization)
       .filter((o): o is string => typeof o === "string" && o.trim().length > 0),
-    ...FEATURED_CALENDARS.map(o => o.name),
+    ...featuredCalendars.map(o => o.name),
   ]).catch(() => ({}));
 
   // Fire-and-forget banner backfill for events missing a cached image.
@@ -144,6 +146,15 @@ export default async function Home() {
         pastEvents={[]}
         totalCount={totalCount ?? 0}
         orgLogos={orgLogos}
+        featuredCalendars={featuredCalendars.map(o => ({
+          slug: o.slug,
+          name: o.name,
+          short: o.short,
+          description: o.description,
+          color: o.color,
+          needs_dark_background: o.needs_dark_background,
+          logo_url: o.logo_url,
+        }))}
       />
       <SubmitEventBanner />
     </div>
