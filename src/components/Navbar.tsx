@@ -146,7 +146,7 @@ export default function Navbar() {
             </div>
 
             <Link
-              href="/events/create"
+              href="/submit"
               className="hidden md:flex text-sm font-semibold px-3 py-1.5 rounded-md bg-[#4ea8de]/20 text-[#4ea8de] border border-[#4ea8de]/30 hover:bg-[#4ea8de]/30 transition-colors"
             >
               + {t(lang, "nav.submit")}
@@ -227,7 +227,7 @@ export default function Navbar() {
               {label}
             </Link>
           ))}
-          <Link href="/events/create" className="block px-3 py-2.5 text-sm font-medium text-[#4ea8de] hover:bg-white/5 rounded-md">
+          <Link href="/submit" className="block px-3 py-2.5 text-sm font-medium text-[#4ea8de] hover:bg-white/5 rounded-md">
             + Submit Event
           </Link>
           <Link href="/assistant" className="flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 rounded-md">

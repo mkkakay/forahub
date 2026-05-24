@@ -60,6 +60,11 @@ export interface EventRow {
   banner_image_url: string | null
   banner_fetched_at: string | null
   banner_display_mode: 'contain' | 'cover' | null
+  submission_status: 'pending' | 'approved' | 'rejected' | 'draft' | null
+  submitted_by_user_id: string | null
+  submitter_email: string | null
+  submission_source: 'flyer_ai' | 'url_ai' | 'manual' | null
+  submitted_at: string | null
 }
 
 export interface EventDeadlineRow {

@@ -103,6 +103,7 @@ export default async function Home() {
         .select(COLS)
         .gte("start_date", today)
         .lte("start_date", endOf2030)
+        .eq("submission_status", "approved")
         .order("start_date", { ascending: true })
         .limit(6),
       supabase
