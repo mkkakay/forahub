@@ -5,6 +5,9 @@ import {
   Building2, ChevronDown, ChevronRight, Loader2, Search, RefreshCw,
   AlertCircle, Check, Star, Moon, X, Upload,
 } from "lucide-react";
+import { parseApiResponse } from "@/lib/admin/fetchJson";
+
+const MAX_LOGO_BYTES = 2 * 1024 * 1024;
 
 interface ResolvedOrg {
   slug: string;
@@ -68,9 +71,9 @@ export default function OrganizationsPanel({ adminSecret }: { adminSecret: strin
     setError(null);
     try {
       const res = await fetch("/api/admin/organizations", { headers });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
-      const list = (json.data ?? []) as ResolvedOrg[];
+      const parsed = await parseApiResponse<{ data: ResolvedOrg[] }>(res);
+      if (!parsed.ok) throw new Error(parsed.error);
+      const list = parsed.data.data ?? [];
       list.sort((a, b) => a.name.localeCompare(b.name));
       setOrgs(list);
       setDrafts(Object.fromEntries(list.map(o => [o.slug, draftFromOrg(o)])));
@@ -112,8 +115,9 @@ export default function OrganizationsPanel({ adminSecret }: { adminSecret: strin
         headers: { ...headers, "Content-Type": "application/json" },
         body: JSON.stringify({ slug, ...draft }),
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
+      console.log("[OrganizationsPanel] PATCH save →", res.status);
+      const parsed = await parseApiResponse(res);
+      if (!parsed.ok) throw new Error(parsed.error);
       setSavedFlash(slug);
       setTimeout(() => setSavedFlash(s => (s === slug ? null : s)), 2500);
       await refresh();
@@ -133,8 +137,9 @@ export default function OrganizationsPanel({ adminSecret }: { adminSecret: strin
         headers: { ...headers, "Content-Type": "application/json" },
         body: JSON.stringify({ slug, logo_display_mode: mode }),
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
+      console.log("[OrganizationsPanel] PATCH display mode →", res.status);
+      const parsed = await parseApiResponse(res);
+      if (!parsed.ok) throw new Error(parsed.error);
       await refresh();
     } catch (err) {
       setError(String(err instanceof Error ? err.message : err));
@@ -142,6 +147,12 @@ export default function OrganizationsPanel({ adminSecret }: { adminSecret: strin
   }
 
   async function uploadLogo(slug: string, file: File) {
+    if (file.size > MAX_LOGO_BYTES) {
+      setError(
+        `File too large: ${(file.size / 1024 / 1024).toFixed(2)}MB. Logos are capped at 2MB — please compress and try again.`
+      );
+      return;
+    }
     setUploadingSlug(slug);
     setError(null);
     try {
@@ -153,8 +164,9 @@ export default function OrganizationsPanel({ adminSecret }: { adminSecret: strin
         headers,
         body: fd,
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
+      console.log("[OrganizationsPanel] upload-logo →", res.status, res.headers.get("content-type"));
+      const parsed = await parseApiResponse(res);
+      if (!parsed.ok) throw new Error(parsed.error);
       setSavedFlash(slug);
       setTimeout(() => setSavedFlash(s => (s === slug ? null : s)), 2500);
       await refresh();
@@ -174,8 +186,9 @@ export default function OrganizationsPanel({ adminSecret }: { adminSecret: strin
         headers: { ...headers, "Content-Type": "application/json" },
         body: JSON.stringify({ slug }),
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
+      console.log("[OrganizationsPanel] refresh-logo →", res.status);
+      const parsed = await parseApiResponse(res);
+      if (!parsed.ok) throw new Error(parsed.error);
       await refresh();
     } catch (err) {
       setError(String(err instanceof Error ? err.message : err));

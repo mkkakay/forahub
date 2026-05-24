@@ -32,6 +32,14 @@ interface OverrideRow {
   is_featured: boolean | null;
   display_order: number | null;
   logo_display_mode: "contain" | "cover" | null;
+  updated_at: string | null;
+}
+
+/** Append a ?v=… query so browsers re-fetch when the admin updates the logo. */
+function withCacheBust(url: string, version: string | null): string {
+  if (!url) return url;
+  const v = (version ? new Date(version).getTime() : Date.now()).toString();
+  return `${url}${url.includes("?") ? "&" : "?"}v=${v}`;
 }
 
 interface LogoCacheRow {
@@ -43,7 +51,7 @@ interface LogoCacheRow {
 async function readAllOverrides(): Promise<Map<string, OverrideRow>> {
   const { data } = await adminSupabase
     .from("organization_overrides")
-    .select("slug, display_name, short_name, description, manual_logo_url, needs_dark_background, brand_color, is_featured, display_order, logo_display_mode");
+    .select("slug, display_name, short_name, description, manual_logo_url, needs_dark_background, brand_color, is_featured, display_order, logo_display_mode, updated_at");
   const rows = (data as OverrideRow[] | null) ?? [];
   return new Map(rows.map(r => [r.slug, r]));
 }
@@ -68,6 +76,12 @@ function resolveOne(
   cachedLogoUrl: string | undefined
 ): ResolvedOrg {
   const overrideExists = !!override;
+  // Manual uploads get cache-busted by the override's updated_at so the browser
+  // re-fetches when the admin saves a new image. Brandfetch cache URLs are unique
+  // per fetch so they don't need busting.
+  const manualUrl = override?.manual_logo_url
+    ? withCacheBust(override.manual_logo_url, override.updated_at)
+    : null;
   return {
     ...base,
     name: override?.display_name ?? base.name,
@@ -75,7 +89,7 @@ function resolveOne(
     description: override?.description ?? base.description,
     color: override?.brand_color ?? base.color,
     needs_dark_background: override?.needs_dark_background ?? false,
-    logo_url: override?.manual_logo_url ?? cachedLogoUrl ?? null,
+    logo_url: manualUrl ?? cachedLogoUrl ?? null,
     is_featured:
       typeof override?.is_featured === "boolean"
         ? override.is_featured
@@ -95,12 +109,19 @@ export async function getAllResolvedOrgs(): Promise<ResolvedOrg[]> {
   overrides.forEach((_, slug) => allSlugs.add(slug));
 
   const slugList = Array.from(allSlugs);
-  const namesForLogoFetch = slugList
-    .map(s => {
-      const ov = overrides.get(s);
-      return ov?.display_name ?? ORG_REGISTRY[s]?.name ?? null;
-    })
-    .filter((n): n is string => typeof n === "string");
+  // Look up the cache under BOTH the override.display_name AND the registry
+  // canonical name. This avoids cache misses when an admin renames an org
+  // (e.g. "Bill and Melinda Gates Foundation" → "Gates Foundation") — the
+  // logo was originally seeded under the canonical name and shouldn't vanish
+  // just because the display label changed.
+  const namesForLogoFetch = slugList.flatMap(s => {
+    const ov = overrides.get(s);
+    const reg = ORG_REGISTRY[s];
+    const names: string[] = [];
+    if (ov?.display_name) names.push(ov.display_name);
+    if (reg?.name) names.push(reg.name);
+    return names;
+  });
 
   const logos = await readLogosForNames(namesForLogoFetch);
 
@@ -120,8 +141,12 @@ export async function getAllResolvedOrgs(): Promise<ResolvedOrg[]> {
         matchPatterns: [],
         domain: "",
       };
-      const lookupName = ov?.display_name ?? synthBase.name;
-      return resolveOne(synthBase, ov, logos.get(lookupName));
+      // Try the override label first, then fall back to the canonical name
+      // so a re-labelled org still resolves to its seeded logo.
+      const displayKey = ov?.display_name;
+      const canonicalKey = synthBase.name;
+      const cached = (displayKey && logos.get(displayKey)) || logos.get(canonicalKey) || undefined;
+      return resolveOne(synthBase, ov, cached);
     })
     .filter((o): o is ResolvedOrg => o !== null);
 }

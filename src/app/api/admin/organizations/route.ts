@@ -63,12 +63,18 @@ export async function PATCH(req: NextRequest) {
     }
   }
 
+  console.log("[admin/organizations PATCH]", { slug, fields: Object.keys(patch).filter(k => k !== "slug" && k !== "updated_at") });
+
   const { data, error } = await adminSupabase
     .from("organization_overrides")
     .upsert(patch, { onConflict: "slug" })
     .select()
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("[admin/organizations PATCH] upsert failed:", error.message);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+  console.log("[admin/organizations PATCH] ok", { slug, has_manual_logo: !!data?.manual_logo_url });
   return NextResponse.json({ data });
 }
