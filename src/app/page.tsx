@@ -11,6 +11,7 @@ import SubmitEventBanner from "@/components/SubmitEventBanner";
 import HomeClient from "@/components/HomeClient";
 import { batchGetLogos } from "@/lib/organizations/getLogoUrl";
 import { backfillBannersAsync } from "@/lib/events/fetchEventBanner";
+import { FEATURED_CALENDARS } from "@/lib/organizations";
 
 // Search queries aligned to each slide's content — specific enough for accurate Pexels results
 const SLIDE_QUERIES = [
@@ -118,11 +119,12 @@ export default async function Home() {
   const events = (upcomingData as EventPreview[] | null) ?? [];
   const heroImages = ((heroImagesData ?? []) as HeroImageRow[]);
 
-  const orgLogos = await batchGetLogos(
-    events
+  const orgLogos = await batchGetLogos([
+    ...events
       .map(e => e.organization)
-      .filter((o): o is string => typeof o === "string" && o.trim().length > 0)
-  ).catch(() => ({}));
+      .filter((o): o is string => typeof o === "string" && o.trim().length > 0),
+    ...FEATURED_CALENDARS.map(o => o.name),
+  ]).catch(() => ({}));
 
   // Fire-and-forget banner backfill for events missing a cached image.
   backfillBannersAsync(

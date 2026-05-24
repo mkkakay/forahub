@@ -217,3 +217,33 @@ export const ORG_LIST: OrgConfig[] = Object.values(ORG_REGISTRY);
 export function getOrgBySlug(slug: string): OrgConfig | null {
   return ORG_REGISTRY[slug] ?? null;
 }
+
+// Curated order for the "Featured Calendars" homepage strip.
+// Each slug must exist in ORG_REGISTRY. The display pulls name, color,
+// description, and (cached) Brandfetch logo via the standard asset service.
+export const FEATURED_CALENDAR_SLUGS: string[] = [
+  "world-health-organization",
+  "bill-and-melinda-gates-foundation",
+  "world-bank-group",
+  "unicef",
+  "african-development-bank",
+  "world-economic-forum",
+  "gavi-the-vaccine-alliance",
+  "the-global-fund",
+  "medecins-sans-frontieres",
+  "african-union",
+  "un-development-programme",
+  "wellcome-trust",
+  "save-the-children",
+  "chatham-house",
+  "asian-development-bank",
+  "association-of-southeast-asian-nations",
+  "oxfam-international",
+  "brookings-institution",
+  "world-food-programme",
+  "un-climate-change-secretariat",
+];
+
+export const FEATURED_CALENDARS: OrgConfig[] = FEATURED_CALENDAR_SLUGS
+  .map(slug => ORG_REGISTRY[slug])
+  .filter((o): o is OrgConfig => Boolean(o));

@@ -6,14 +6,9 @@ import { Calendar, Flag, MapPin, ArrowRight, ChevronRight, Globe, X } from "luci
 import { supabase } from "@/lib/supabase/client";
 import { useLanguage } from "@/context/LanguageContext";
 import { t } from "@/lib/i18n";
-import { slugify } from "@/lib/organizations";
-
-const SDG_COLORS: Record<number, string> = {
-  1: "#E5243B", 2: "#DDA63A", 3: "#4C9F38", 4: "#C5192D", 5: "#FF3A21",
-  6: "#26BDE2", 7: "#FCC30B", 8: "#A21942", 9: "#FD6925", 10: "#DD1367",
-  11: "#FD9D24", 12: "#BF8B2E", 13: "#3F7E44", 14: "#0A97D9", 15: "#56C02B",
-  16: "#00689D", 17: "#19486A",
-};
+import { FEATURED_CALENDARS, type OrgConfig } from "@/lib/organizations";
+import { getEventAssets } from "@/lib/assets/eventAssetService";
+import { SDG_COLORS } from "@/lib/assets/sdgFallbacks";
 
 const SDG_LABELS: Record<number, string> = {
   1: "No Poverty", 2: "Zero Hunger", 3: "Good Health", 4: "Quality Education",
@@ -34,31 +29,6 @@ const REGIONS = [
   { name: "Pacific Islands", query: "Pacific", photo: "https://images.unsplash.com/photo-1559628233-100c798642d8?w=600&q=80", cities: ["Fiji", "Samoa", "Tonga"], events: 40 },
 ];
 
-const BF_KEY = "NJ56JESB-y_Yq9XLTApT75PLDyFi9Qf7-pz31r4tAVRcF1jD_r6AES98YRgJyToYZCUmW98HtK9wj_41zhBQjQ";
-const bf = (domain: string) => `https://cdn.brandfetch.io/${domain}/w/300/h/150/logo?c=${BF_KEY}`;
-
-const FEATURED_ORGS = [
-  { name: "WHO",              full: "World Health Organization",         color: "#0093D5", logo: "/images/logos/who.svg",          events: 48 },
-  { name: "Gates Foundation", full: "Bill & Melinda Gates Foundation",   color: "#E8192C", logo: bf("gatesfoundation.org"),         events: 34 },
-  { name: "World Bank",       full: "World Bank Group",                  color: "#003299", logo: "/images/logos/worldbank.svg",     events: 62 },
-  { name: "UNICEF",           full: "UNICEF",                            color: "#00AEEF", logo: "/images/logos/unicef.svg",        events: 36 },
-  { name: "African Dev Bank", full: "African Development Bank",          color: "#006B3F", logo: bf("afdb.org"),                    events: 28 },
-  { name: "WEF",              full: "World Economic Forum",              color: "#1A1A1A", logo: bf("weforum.org"),                 events: 41 },
-  { name: "Gavi",             full: "Gavi, the Vaccine Alliance",        color: "#0066CC", logo: bf("gavi.org"),                   events: 19 },
-  { name: "Global Fund",      full: "The Global Fund",                   color: "#EF3340", logo: "/images/logos/globalfund.svg",   events: 22 },
-  { name: "MSF",              full: "Médecins Sans Frontières",          color: "#E30613", logo: "/images/logos/msf.svg",          events: 15 },
-  { name: "African Union",    full: "African Union",                     color: "#009A44", logo: "/images/logos/au.svg",           events: 31 },
-  { name: "UNDP",             full: "UN Development Programme",          color: "#009FDA", logo: "/images/logos/undp.svg",         events: 44 },
-  { name: "Wellcome",         full: "Wellcome Trust",                    color: "#E7157B", logo: bf("wellcome.org"),               events: 18 },
-  { name: "Save the Children",full: "Save the Children",                 color: "#E2001A", logo: "/images/logos/savechildren.svg", events: 24 },
-  { name: "Chatham House",    full: "Chatham House",                     color: "#003B6F", logo: bf("chathamhouse.org"),           events: 16 },
-  { name: "ADB",              full: "Asian Development Bank",            color: "#E3000F", logo: bf("adb.org"),                    events: 23 },
-  { name: "ASEAN",            full: "Association of Southeast Asian Nations", color: "#003087", logo: "/images/logos/asean.svg",  events: 29 },
-  { name: "Oxfam",            full: "Oxfam International",               color: "#E70052", logo: "/images/logos/oxfam.svg",       events: 21 },
-  { name: "Brookings",        full: "Brookings Institution",             color: "#003974", logo: bf("brookings.edu"),              events: 14 },
-  { name: "WFP",              full: "World Food Programme",              color: "#009FE3", logo: "/images/logos/wfp.svg",          events: 22 },
-  { name: "UNFCCC",           full: "UN Climate Change Secretariat",     color: "#009A44", logo: "/images/logos/unfccc.svg",      events: 27 },
-];
 
 const ACTIVITY_FEED = [
   "A researcher from Kenya just saved World Health Summit 2027",
@@ -70,34 +40,6 @@ const ACTIVITY_FEED = [
 
 // Provides cached Brandfetch logo URLs to EventCard. page.tsx populates this server-side.
 const OrgLogosContext = createContext<Record<string, string>>({});
-
-function getEventCoverImage(org: string | null, sdgGoals: number[]): string {
-  const o = (org ?? "").toLowerCase();
-  const sdg = sdgGoals?.[0];
-  if (o.includes("who") || o.includes("world health"))
-    return "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=400&q=80";
-  if (o.includes("unicef"))
-    return "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=400&q=80";
-  if (o.includes("world bank"))
-    return "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=400&q=80";
-  if (o.includes("fao") || o.includes("wfp") || o.includes("food"))
-    return "https://images.unsplash.com/photo-1536304993881-ff86e0c9b5b?w=400&q=80";
-  if (o.includes("unesco") || o.includes("education") || sdg === 4)
-    return "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=400&q=80";
-  if (sdg === 13 || o.includes("climate") || o.includes("cop") || o.includes("unfccc") || o.includes("environment"))
-    return "https://images.unsplash.com/photo-1569163139599-0f4517e36f51?w=400&q=80";
-  if (sdg === 3 || o.includes("health"))
-    return "https://images.unsplash.com/photo-1584982751601-97ddc0082f3b?w=400&q=80";
-  if (sdg === 8 || o.includes("finance") || o.includes("imf") || o.includes("bank"))
-    return "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=400&q=80";
-  if (sdg === 9 || o.includes("tech") || o.includes("digital") || o.includes("itu"))
-    return "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80";
-  if (o.includes("africa") || o.includes("ecowas") || o.includes("sadc") || o.includes("au "))
-    return "https://images.unsplash.com/photo-1489749798305-4fea3ae63d43?w=400&q=80";
-  if (o.includes("asia") || o.includes("asean") || o.includes("adb"))
-    return "https://images.unsplash.com/photo-1535139262971-ab8d1723fab6?w=400&q=80";
-  return "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&q=80";
-}
 
 export interface EventPreview {
   id: string;
@@ -187,41 +129,42 @@ function OrgLogo({
   );
 }
 
-function FeaturedOrgCard({ org }: {
-  org: { name: string; full: string; color: string; logo: string; events: number };
-}) {
+function FeaturedOrgCard({ org }: { org: OrgConfig }) {
   const { lang } = useLanguage();
-  const [imgFailed, setImgFailed] = useState(false);
+  const orgLogos = useContext(OrgLogosContext);
+  const logoUrl = orgLogos[org.name] ?? null;
+  const [logoFailed, setLogoFailed] = useState(false);
+  const showLogo = logoUrl && !logoFailed;
+
   return (
     <Link
-      href={`/organizations/${slugify(org.full)}`}
+      href={`/organizations/${org.slug}`}
       className="shrink-0 w-52 snap-start bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-[#334155] hover:shadow-lg transition-all duration-200 group overflow-hidden flex flex-col"
     >
-      {/* Branded header: near-white tinted background, large logo */}
+      {/* Branded header: tinted background, large logo (or short-name fallback) */}
       <div
         className="h-32 flex items-center justify-center p-6 border-b border-gray-100 dark:border-[#334155]"
         style={{ backgroundColor: `${org.color}14` }}
       >
-        {imgFailed ? (
-          <span className="text-lg font-bold text-center leading-tight" style={{ color: org.color }}>
-            {org.name}
-          </span>
-        ) : (
+        {showLogo ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={org.logo}
-            alt={org.name}
+            src={logoUrl}
+            alt={org.short}
             className="max-h-12 max-w-40 object-contain mx-auto"
-            crossOrigin="anonymous"
-            onError={() => setImgFailed(true)}
+            loading="lazy"
+            onError={() => setLogoFailed(true)}
           />
+        ) : (
+          <span className="text-lg font-bold text-center leading-tight" style={{ color: org.color }}>
+            {org.short}
+          </span>
         )}
       </div>
       {/* Body */}
       <div className="p-4 flex flex-col flex-1">
-        <p className="text-sm font-bold text-[#0f2a4a] dark:text-white group-hover:text-[#4ea8de] transition-colors">{org.name}</p>
-        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{org.events} events</p>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-1 flex-1">{org.full}</p>
+        <p className="text-sm font-bold text-[#0f2a4a] dark:text-white group-hover:text-[#4ea8de] transition-colors">{org.short}</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2 flex-1">{org.name}</p>
         <span className="mt-3 block w-full py-2 rounded-lg text-sm font-semibold text-center border border-[#4ea8de]/40 text-[#4ea8de] group-hover:bg-[#4ea8de] group-hover:text-white transition-colors">
           {t(lang, "calendar.follow")}
         </span>
@@ -278,10 +221,16 @@ function SdgCard({ sdg, count }: { sdg: number; count: number }) {
 
 export function EventCard({ event }: { event: EventPreview }) {
   const sdg = event.sdg_goals?.[0];
-  const color = sdg ? SDG_COLORS[sdg] : "#3b82f6";
   const orgInitial = event.organization?.trim()[0]?.toUpperCase() ?? "E";
   const orgLogos = useContext(OrgLogosContext);
   const logoUrl = event.organization ? orgLogos[event.organization] ?? null : null;
+  const assets = getEventAssets({
+    banner_image_url: event.banner_image_url,
+    organization: event.organization,
+    sdg_goals: event.sdg_goals,
+    org_logo_url: logoUrl,
+  });
+  const color = assets.org_brand_color;
   const formatLabel =
     event.format === "in_person" ? "In-Person" :
     event.format === "virtual" ? "Virtual" :
@@ -317,15 +266,15 @@ export function EventCard({ event }: { event: EventPreview }) {
         href={`/events/${event.id}`}
         className="block bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-[#334155] shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 group overflow-hidden min-h-[260px] flex flex-col"
       >
-        {/* Cover area with contextual image */}
+        {/* Cover: real image when available, SDG gradient when not — never a broken state */}
         <div
           className="h-[100px] relative shrink-0 overflow-hidden flex flex-col items-center justify-center"
-          style={coverFailed ? { background: `linear-gradient(135deg, ${color}, ${color}bb)` } : undefined}
+          style={(!assets.banner_image_url || coverFailed) ? { background: assets.banner_gradient } : undefined}
         >
-          {!coverFailed && (
+          {assets.banner_image_url && !coverFailed && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={event.banner_image_url ?? getEventCoverImage(event.organization, event.sdg_goals)}
+              src={assets.banner_image_url}
               alt=""
               aria-hidden="true"
               className="w-full h-full object-cover object-center"
@@ -333,13 +282,13 @@ export function EventCard({ event }: { event: EventPreview }) {
               onError={() => setCoverFailed(true)}
             />
           )}
-          {coverFailed && (
+          {(!assets.banner_image_url || coverFailed) && (
             <>
-              <span className="text-white font-extrabold leading-none select-none" style={{ fontSize: 48 }}>
+              <span className="text-white font-extrabold leading-none select-none drop-shadow-md" style={{ fontSize: 48 }}>
                 {orgInitial}
               </span>
               {event.organization && (
-                <span className="text-white/80 text-xs mt-1 font-medium px-4 text-center line-clamp-1 max-w-full">
+                <span className="text-white/90 text-xs mt-1 font-medium px-4 text-center line-clamp-1 max-w-full drop-shadow">
                   {event.organization}
                 </span>
               )}
@@ -583,8 +532,8 @@ export default function HomeClient({
             </Link>
           </div>
           <div className="flex gap-4 overflow-x-auto pb-0 no-scrollbar snap-x snap-mandatory pl-0.5">
-            {FEATURED_ORGS.map(org => (
-              <FeaturedOrgCard key={org.name} org={org} />
+            {FEATURED_CALENDARS.map(org => (
+              <FeaturedOrgCard key={org.slug} org={org} />
             ))}
             {/* Suggest organization CTA card */}
             <div className="shrink-0 w-52 snap-start rounded-2xl border-2 border-dashed border-gray-300 dark:border-[#334155] bg-white dark:bg-[#1e293b] flex flex-col items-center justify-center p-6 gap-2 text-center">
