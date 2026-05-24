@@ -23,17 +23,22 @@ function sniffMime(buf: Buffer): "image/jpeg" | "image/png" | "image/webp" | nul
   return null;
 }
 
-function pickExtensionFromUrl(url: string): "jpg" | "jpeg" | "png" | "webp" | null {
-  try {
-    const u = new URL(url);
-    const m = u.pathname.toLowerCase().match(/\.(jpe?g|png|webp)(?:$|\?)/);
-    if (!m) return null;
-    const ext = m[1];
-    if (ext === "jpg" || ext === "jpeg" || ext === "png" || ext === "webp") return ext;
-    return null;
-  } catch {
-    return null;
-  }
+const KNOWN_IMAGE_CDN_HOSTS = [
+  /^images\.unsplash\.com$/i,
+  /^images\.pexels\.com$/i,
+  /^cdn\.pixabay\.com$/i,
+];
+
+function isKnownImageCdn(hostname: string): boolean {
+  return KNOWN_IMAGE_CDN_HOSTS.some(re => re.test(hostname));
+}
+
+function pathnameHasImageExt(pathname: string): boolean {
+  return /\.(jpe?g|png|webp)$/i.test(pathname);
+}
+
+function looksLikeDirectImage(u: URL): boolean {
+  return isKnownImageCdn(u.hostname) || pathnameHasImageExt(u.pathname);
 }
 
 function pickExtensionFromMime(mime: string): "jpg" | "png" | "webp" {
@@ -61,12 +66,7 @@ async function fetchWithTimeout(url: string, init?: RequestInit): Promise<Respon
   }
 }
 
-async function resolveImageUrlFromHtml(pageUrl: string): Promise<string | null> {
-  const res = await fetchWithTimeout(pageUrl);
-  if (!res.ok) return null;
-  const ct = (res.headers.get("content-type") ?? "").toLowerCase();
-  if (!ct.includes("text/html") && !ct.includes("application/xhtml")) return null;
-  const html = await res.text();
+function parseOgImageFromHtml(html: string, baseUrl: string): string | null {
   const headChunk = html.slice(0, 200_000);
   const re = /<meta\s+[^>]*?(?:property|name)\s*=\s*["']([^"']+)["'][^>]*?content\s*=\s*["']([^"']+)["'][^>]*>/gi;
   const reAlt = /<meta\s+[^>]*?content\s*=\s*["']([^"']+)["'][^>]*?(?:property|name)\s*=\s*["']([^"']+)["'][^>]*>/gi;
@@ -79,7 +79,7 @@ async function resolveImageUrlFromHtml(pageUrl: string): Promise<string | null> 
     const hit = candidates.find(c => c.key === key);
     if (hit?.value) {
       try {
-        return new URL(hit.value, pageUrl).toString();
+        return new URL(hit.value, baseUrl).toString();
       } catch {
         return null;
       }
@@ -196,33 +196,54 @@ async function handleUrlUpload(req: NextRequest) {
     return NextResponse.json({ error: "URL must use http or https" }, { status: 400 });
   }
 
-  let imageUrl = sourceUrl;
-  const ext = pickExtensionFromUrl(sourceUrl);
-  if (!ext) {
-    const resolved = await resolveImageUrlFromHtml(sourceUrl).catch(() => null);
-    if (!resolved) {
+  let imageRes: Response;
+  try {
+    // First, fetch the original URL — either it IS the image, or it's an HTML page we
+    // can extract the image URL from. We make this single round-trip work for both.
+    const firstRes = await fetchWithTimeout(sourceUrl);
+    if (!firstRes.ok) {
       return NextResponse.json(
-        { error: "Could not find an og:image / twitter:image on that page. Paste the direct image URL instead." },
+        { error: `Host returned HTTP ${firstRes.status}` },
+        { status: 502 }
+      );
+    }
+
+    const firstCt = (firstRes.headers.get("content-type") ?? "").toLowerCase().split(";")[0].trim();
+    const firstIsImage = firstCt.startsWith("image/");
+    const firstIsHtml = firstCt.includes("text/html") || firstCt.includes("application/xhtml");
+
+    // Treat as direct image if: hostname is a known CDN, OR pathname has an image ext,
+    // OR the actual Content-Type is image/*.
+    if (looksLikeDirectImage(parsedUrl) || firstIsImage) {
+      imageRes = firstRes;
+    } else if (firstIsHtml) {
+      // Parse og:image from the body we already have — no second fetch of the page.
+      const html = await firstRes.text();
+      const resolved = parseOgImageFromHtml(html, sourceUrl);
+      if (!resolved) {
+        return NextResponse.json(
+          { error: "Could not find an og:image / twitter:image on that page. Paste the direct image URL instead." },
+          { status: 400 }
+        );
+      }
+      imageRes = await fetchWithTimeout(resolved);
+      if (!imageRes.ok) {
+        return NextResponse.json(
+          { error: `Image host returned HTTP ${imageRes.status}` },
+          { status: 502 }
+        );
+      }
+    } else {
+      return NextResponse.json(
+        { error: `Unrecognized response type: ${firstCt || "unknown"}. Paste a direct image URL.` },
         { status: 400 }
       );
     }
-    imageUrl = resolved;
-  }
-
-  let imageRes: Response;
-  try {
-    imageRes = await fetchWithTimeout(imageUrl);
   } catch (err) {
     const msg = err instanceof Error && err.name === "AbortError"
       ? "Image fetch timed out after 15s"
       : `Image fetch failed: ${err instanceof Error ? err.message : String(err)}`;
     return NextResponse.json({ error: msg }, { status: 502 });
-  }
-  if (!imageRes.ok) {
-    return NextResponse.json(
-      { error: `Image host returned HTTP ${imageRes.status}` },
-      { status: 502 }
-    );
   }
 
   const contentLengthHeader = imageRes.headers.get("content-length");
