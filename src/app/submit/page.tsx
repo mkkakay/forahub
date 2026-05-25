@@ -42,6 +42,9 @@ interface FormState {
   speakers: string;
   event_languages: string[];
   language_other: string; // free-text "Other" language label
+  will_be_recorded: boolean;
+  recording_url: string;
+  capacity: string; // form-side keeps as string for empty-state UX, coerced to number on submit
   submitter_email: string;
 }
 
@@ -108,6 +111,9 @@ interface ExtractedFields {
   co_organizers: string | null;
   speakers: string | null;
   event_languages: string[] | null;
+  will_be_recorded: boolean | null;
+  recording_url: string | null;
+  capacity: number | null;
   confidence: "high" | "medium" | "low";
 }
 
@@ -157,6 +163,9 @@ function emptyForm(): FormState {
     speakers: "",
     event_languages: ["en"],
     language_other: "",
+    will_be_recorded: false,
+    recording_url: "",
+    capacity: "",
     submitter_email: "",
   };
 }
@@ -322,6 +331,10 @@ export default function SubmitPage() {
   // Debounced AI SDG suggestion in manual-entry mode.
   const [sdgSuggestion, setSdgSuggestion] = useState<{ sdg: number; label: string } | null>(null);
   const sdgTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Duplicate detection — soft warning modal before final submit.
+  const [duplicates, setDuplicates] = useState<Array<{ id: string; title: string; start_date: string; organization: string | null; similarity_score: number; event_url: string }>>([]);
+  const [duplicateModalOpen, setDuplicateModalOpen] = useState(false);
 
   // AI description rewrite state.
   const [rewriting, setRewriting] = useState<null | "polish" | "shorten" | "expand" | "translate_en" | "translate_fr" | "translate_es" | "translate_ar">(null);
@@ -502,6 +515,9 @@ export default function SubmitPage() {
       next.event_languages = extracted.event_languages;
       filled.event_languages = true;
     }
+    if (typeof extracted.will_be_recorded === "boolean") next.will_be_recorded = extracted.will_be_recorded;
+    if (extracted.recording_url) next.recording_url = extracted.recording_url;
+    if (typeof extracted.capacity === "number" && extracted.capacity > 0) next.capacity = String(extracted.capacity);
     if (ogImage && !next.banner_image_url) { next.banner_image_url = ogImage; filled.banner_image_url = true; }
     setForm(next);
     setAiFilled(filled);
@@ -759,17 +775,49 @@ export default function SubmitPage() {
       return setSubmitError("Email is required for anonymous submissions");
     }
 
-    const source = aiFilled.title || aiFilled.organization
-      ? (tab === "url" ? "url_ai" : "flyer_ai")
-      : "manual";
-
-    setSubmitting(true);
+    // Soft duplicate check before final submit.
     try {
+      const res = await fetch("/api/events/check-duplicate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: form.title.trim(),
+          start_date: new Date(form.start_date).toISOString(),
+          organization: form.organization.trim() || undefined,
+        }),
+      });
+      const parsed = await parseApiResponse<{ has_duplicates: boolean; candidates: Array<{ id: string; title: string; start_date: string; organization: string | null; similarity_score: number; event_url: string }> }>(res);
+      if (parsed.ok && parsed.data.has_duplicates) {
+        const strong = parsed.data.candidates.filter(c => c.similarity_score > 0.6);
+        if (strong.length > 0) {
+          setDuplicates(parsed.data.candidates.slice(0, 3));
+          setDuplicateModalOpen(true);
+          return;
+        }
+      }
+    } catch {
+      // Duplicate check is best-effort; never block submission on its failure.
+    }
+
+    await performSubmit();
+  }
+
+  async function performSubmit() {
+    setSubmitting(true);
+    setSubmitError(null);
+    setDuplicateModalOpen(false);
+    try {
+      const source = aiFilled.title || aiFilled.organization
+        ? (tab === "url" ? "url_ai" : "flyer_ai")
+        : "manual";
+
       // Include any free-text "Other" language as `other:<label>`.
       const languages = [...form.event_languages];
       if (form.language_other.trim() && !languages.includes(`other:${form.language_other.trim()}`)) {
         languages.push(`other:${form.language_other.trim()}`);
       }
+
+      const capacityNum = form.capacity.trim() ? Number(form.capacity.trim()) : null;
 
       const payload = {
         title: form.title.trim(),
@@ -792,6 +840,9 @@ export default function SubmitPage() {
         co_organizers: form.co_organizers.trim() || null,
         speakers: form.speakers.trim() || null,
         event_languages: languages.length > 0 ? languages : ["en"],
+        will_be_recorded: form.will_be_recorded,
+        recording_url: form.recording_url.trim() || null,
+        capacity: capacityNum && capacityNum > 0 ? capacityNum : null,
         source,
         submitted_by_user_id: userId ?? undefined,
         submitter_email: userId ? undefined : form.submitter_email.trim(),
@@ -1483,6 +1534,20 @@ export default function SubmitPage() {
             <p className="text-[11px] text-gray-400 mt-1">Default: 7 days before the event start. Adjust or clear if not applicable.</p>
           </div>
 
+          {/* ── Capacity ─────────────────────────────────────────── */}
+          <div>
+            <label className={labelClass}>Capacity <span className="text-gray-400 font-normal normal-case tracking-normal">(optional)</span></label>
+            <input
+              type="number"
+              min={1}
+              value={form.capacity}
+              onChange={e => setForm(f => ({ ...f, capacity: e.target.value }))}
+              placeholder="Leave blank for unlimited"
+              className={inputClass}
+            />
+            <p className="text-[11px] text-gray-400 mt-1">Maximum attendees. Helps attendees know if there&apos;s a registration cap.</p>
+          </div>
+
           {/* ── Co-organizers / partners ─────────────────────────── */}
           <div>
             <label className={labelClass}>Co-organizers / partners (optional) {aiFilled.co_organizers && aiBadge}</label>
@@ -1505,6 +1570,30 @@ export default function SubmitPage() {
               className={inputClass}
             />
             <p className="text-[11px] text-gray-400 mt-1">One per line or comma-separated.</p>
+          </div>
+
+          {/* ── Recording / livestream ───────────────────────────── */}
+          <div>
+            <label className={labelClass}>Recording <span className="text-gray-400 font-normal normal-case tracking-normal">(optional)</span></label>
+            <label className="flex items-center gap-2 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                checked={form.will_be_recorded}
+                onChange={e => setForm(f => ({ ...f, will_be_recorded: e.target.checked, recording_url: e.target.checked ? f.recording_url : "" }))}
+                className="accent-[#4ea8de]"
+              />
+              📹 This event will be recorded
+            </label>
+            {form.will_be_recorded && (
+              <input
+                type="url"
+                value={form.recording_url}
+                onChange={e => setForm(f => ({ ...f, recording_url: e.target.value }))}
+                placeholder="https://... (optional, you can add this after the event)"
+                className={`${inputClass} mt-2`}
+              />
+            )}
+            <p className="text-[11px] text-gray-400 mt-1">Help attendees who can&apos;t join live.</p>
           </div>
 
           {/* ── Event languages ──────────────────────────────────── */}
@@ -1582,6 +1671,69 @@ export default function SubmitPage() {
             </button>
           </div>
         </form>
+
+        {/* Duplicate-detection soft warning modal */}
+        {duplicateModalOpen && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+            onClick={() => setDuplicateModalOpen(false)}
+          >
+            <div
+              className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex items-start gap-3 mb-3">
+                <div className="shrink-0 w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-xl">
+                  ⚠️
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-[#0f2a4a]">We may already have this event</h3>
+                  <p className="text-sm text-gray-600 mt-0.5">
+                    These events on ForaHub look similar to what you&apos;re about to submit. Mind taking a look first?
+                  </p>
+                </div>
+              </div>
+              <ul className="space-y-2 mb-5">
+                {duplicates.map(d => (
+                  <li key={d.id} className="border border-gray-200 rounded-xl p-3 flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-gray-900 leading-snug line-clamp-2">{d.title}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {d.organization ?? "—"} · {new Date(d.start_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" })}
+                        <span className="ml-2 text-gray-400">{Math.round(d.similarity_score * 100)}% match</span>
+                      </p>
+                    </div>
+                    <a
+                      href={d.event_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="shrink-0 text-xs font-semibold text-[#4ea8de] hover:text-[#3a95cc] underline"
+                    >
+                      View →
+                    </a>
+                  </li>
+                ))}
+              </ul>
+              <div className="flex flex-col sm:flex-row gap-2 justify-end">
+                <button
+                  type="button"
+                  onClick={() => setDuplicateModalOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-gray-300 text-gray-700 text-sm font-semibold hover:bg-gray-50"
+                >
+                  Cancel — I&apos;ll check first
+                </button>
+                <button
+                  type="button"
+                  onClick={() => performSubmit()}
+                  disabled={submitting}
+                  className="px-4 py-2 rounded-xl bg-[#4ea8de] hover:bg-[#3a95cc] text-white text-sm font-semibold disabled:opacity-50"
+                >
+                  {submitting ? "Submitting…" : "Yes, mine is different — submit anyway"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

@@ -28,6 +28,9 @@ const EXTRACTION_PROMPT = `You are extracting event information for ForaHub, a g
   "co_organizers": string (comma-separated partner org names) or null,
   "speakers": string (newline or comma separated featured speakers) or null,
   "event_languages": array of ISO 639-1 codes (e.g., ["en", "fr"]) or null,
+  "will_be_recorded": boolean (true if the source explicitly mentions "will be recorded", "recording available", or similar),
+  "recording_url": string (URL where the recording will be / is posted) or null,
+  "capacity": number (maximum attendees if the source says "limited to X", "max X", or similar) or null,
   "confidence": "high" | "medium" | "low"
 }
 If you can't find a field, set it to null. Don't fabricate. Set confidence based on how much was explicit in the source.`;
@@ -49,6 +52,9 @@ interface ExtractedFields {
   co_organizers: string | null;
   speakers: string | null;
   event_languages: string[] | null;
+  will_be_recorded: boolean | null;
+  recording_url: string | null;
+  capacity: number | null;
   confidence: "high" | "medium" | "low";
 }
 
@@ -103,6 +109,12 @@ function parseExtraction(raw: string): ExtractedFields | null {
       co_organizers: typeof parsed.co_organizers === "string" ? parsed.co_organizers : null,
       speakers: typeof parsed.speakers === "string" ? parsed.speakers : null,
       event_languages: langs && langs.length > 0 ? langs : null,
+      will_be_recorded: typeof parsed.will_be_recorded === "boolean" ? parsed.will_be_recorded : null,
+      recording_url: typeof parsed.recording_url === "string" ? parsed.recording_url : null,
+      capacity:
+        typeof parsed.capacity === "number" && parsed.capacity > 0 && parsed.capacity < 1_000_000
+          ? Math.floor(parsed.capacity)
+          : null,
       confidence:
         parsed.confidence === "high" || parsed.confidence === "low" ? parsed.confidence : "medium",
     };

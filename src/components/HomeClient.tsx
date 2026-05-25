@@ -59,6 +59,8 @@ export interface EventPreview {
   banner_image_url?: string | null;
   banner_display_mode?: "contain" | "cover" | null;
   cost_type?: "free" | "paid" | "sliding_scale" | "donor_funded" | null;
+  capacity?: number | null;
+  registration_full?: boolean | null;
 }
 
 function formatDate(d: string) {
@@ -353,6 +355,16 @@ export function EventCard({ event }: { event: EventPreview }) {
                 <span>
                   {event.cost_type === "paid" ? "Paid" : event.cost_type === "sliding_scale" ? "Sliding scale" : "Donor-funded"}
                 </span>
+              </span>
+            )}
+            {event.capacity && event.registration_full && (
+              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
+                Registration full
+              </span>
+            )}
+            {event.capacity && !event.registration_full && (
+              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                {event.capacity} seats
               </span>
             )}
           </div>

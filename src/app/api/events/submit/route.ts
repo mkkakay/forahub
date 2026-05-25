@@ -19,6 +19,9 @@ interface SubmitBody {
   location?: string | null;
   online_url?: string | null;
   registration_url?: string | null;
+  will_be_recorded?: boolean;
+  recording_url?: string | null;
+  capacity?: number | null;
   primary_sdg?: number | null;
   banner_image_url?: string | null;
   uploaded_flyer_url?: string | null;
@@ -171,6 +174,12 @@ export async function POST(req: NextRequest) {
     location: body.location?.trim() || null,
     online_url: body.online_url?.trim() || null,
     registration_url: body.registration_url?.trim() || null,
+    will_be_recorded: !!body.will_be_recorded,
+    recording_url: body.recording_url?.trim() || null,
+    capacity:
+      typeof body.capacity === "number" && body.capacity > 0
+        ? Math.floor(body.capacity)
+        : null,
     sdg_goals: sdgGoals,
     banner_image_url: body.banner_image_url?.trim() || null,
     banner_fetched_at: body.banner_image_url ? new Date().toISOString() : null,
