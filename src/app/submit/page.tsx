@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   Upload, LinkIcon, PencilLine, Loader2, Sparkles, CheckCircle2,
@@ -206,8 +206,9 @@ function RewriteButton({
 }
 
 function FormSection({
-  icon, title, subtitle, children, first,
+  id, icon, title, subtitle, children, first,
 }: {
+  id?: string;
   icon: React.ReactNode;
   title: string;
   subtitle?: string;
@@ -215,7 +216,7 @@ function FormSection({
   first?: boolean;
 }) {
   return (
-    <section className={first ? "" : "border-t border-gray-200 pt-8 mt-8 md:pt-10 md:mt-10"}>
+    <section id={id} className={`scroll-mt-32 ${first ? "" : "border-t border-gray-200 pt-8 mt-8 md:pt-10 md:mt-10"}`}>
       <header className="mb-5">
         <div className="flex items-center gap-2">
           <span className="text-xl" aria-hidden="true">{icon}</span>
@@ -225,6 +226,82 @@ function FormSection({
       </header>
       <div className="space-y-5">{children}</div>
     </section>
+  );
+}
+
+type ProgressSection = {
+  id: string;
+  icon: string;
+  name: string;
+  complete: boolean;
+};
+
+function SubmitProgressBar({
+  sections,
+  currentSectionId,
+}: {
+  sections: ProgressSection[];
+  currentSectionId: string | null;
+}) {
+  const completedCount = sections.filter(s => s.complete).length;
+  const total = sections.length;
+  const allComplete = completedCount === total;
+  const pct = (completedCount / total) * 100;
+
+  const handleScrollTo = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  return (
+    <div className="sticky top-16 z-30 bg-white border-b border-gray-200 shadow-sm">
+      <div className="max-w-5xl mx-auto py-3 px-4 flex items-center gap-3 md:gap-4">
+        <div className="shrink-0 hidden md:block">
+          <p className="text-xs font-semibold text-[#0f2a4a]">Your event submission</p>
+          <p className={`text-[11px] mt-0.5 ${allComplete ? "text-green-700 font-semibold" : "text-gray-500"}`}>
+            {allComplete ? "Ready to submit ✨" : `${completedCount} of ${total} sections complete`}
+          </p>
+        </div>
+
+        <div className="flex-1 min-w-0 flex items-center gap-2 md:gap-3">
+          <div className={`flex-1 h-1.5 rounded-full overflow-hidden ${allComplete ? "bg-green-100" : "bg-gray-100"}`}>
+            <div
+              className={`h-full transition-all duration-500 ${allComplete ? "bg-green-500" : "bg-blue-500"}`}
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+          <span className={`md:hidden text-[11px] font-semibold shrink-0 ${allComplete ? "text-green-700" : "text-gray-600"}`}>
+            {allComplete ? "Ready ✨" : `${completedCount}/${total}`}
+          </span>
+        </div>
+
+        <ul className="hidden md:flex items-center gap-2 lg:gap-3 shrink-0">
+          {sections.map(s => {
+            const isCurrent = s.id === currentSectionId;
+            const base = "inline-flex items-center gap-1 text-xs px-1.5 py-1 rounded transition-colors";
+            const stateClass = s.complete
+              ? "text-green-700"
+              : isCurrent
+              ? "text-blue-700 font-bold border-b-2 border-blue-500 rounded-none"
+              : "text-gray-400";
+            return (
+              <li key={s.id}>
+                <button
+                  type="button"
+                  onClick={() => handleScrollTo(s.id)}
+                  aria-current={isCurrent ? "true" : undefined}
+                  className={`${base} ${stateClass} hover:bg-gray-50`}
+                >
+                  <span aria-hidden="true">{s.icon}</span>
+                  <span className="hidden lg:inline">{s.name}</span>
+                  {s.complete && <span aria-label="complete" className="text-green-600 font-bold">✓</span>}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </div>
   );
 }
 
@@ -367,6 +444,60 @@ export default function SubmitPage() {
   const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [translateOpen, setTranslateOpen] = useState(false);
   const MAX_REWRITES = 10;
+
+  // Sticky progress bar — track which section is currently in the viewport.
+  const [currentSectionId, setCurrentSectionId] = useState<string | null>("section-basics");
+
+  // Section completion derived from required fields only (optional fields ignored).
+  const progressSections: ProgressSection[] = useMemo(() => {
+    const basicsComplete = !!(form.title.trim() && form.organization.trim() && form.description.trim());
+
+    const formatRequiresLocation = form.format === "in_person" || form.format === "hybrid";
+    const formatRequiresOnline = form.format === "virtual" || form.format === "hybrid";
+    const locationOk = formatRequiresLocation ? form.location.trim().length > 0 : true;
+    const onlineOk = formatRequiresOnline ? form.online_url.trim().length > 0 : true;
+    const whenWhereComplete = !!(form.start_date && form.format && locationOk && onlineOk);
+
+    const costComplete = !!form.cost_type;
+    const partnersComplete = true; // all optional
+    const finalComplete = userId ? true : !!form.submitter_email.trim();
+
+    return [
+      { id: "section-basics", icon: "📋", name: "Basics", complete: basicsComplete },
+      { id: "section-when-where", icon: "📅", name: "When & Where", complete: whenWhereComplete },
+      { id: "section-cost-audience", icon: "🎫", name: "Cost & Audience", complete: costComplete },
+      { id: "section-partners-speakers", icon: "👥", name: "Partners & Speakers", complete: partnersComplete },
+      { id: "section-final-details", icon: "🎬", name: "Final Details", complete: finalComplete },
+    ];
+  }, [form, userId]);
+
+  // Intersection-observer-driven "current section" detection. The section
+  // whose heading sits closest to (but below) the sticky bar wins.
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof IntersectionObserver === "undefined") return;
+    const ids = ["section-basics", "section-when-where", "section-cost-audience", "section-partners-speakers", "section-final-details"];
+    const visibility = new Map<string, number>();
+    const observer = new IntersectionObserver(
+      entries => {
+        entries.forEach(e => visibility.set(e.target.id, e.intersectionRatio));
+        // Pick the first id (in document order) with the highest visibility ratio.
+        let bestId: string | null = null;
+        let bestRatio = -1;
+        for (const id of ids) {
+          const r = visibility.get(id) ?? 0;
+          if (r > bestRatio) {
+            bestRatio = r;
+            bestId = id;
+          }
+        }
+        if (bestId && bestRatio > 0) setCurrentSectionId(bestId);
+      },
+      { rootMargin: "-120px 0px -60% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] }
+    );
+    const els = ids.map(id => document.getElementById(id)).filter((el): el is HTMLElement => !!el);
+    els.forEach(el => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
 
   // Draft autosave
   const [showResumeBanner, setShowResumeBanner] = useState(false);
@@ -968,6 +1099,7 @@ export default function SubmitPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
+      <SubmitProgressBar sections={progressSections} currentSectionId={currentSectionId} />
       <main className="max-w-3xl mx-auto px-4 py-8 md:py-12">
         <header className="mb-6 text-center md:text-left">
           <h1 className="text-3xl md:text-4xl font-extrabold text-[#0f2a4a] tracking-tight">
@@ -1184,7 +1316,7 @@ export default function SubmitPage() {
 
         {/* The shared verify-and-submit form */}
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 md:p-8">
-          <FormSection first icon="📋" title="The Basics" subtitle="What is your event and who is hosting it?">
+          <FormSection id="section-basics" first icon="📋" title="The Basics" subtitle="What is your event and who is hosting it?">
 
           <div>
             <label className={labelClass}>
@@ -1340,7 +1472,7 @@ export default function SubmitPage() {
           </div>
           </FormSection>
 
-          <FormSection icon="📅" title="When & Where" subtitle="When does it happen and where can people join?">
+          <FormSection id="section-when-where" icon="📅" title="When & Where" subtitle="When does it happen and where can people join?">
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -1455,7 +1587,7 @@ export default function SubmitPage() {
           </div>
           </FormSection>
 
-          <FormSection icon="🎫" title="Cost & Audience" subtitle="Who is it for and what does it cost?">
+          <FormSection id="section-cost-audience" icon="🎫" title="Cost & Audience" subtitle="Who is it for and what does it cost?">
 
           {/* ── Cost ─────────────────────────────────────────────── */}
           <div>
@@ -1534,7 +1666,7 @@ export default function SubmitPage() {
           </div>
           </FormSection>
 
-          <FormSection icon="👥" title="Partners & Speakers" subtitle="Who else is involved?">
+          <FormSection id="section-partners-speakers" icon="👥" title="Partners & Speakers" subtitle="Who else is involved?">
 
           {/* ── Co-organizers / partners ─────────────────────────── */}
           <div>
@@ -1561,7 +1693,7 @@ export default function SubmitPage() {
           </div>
           </FormSection>
 
-          <FormSection icon="🎬" title="Final Details" subtitle="Last few things to make your event shine">
+          <FormSection id="section-final-details" icon="🎬" title="Final Details" subtitle="Last few things to make your event shine">
 
           {/* ── Banner ───────────────────────────────────────────── */}
           <div>
