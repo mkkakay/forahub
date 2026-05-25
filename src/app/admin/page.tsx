@@ -10,6 +10,7 @@ import OrganizationsPanel from './OrganizationsPanel'
 import RegionsPanel from './RegionsPanel'
 import EventsBannerPanel from './EventsBannerPanel'
 import PendingSubmissionsPanel from './PendingSubmissionsPanel'
+import DirectoryPanel from './DirectoryPanel'
 
 export const dynamic = 'force-dynamic'
 
@@ -254,6 +255,11 @@ export default async function AdminDashboard() {
       {/* Pending Submissions from /submit */}
       <div className="mt-6">
         <PendingSubmissionsPanel adminSecret={process.env.ADMIN_SECRET ?? ''} />
+      </div>
+
+      {/* Organization Directory (tiered, ~300 entries Stage 1) */}
+      <div className="mt-6">
+        <DirectoryPanel adminSecret={process.env.ADMIN_SECRET ?? ''} />
       </div>
 
       {/* Quick nav */}

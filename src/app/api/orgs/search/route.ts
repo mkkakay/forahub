@@ -1,15 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
-import { ORG_LIST, slugify } from "@/lib/organizations";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-interface OrgSuggestion {
+interface DirectoryRow {
   slug: string;
   name: string;
-  short: string;
+  short_name: string | null;
+  org_type: string;
+  region: string | null;
+  tier: number;
   logo_url: string | null;
+  aliases: string[] | null;
 }
 
 interface OverrideRow {
@@ -19,92 +22,143 @@ interface OverrideRow {
   manual_logo_url: string | null;
 }
 
-interface LogoRow {
+interface LogoCacheRow {
   organization_name: string;
   logo_url: string | null;
   status: string;
 }
 
-// Public — used by the /submit autocomplete. No admin gate, no PII.
+export interface OrgSuggestion {
+  slug: string;
+  name: string;
+  short: string;
+  org_type: string;
+  region: string | null;
+  tier: number;
+  logo_url: string | null;
+}
+
+// Tiny in-memory cache so a busy combobox doesn't slam the DB. Per-process.
+const respCache = new Map<string, { at: number; data: OrgSuggestion[] }>();
+const CACHE_TTL_MS = 60_000;
+
+function rankScore(s: { name: string; short: string; slug: string; aliases?: string[] | null }, q: string): number {
+  const qLower = q.toLowerCase();
+  if (s.slug === qLower) return 0;
+  if (s.name.toLowerCase() === qLower) return 1;
+  if (s.short.toLowerCase() === qLower) return 1;
+  if (s.short.toLowerCase().startsWith(qLower)) return 2;
+  if (s.name.toLowerCase().startsWith(qLower)) return 2;
+  if ((s.aliases ?? []).some(a => a.toLowerCase().startsWith(qLower))) return 3;
+  if (s.short.toLowerCase().includes(qLower)) return 4;
+  if (s.name.toLowerCase().includes(qLower)) return 4;
+  if (s.slug.includes(qLower)) return 5;
+  if ((s.aliases ?? []).some(a => a.toLowerCase().includes(qLower))) return 6;
+  return 99;
+}
+
 export async function GET(req: NextRequest) {
-  const q = (req.nextUrl.searchParams.get("q") ?? "").trim().toLowerCase();
+  const q = (req.nextUrl.searchParams.get("q") ?? "").trim();
   if (q.length < 1) return NextResponse.json({ data: [] });
 
-  // 1. Match against the static registry (20 curated orgs).
-  const registryMatches: OrgSuggestion[] = ORG_LIST
-    .filter(o => {
-      return (
-        o.name.toLowerCase().includes(q) ||
-        o.short.toLowerCase().includes(q) ||
-        o.slug.includes(q) ||
-        o.matchPatterns.some(p => p.toLowerCase().includes(q))
-      );
-    })
-    .map(o => ({ slug: o.slug, name: o.name, short: o.short, logo_url: null }));
+  const cacheKey = q.toLowerCase();
+  const cached = respCache.get(cacheKey);
+  if (cached && Date.now() - cached.at < CACHE_TTL_MS) {
+    return NextResponse.json({ data: cached.data });
+  }
 
-  // 2. Pull overrides (admin-renamed display names + manual logos).
+  // Pull tier 1 + 2 candidates that could plausibly match.
+  // We use ILIKE on name/short_name/slug for the main filter. Aliases are
+  // checked in JS over the returned candidates (text[] case-insensitive
+  // matching in PostgREST is awkward; the candidate set stays small).
+  const ilike = `%${q.replace(/[%_]/g, "")}%`;
+  const { data: rawRows } = await adminSupabase
+    .from("organizations_directory")
+    .select("slug, name, short_name, org_type, region, tier, logo_url, aliases")
+    .eq("status", "active")
+    .in("tier", [1, 2])
+    .or(`name.ilike.${ilike},short_name.ilike.${ilike},slug.ilike.${ilike}`)
+    .limit(50);
+
+  const candidates = (rawRows as DirectoryRow[] | null) ?? [];
+
+  // Surface alias-only matches that the SQL filter missed by pulling a small
+  // additional batch and merging. Cheap because we cap at 200 tier-1 rows.
+  if (candidates.length < 8) {
+    const { data: tier1All } = await adminSupabase
+      .from("organizations_directory")
+      .select("slug, name, short_name, org_type, region, tier, logo_url, aliases")
+      .eq("status", "active")
+      .eq("tier", 1)
+      .not("aliases", "is", null)
+      .limit(300);
+    const byAlias = ((tier1All as DirectoryRow[] | null) ?? []).filter(r =>
+      (r.aliases ?? []).some(a => a.toLowerCase().includes(q.toLowerCase()))
+    );
+    const seen = new Set(candidates.map(c => c.slug));
+    for (const r of byAlias) if (!seen.has(r.slug)) candidates.push(r);
+  }
+
+  if (candidates.length === 0) {
+    respCache.set(cacheKey, { at: Date.now(), data: [] });
+    return NextResponse.json({ data: [] });
+  }
+
+  // Layer 1: override-row manual logos + display-name renames.
+  const slugs = candidates.map(c => c.slug);
   const { data: overrideRows } = await adminSupabase
     .from("organization_overrides")
-    .select("slug, display_name, short_name, manual_logo_url");
-  const overrides = ((overrideRows ?? []) as OverrideRow[]);
-  const overrideBySlug = new Map(overrides.map(o => [o.slug, o]));
+    .select("slug, display_name, short_name, manual_logo_url")
+    .in("slug", slugs);
+  const overrideBySlug = new Map(((overrideRows ?? []) as OverrideRow[]).map(o => [o.slug, o]));
 
-  // Apply override renames onto registry matches AND surface override-only orgs that match.
-  const merged: Map<string, OrgSuggestion> = new Map();
-  for (const r of registryMatches) {
-    const ov = overrideBySlug.get(r.slug);
-    merged.set(r.slug, {
-      slug: r.slug,
-      name: ov?.display_name ?? r.name,
-      short: ov?.short_name ?? r.short,
-      logo_url: ov?.manual_logo_url ?? null,
-    });
-  }
-  for (const ov of overrides) {
-    if (merged.has(ov.slug)) continue;
-    const matches =
-      (ov.display_name?.toLowerCase().includes(q) ?? false) ||
-      (ov.short_name?.toLowerCase().includes(q) ?? false) ||
-      ov.slug.includes(q);
-    if (!matches) continue;
-    merged.set(ov.slug, {
-      slug: ov.slug,
-      name: ov.display_name ?? ov.slug,
-      short: ov.short_name ?? ov.display_name ?? ov.slug,
-      logo_url: ov.manual_logo_url,
-    });
-  }
-
-  // 3. Fill missing logos from the Brandfetch cache (organization_logos).
-  const names = Array.from(merged.values()).filter(o => !o.logo_url).map(o => o.name);
-  if (names.length > 0) {
+  // Layer 2: Brandfetch cache backfill for rows without a directory logo.
+  const namesNeedingLogo = candidates
+    .map(c => {
+      const ov = overrideBySlug.get(c.slug);
+      return ov?.display_name ?? c.name;
+    })
+    .filter(Boolean);
+  const cachedLogos = new Map<string, string>();
+  if (namesNeedingLogo.length > 0) {
     const { data: logoRows } = await adminSupabase
       .from("organization_logos")
       .select("organization_name, logo_url, status")
-      .in("organization_name", names);
-    const logoMap = new Map<string, string>();
-    for (const lr of (logoRows ?? []) as LogoRow[]) {
-      if (lr.status === "success" && lr.logo_url) logoMap.set(lr.organization_name, lr.logo_url);
+      .in("organization_name", namesNeedingLogo);
+    for (const r of ((logoRows ?? []) as LogoCacheRow[])) {
+      if (r.status === "success" && r.logo_url) cachedLogos.set(r.organization_name, r.logo_url);
     }
-    merged.forEach((sug, slug) => {
-      if (!sug.logo_url && logoMap.has(sug.name)) {
-        merged.set(slug, { ...sug, logo_url: logoMap.get(sug.name) ?? null });
-      }
-    });
   }
 
-  // 4. Rank: exact-slug-match > short-name-startswith > name-startswith > substring.
-  const ranked = Array.from(merged.values())
-    .sort((a, b) => {
-      const aSlugExact = slugify(a.name) === q ? 0 : 1;
-      const bSlugExact = slugify(b.name) === q ? 0 : 1;
-      if (aSlugExact !== bSlugExact) return aSlugExact - bSlugExact;
-      const aStart = a.short.toLowerCase().startsWith(q) || a.name.toLowerCase().startsWith(q) ? 0 : 1;
-      const bStart = b.short.toLowerCase().startsWith(q) || b.name.toLowerCase().startsWith(q) ? 0 : 1;
-      if (aStart !== bStart) return aStart - bStart;
-      return a.name.localeCompare(b.name);
-    })
-    .slice(0, 8);
+  // Build resolved suggestions.
+  const resolved: OrgSuggestion[] = candidates.map(c => {
+    const ov = overrideBySlug.get(c.slug);
+    const name = ov?.display_name ?? c.name;
+    const short = ov?.short_name ?? c.short_name ?? c.name;
+    const logo = ov?.manual_logo_url ?? c.logo_url ?? cachedLogos.get(name) ?? null;
+    return {
+      slug: c.slug,
+      name,
+      short,
+      org_type: c.org_type,
+      region: c.region,
+      tier: c.tier,
+      logo_url: logo,
+    };
+  });
 
-  return NextResponse.json({ data: ranked });
+  // Rank: by score, then by tier (1 wins), then alphabetically.
+  resolved.sort((a, b) => {
+    const aRow = candidates.find(c => c.slug === a.slug);
+    const bRow = candidates.find(c => c.slug === b.slug);
+    const aScore = rankScore({ name: a.name, short: a.short, slug: a.slug, aliases: aRow?.aliases }, q);
+    const bScore = rankScore({ name: b.name, short: b.short, slug: b.slug, aliases: bRow?.aliases }, q);
+    if (aScore !== bScore) return aScore - bScore;
+    if (a.tier !== b.tier) return a.tier - b.tier;
+    return a.name.localeCompare(b.name);
+  });
+
+  const top = resolved.slice(0, 8);
+  respCache.set(cacheKey, { at: Date.now(), data: top });
+  return NextResponse.json({ data: top });
 }
