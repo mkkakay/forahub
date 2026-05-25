@@ -843,7 +843,7 @@ export default function SubmitPage() {
                     type="url"
                     value={urlInput}
                     onChange={e => setUrlInput(e.target.value)}
-                    placeholder="https://www.eventbrite.com/e/…"
+                    placeholder="https://example.com/event-page"
                     className={inputClass}
                     onKeyDown={e => e.key === "Enter" && !extracting && handleUrlExtract()}
                   />
@@ -856,6 +856,7 @@ export default function SubmitPage() {
                     {extracting ? "Reading…" : "Extract"}
                   </button>
                 </div>
+                <p className="text-xs text-gray-500 mt-1">We&apos;ll read the page and fill in the form automatically.</p>
 
                 {pasteFallback && (
                   <div className="mt-2 border border-amber-200 bg-amber-50 rounded-xl p-4 space-y-3">
@@ -899,9 +900,14 @@ export default function SubmitPage() {
             )}
 
             {tab === "manual" && (
-              <p className="text-sm text-gray-600">
-                Just fill in the form below — no extraction needed.
-              </p>
+              <div className="space-y-1">
+                <p className="text-sm text-gray-600">
+                  Just fill in the form below — no extraction needed.
+                </p>
+                <p className="text-xs text-gray-500">
+                  Fill in event details — fields auto-suggest as you type.
+                </p>
+              </div>
             )}
           </div>
         </div>
@@ -928,7 +934,7 @@ export default function SubmitPage() {
             <input
               value={form.title}
               onChange={e => { setForm(f => ({ ...f, title: e.target.value })); setAiFilled(a => ({ ...a, title: false })); }}
-              placeholder="e.g. World Health Assembly 79th Session"
+              placeholder="e.g., World Health Assembly 79th Session"
               maxLength={120}
               className={inputClass}
             />
@@ -943,8 +949,9 @@ export default function SubmitPage() {
               <OrgCombobox
                 value={form.organization}
                 onChange={v => { setForm(f => ({ ...f, organization: v })); setAiFilled(a => ({ ...a, organization: false })); }}
-                placeholder="e.g. World Health Organization"
+                placeholder="Start typing your organization..."
               />
+              <p className="text-xs text-gray-500 mt-1">Type at least 2 characters to see suggestions.</p>
             </div>
             <div>
               <label className={labelClass}>Primary SDG (optional){aiFilled.primary_sdg && aiBadge}</label>
@@ -1070,8 +1077,9 @@ export default function SubmitPage() {
                 value={form.location}
                 onChange={v => { setForm(f => ({ ...f, location: v })); setAiFilled(a => ({ ...a, location: false })); }}
                 onPickedLocation={handleLocationPicked}
-                placeholder="Start typing a city — e.g. Brussels"
+                placeholder="Start typing city or country..."
               />
+              <p className="text-xs text-gray-500 mt-1">Type at least 2 characters to see suggestions.</p>
             </div>
           )}
 
@@ -1083,7 +1091,7 @@ export default function SubmitPage() {
                 type="url"
                 value={form.registration_url}
                 onChange={e => { setForm(f => ({ ...f, registration_url: e.target.value })); setAiFilled(a => ({ ...a, registration_url: false })); }}
-                placeholder="https://…"
+                placeholder="https://..."
                 className={`${inputClass} pl-9`}
               />
             </div>
@@ -1097,7 +1105,7 @@ export default function SubmitPage() {
                 type="url"
                 value={form.banner_image_url}
                 onChange={e => { setForm(f => ({ ...f, banner_image_url: e.target.value })); setAiFilled(a => ({ ...a, banner_image_url: false })); }}
-                placeholder="https://… (paste an image URL, or upload below)"
+                placeholder="https://images.unsplash.com/... (we'll auto-fetch a Pexels banner if you leave this blank)"
                 className={inputClass}
               />
               <label className="shrink-0 cursor-pointer inline-flex items-center gap-1.5 bg-[#0f2a4a] hover:bg-[#1a3f6e] text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors">
@@ -1156,7 +1164,7 @@ export default function SubmitPage() {
               <input
                 value={form.cost_details}
                 onChange={e => { setForm(f => ({ ...f, cost_details: e.target.value })); setAiFilled(a => ({ ...a, cost_details: false })); }}
-                placeholder="e.g. $50 USD, free for low-income countries"
+                placeholder="e.g., $50 USD, free for low-income country participants"
                 className={`${inputClass} mt-2`}
               />
             )}
@@ -1207,9 +1215,9 @@ export default function SubmitPage() {
             <OrgChipInput
               value={form.co_organizers}
               onChange={v => { setForm(f => ({ ...f, co_organizers: v })); setAiFilled(a => ({ ...a, co_organizers: false })); }}
-              placeholder="Type to search organizations, press Enter to add"
+              placeholder="Start typing to add partner organizations..."
             />
-            <p className="text-[11px] text-gray-400 mt-1">Picks from our registry first; you can also type any free-form name.</p>
+            <p className="text-xs text-gray-500 mt-1">Type at least 2 characters to see suggestions. Press Enter to add a free-form name.</p>
           </div>
 
           {/* ── Speakers / panelists ─────────────────────────────── */}
@@ -1218,7 +1226,7 @@ export default function SubmitPage() {
             <textarea
               value={form.speakers}
               onChange={e => { setForm(f => ({ ...f, speakers: e.target.value })); setAiFilled(a => ({ ...a, speakers: false })); }}
-              placeholder={"Dr. Jane Smith, WHO\nDr. John Doe, UNICEF\n…"}
+              placeholder={"Featured speakers, one per line or comma-separated\n\nDr. Jane Smith, WHO\nDr. John Doe, UNICEF"}
               rows={3}
               className={inputClass}
             />
