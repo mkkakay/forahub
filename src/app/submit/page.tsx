@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   Upload, LinkIcon, PencilLine, Loader2, Sparkles, CheckCircle2,
-  AlertCircle, Calendar, X, ArrowRight, Globe,
+  AlertCircle, X, ArrowRight, Globe,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { useSubscription } from "@/context/SubscriptionContext";
@@ -194,14 +194,37 @@ function RewriteButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex items-center gap-1 text-xs font-semibold border rounded-full px-2.5 py-1 transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+      className={`inline-flex items-center gap-1 text-xs font-semibold border rounded-full px-3 py-1.5 transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
         active
-          ? "bg-[#4ea8de] border-[#4ea8de] text-white"
-          : "border-gray-200 hover:border-[#4ea8de] hover:bg-[#4ea8de]/5 text-gray-700"
+          ? "bg-gradient-to-r from-purple-500 to-violet-500 border-purple-500 text-white shadow-md"
+          : "border-gray-200 hover:border-purple-300 hover:bg-gradient-to-r hover:from-purple-50 hover:to-violet-50 text-gray-700"
       }`}
     >
       <span aria-hidden="true">{icon}</span> {label}
     </button>
+  );
+}
+
+function FormSection({
+  icon, title, subtitle, children, first,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+  first?: boolean;
+}) {
+  return (
+    <section className={first ? "" : "border-t border-gray-200 pt-8 mt-8 md:pt-10 md:mt-10"}>
+      <header className="mb-5">
+        <div className="flex items-center gap-2">
+          <span className="text-xl" aria-hidden="true">{icon}</span>
+          <h2 className="text-lg md:text-xl font-bold text-[#0f2a4a]">{title}</h2>
+        </div>
+        {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
+      </header>
+      <div className="space-y-5">{children}</div>
+    </section>
   );
 }
 
@@ -875,11 +898,12 @@ export default function SubmitPage() {
 
   const labelClass = "block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1";
   const inputClass =
-    "w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]/40 focus:border-[#4ea8de] transition-colors";
+    "w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-800 placeholder-gray-400 hover:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-colors";
 
   const aiBadge = (
-    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-amber-700 bg-amber-100 border border-amber-300/60 rounded-full px-1.5 py-0.5 ml-1.5">
-      <Sparkles size={9} /> AI
+    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-purple-50 border border-purple-200 rounded-full px-1.5 py-0.5 ml-1.5 shadow-sm">
+      <Sparkles size={9} className="text-purple-600" />
+      <span className="bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent">AI</span>
     </span>
   );
 
@@ -945,13 +969,13 @@ export default function SubmitPage() {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <main className="max-w-3xl mx-auto px-4 py-8 md:py-12">
-        <header className="mb-6">
+        <header className="mb-6 text-center md:text-left">
           <h1 className="text-3xl md:text-4xl font-extrabold text-[#0f2a4a] tracking-tight">
             List your event on ForaHub
           </h1>
-          <p className="text-gray-600 mt-2">
-            Upload a flyer, paste a link, or fill in the form — we&apos;ll handle the rest.
-            Verified organizations go live instantly; everyone else publishes within 24 hours.
+          <p className="text-base text-gray-600 mt-2 mb-6">
+            Share your event with thousands of development professionals worldwide.
+            We&apos;ll review and publish within 24 hours.
           </p>
         </header>
 
@@ -998,21 +1022,28 @@ export default function SubmitPage() {
 
         {/* Tabs */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-5">
-          <div className="flex border-b border-gray-200">
+          <div className="grid grid-cols-3 gap-1 p-1 bg-gray-50">
             {(["flyer", "url", "manual"] as const).map(t => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
-                className={`flex-1 px-4 py-3 text-xs md:text-sm font-semibold uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 ${
+                className={`relative px-3 py-3 text-xs md:text-sm font-semibold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 rounded-lg ${
                   tab === t
-                    ? "bg-[#0f2a4a] text-white"
-                    : "bg-white text-gray-500 hover:text-[#0f2a4a]"
+                    ? "bg-blue-600 text-white shadow-md"
+                    : "bg-gray-50 text-gray-600 hover:bg-gray-100"
                 }`}
               >
-                {t === "flyer" && <Upload size={14} />}
-                {t === "url" && <LinkIcon size={14} />}
-                {t === "manual" && <PencilLine size={14} />}
-                {t === "flyer" ? "Upload Flyer" : t === "url" ? "Paste URL" : "Enter Manually"}
+                {t === "flyer" && <Upload size={16} />}
+                {t === "url" && <LinkIcon size={16} />}
+                {t === "manual" && <PencilLine size={16} />}
+                <span>{t === "flyer" ? "Upload Flyer" : t === "url" ? "Paste URL" : "Enter Manually"}</span>
+                {t === "flyer" && (
+                  <span className={`hidden sm:inline-flex absolute -top-1 -right-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full shadow-sm ${
+                    tab === t ? "bg-white text-purple-600" : "bg-gradient-to-r from-purple-500 to-violet-500 text-white"
+                  }`}>
+                    ✨ Recommended
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -1152,8 +1183,8 @@ export default function SubmitPage() {
         )}
 
         {/* The shared verify-and-submit form */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 md:p-6 space-y-5">
-          <h2 className="text-lg font-bold text-[#0f2a4a]">Event details</h2>
+        <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 md:p-8">
+          <FormSection first icon="📋" title="The Basics" subtitle="What is your event and who is hosting it?">
 
           <div>
             <label className={labelClass}>
@@ -1307,6 +1338,9 @@ export default function SubmitPage() {
               </div>
             )}
           </div>
+          </FormSection>
+
+          <FormSection icon="📅" title="When & Where" subtitle="When does it happen and where can people join?">
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -1408,57 +1442,20 @@ export default function SubmitPage() {
             <p className="text-[11px] text-gray-400 mt-1">Auto-set from the selected location. Override if needed.</p>
           </div>
 
+          {/* ── Registration deadline ────────────────────────────── */}
           <div>
-            <label className={labelClass}>Registration / info URL {aiFilled.registration_url && aiBadge}</label>
-            <div className="relative">
-              <LinkIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="url"
-                value={form.registration_url}
-                onChange={e => { setForm(f => ({ ...f, registration_url: e.target.value })); setAiFilled(a => ({ ...a, registration_url: false })); }}
-                placeholder="https://..."
-                className={`${inputClass} pl-9`}
-              />
-            </div>
+            <label className={labelClass}>Registration deadline (optional) {aiFilled.registration_deadline && aiBadge}</label>
+            <input
+              type="datetime-local"
+              value={form.registration_deadline}
+              onChange={e => { deadlineTouchedRef.current = true; setForm(f => ({ ...f, registration_deadline: e.target.value })); setAiFilled(a => ({ ...a, registration_deadline: false })); }}
+              className={inputClass}
+            />
+            <p className="text-[11px] text-gray-400 mt-1">Default: 7 days before the event start. Adjust or clear if not applicable.</p>
           </div>
+          </FormSection>
 
-          {/* ── Banner ───────────────────────────────────────────── */}
-          <div>
-            <label className={labelClass}>Banner image (optional) {aiFilled.banner_image_url && aiBadge}</label>
-            <div className="flex flex-col md:flex-row gap-2 items-start">
-              <input
-                type="url"
-                value={form.banner_image_url}
-                onChange={e => { setForm(f => ({ ...f, banner_image_url: e.target.value })); setAiFilled(a => ({ ...a, banner_image_url: false })); }}
-                placeholder="https://images.unsplash.com/... (we'll auto-fetch a Pexels banner if you leave this blank)"
-                className={inputClass}
-              />
-              <label className="shrink-0 cursor-pointer inline-flex items-center gap-1.5 bg-[#0f2a4a] hover:bg-[#1a3f6e] text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors">
-                <Upload size={14} /> Upload banner
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  className="hidden"
-                  onChange={e => {
-                    const f = e.target.files?.[0];
-                    if (f) handleBannerFileUpload(f);
-                    e.target.value = "";
-                  }}
-                />
-              </label>
-            </div>
-            {form.banner_image_url && (
-              <div className="mt-2 rounded-xl border border-gray-200 overflow-hidden bg-white">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={form.banner_image_url} alt="Banner preview" className="w-full max-h-48 object-cover" />
-              </div>
-            )}
-            <p className="text-[11px] text-gray-400 mt-1">
-              {form.uploaded_flyer_url && form.banner_image_url === form.uploaded_flyer_url
-                ? "✨ Using your uploaded flyer as the banner. Paste a URL or upload a different image to override."
-                : "Leave blank and we'll auto-fetch a relevant Pexels image."}
-            </p>
-          </div>
+          <FormSection icon="🎫" title="Cost & Audience" subtitle="Who is it for and what does it cost?">
 
           {/* ── Cost ─────────────────────────────────────────────── */}
           <div>
@@ -1522,18 +1519,6 @@ export default function SubmitPage() {
             <p className="text-[11px] text-gray-400 mt-1">Leave all unchecked = open to everyone (default).</p>
           </div>
 
-          {/* ── Registration deadline ────────────────────────────── */}
-          <div>
-            <label className={labelClass}>Registration deadline (optional) {aiFilled.registration_deadline && aiBadge}</label>
-            <input
-              type="datetime-local"
-              value={form.registration_deadline}
-              onChange={e => { deadlineTouchedRef.current = true; setForm(f => ({ ...f, registration_deadline: e.target.value })); setAiFilled(a => ({ ...a, registration_deadline: false })); }}
-              className={inputClass}
-            />
-            <p className="text-[11px] text-gray-400 mt-1">Default: 7 days before the event start. Adjust or clear if not applicable.</p>
-          </div>
-
           {/* ── Capacity ─────────────────────────────────────────── */}
           <div>
             <label className={labelClass}>Capacity <span className="text-gray-400 font-normal normal-case tracking-normal">(optional)</span></label>
@@ -1547,6 +1532,9 @@ export default function SubmitPage() {
             />
             <p className="text-[11px] text-gray-400 mt-1">Maximum attendees. Helps attendees know if there&apos;s a registration cap.</p>
           </div>
+          </FormSection>
+
+          <FormSection icon="👥" title="Partners & Speakers" subtitle="Who else is involved?">
 
           {/* ── Co-organizers / partners ─────────────────────────── */}
           <div>
@@ -1570,6 +1558,47 @@ export default function SubmitPage() {
               className={inputClass}
             />
             <p className="text-[11px] text-gray-400 mt-1">One per line or comma-separated.</p>
+          </div>
+          </FormSection>
+
+          <FormSection icon="🎬" title="Final Details" subtitle="Last few things to make your event shine">
+
+          {/* ── Banner ───────────────────────────────────────────── */}
+          <div>
+            <label className={labelClass}>Banner image (optional) {aiFilled.banner_image_url && aiBadge}</label>
+            <div className="flex flex-col md:flex-row gap-2 items-start">
+              <input
+                type="url"
+                value={form.banner_image_url}
+                onChange={e => { setForm(f => ({ ...f, banner_image_url: e.target.value })); setAiFilled(a => ({ ...a, banner_image_url: false })); }}
+                placeholder="https://images.unsplash.com/... (we'll auto-fetch a Pexels banner if you leave this blank)"
+                className={inputClass}
+              />
+              <label className="shrink-0 cursor-pointer inline-flex items-center gap-1.5 bg-[#0f2a4a] hover:bg-[#1a3f6e] text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors">
+                <Upload size={14} /> Upload banner
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={e => {
+                    const f = e.target.files?.[0];
+                    if (f) handleBannerFileUpload(f);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+            </div>
+            {form.banner_image_url && (
+              <div className="mt-2 rounded-xl border border-gray-200 overflow-hidden bg-white">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={form.banner_image_url} alt="Banner preview" className="w-full max-h-48 object-cover" />
+              </div>
+            )}
+            <p className="text-[11px] text-gray-400 mt-1">
+              {form.uploaded_flyer_url && form.banner_image_url === form.uploaded_flyer_url
+                ? "✨ Using your uploaded flyer as the banner. Paste a URL or upload a different image to override."
+                : "Leave blank and we'll auto-fetch a relevant Pexels image."}
+            </p>
           </div>
 
           {/* ── Recording / livestream ───────────────────────────── */}
@@ -1628,6 +1657,21 @@ export default function SubmitPage() {
             />
           </div>
 
+          {/* ── Registration / info URL ──────────────────────────── */}
+          <div>
+            <label className={labelClass}>Registration / info URL {aiFilled.registration_url && aiBadge}</label>
+            <div className="relative">
+              <LinkIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="url"
+                value={form.registration_url}
+                onChange={e => { setForm(f => ({ ...f, registration_url: e.target.value })); setAiFilled(a => ({ ...a, registration_url: false })); }}
+                placeholder="https://..."
+                className={`${inputClass} pl-9`}
+              />
+            </div>
+          </div>
+
           {!userId && (
             <div className="border-t border-gray-100 pt-5">
               <label className={labelClass}>
@@ -1649,6 +1693,7 @@ export default function SubmitPage() {
               </p>
             </div>
           )}
+          </FormSection>
 
           {submitError && (
             <div className="flex items-start gap-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
@@ -1657,17 +1702,17 @@ export default function SubmitPage() {
             </div>
           )}
 
-          <div className="border-t border-gray-100 pt-5 flex flex-wrap items-center gap-3 justify-between">
+          <div className="border-t border-gray-100 pt-6 flex flex-col md:flex-row md:items-center gap-3 md:justify-between">
             <p className="text-[11px] text-gray-400 flex items-center gap-1">
               <Globe size={11} /> Drafts auto-save every 10 seconds.
             </p>
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex items-center gap-2 bg-[#4ea8de] hover:bg-[#3a95cc] disabled:bg-gray-300 text-white font-bold px-6 py-3 rounded-xl text-sm transition-colors"
+              className="w-full md:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed text-white font-semibold px-12 py-4 rounded-xl text-base shadow-lg hover:shadow-xl transition-all"
             >
-              {submitting ? <Loader2 size={16} className="animate-spin" /> : <Calendar size={16} />}
               {submitting ? "Submitting…" : "Submit Event"}
+              {submitting ? <Loader2 size={18} className="animate-spin" /> : <ArrowRight size={18} />}
             </button>
           </div>
         </form>
