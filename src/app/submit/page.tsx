@@ -171,6 +171,31 @@ function emptyAi(): AiFilled {
   };
 }
 
+function RewriteButton({
+  onClick, disabled, active, icon, label,
+}: {
+  onClick: () => void;
+  disabled: boolean;
+  active: boolean;
+  icon: string;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`inline-flex items-center gap-1 text-xs font-semibold border rounded-full px-2.5 py-1 transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+        active
+          ? "bg-[#4ea8de] border-[#4ea8de] text-white"
+          : "border-gray-200 hover:border-[#4ea8de] hover:bg-[#4ea8de]/5 text-gray-700"
+      }`}
+    >
+      <span aria-hidden="true">{icon}</span> {label}
+    </button>
+  );
+}
+
 /** 8 major timezones shown below the Start Date & Time picker so submitters
  *  can sanity-check how the event lands for a global audience. */
 const TIMEZONE_STRIP: { city: string; tz: string }[] = [
@@ -297,6 +322,15 @@ export default function SubmitPage() {
   // Debounced AI SDG suggestion in manual-entry mode.
   const [sdgSuggestion, setSdgSuggestion] = useState<{ sdg: number; label: string } | null>(null);
   const sdgTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // AI description rewrite state.
+  const [rewriting, setRewriting] = useState<null | "polish" | "shorten" | "expand" | "translate_en" | "translate_fr" | "translate_es" | "translate_ar">(null);
+  const [rewriteError, setRewriteError] = useState<string | null>(null);
+  const [rewriteCount, setRewriteCount] = useState(0);
+  const [undoOriginal, setUndoOriginal] = useState<string | null>(null);
+  const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [translateOpen, setTranslateOpen] = useState(false);
+  const MAX_REWRITES = 10;
 
   // Draft autosave
   const [showResumeBanner, setShowResumeBanner] = useState(false);
@@ -527,6 +561,59 @@ export default function SubmitPage() {
     } finally {
       setExtracting(false);
     }
+  }
+
+  async function rewriteDescription(mode: "polish" | "shorten" | "expand" | "translate_en" | "translate_fr" | "translate_es" | "translate_ar") {
+    setRewriteError(null);
+    const current = form.description.trim();
+    if (current.length < 10) {
+      setRewriteError("Description too short to rewrite (minimum 10 characters).");
+      return;
+    }
+    if (rewriteCount >= MAX_REWRITES) {
+      setRewriteError(`AI rewrites used (${MAX_REWRITES}/${MAX_REWRITES}). Refresh the page to reset.`);
+      return;
+    }
+    setRewriting(mode);
+    try {
+      const payload = {
+        text: current,
+        mode,
+        context: {
+          title: form.title.trim() || undefined,
+          organization: form.organization.trim() || undefined,
+          sdg: form.primary_sdg ?? undefined,
+        },
+      };
+      const res = await fetch("/api/events/rewrite-description", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const parsed = await parseApiResponse<{ rewritten_text: string; mode: string; cost: number }>(res);
+      if (!parsed.ok) throw new Error(parsed.error);
+      const newText = parsed.data.rewritten_text;
+      // Stash original so the user can undo for 30s.
+      setUndoOriginal(current);
+      if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+      undoTimerRef.current = setTimeout(() => setUndoOriginal(null), 30_000);
+      setForm(f => ({ ...f, description: newText }));
+      setAiFilled(a => ({ ...a, description: true }));
+      setRewriteCount(c => c + 1);
+      setTranslateOpen(false);
+    } catch (err) {
+      setRewriteError(`Rewrite failed: ${err instanceof Error ? err.message : String(err)}. Try again.`);
+    } finally {
+      setRewriting(null);
+    }
+  }
+
+  function undoRewrite() {
+    if (!undoOriginal) return;
+    setForm(f => ({ ...f, description: undoOriginal }));
+    setAiFilled(a => ({ ...a, description: false }));
+    setUndoOriginal(null);
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
   }
 
   function handleLocationPicked(loc: LocationResult) {
@@ -1097,7 +1184,77 @@ export default function SubmitPage() {
               rows={3}
               className={inputClass}
             />
-            <p className="text-[11px] text-gray-400 mt-1">{form.description.length}/500</p>
+            <div className="flex items-center justify-between mt-1">
+              <p className="text-[11px] text-gray-400">{form.description.length}/500</p>
+              <p className="text-[11px] text-gray-400">{rewriteCount}/{MAX_REWRITES} AI rewrites used</p>
+            </div>
+
+            {/* AI Polish toolbar */}
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <RewriteButton onClick={() => rewriteDescription("polish")} disabled={!!rewriting || rewriteCount >= MAX_REWRITES} active={rewriting === "polish"} icon="✨" label="Polish" />
+              <RewriteButton onClick={() => rewriteDescription("shorten")} disabled={!!rewriting || rewriteCount >= MAX_REWRITES} active={rewriting === "shorten"} icon="✂️" label="Shorten" />
+              <RewriteButton onClick={() => rewriteDescription("expand")} disabled={!!rewriting || rewriteCount >= MAX_REWRITES} active={rewriting === "expand"} icon="📝" label="Expand" />
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setTranslateOpen(o => !o)}
+                  disabled={!!rewriting || rewriteCount >= MAX_REWRITES}
+                  className="inline-flex items-center gap-1 text-xs font-semibold border border-gray-200 hover:border-[#4ea8de] hover:bg-[#4ea8de]/5 disabled:opacity-40 disabled:cursor-not-allowed rounded-full px-2.5 py-1 text-gray-700 transition-colors"
+                >
+                  🌐 Translate <span className="text-gray-400">▼</span>
+                </button>
+                {translateOpen && (
+                  <ul className="absolute z-10 mt-1 right-0 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden min-w-[160px]">
+                    {([
+                      { m: "translate_en" as const, label: "To English" },
+                      { m: "translate_fr" as const, label: "À Français" },
+                      { m: "translate_es" as const, label: "Al Español" },
+                      { m: "translate_ar" as const, label: "إلى العربية" },
+                    ]).map(opt => (
+                      <li key={opt.m}>
+                        <button
+                          type="button"
+                          onClick={() => rewriteDescription(opt.m)}
+                          className="w-full text-left px-3 py-2 text-xs hover:bg-gray-50 text-gray-700 border-b border-gray-100 last:border-b-0"
+                        >
+                          {opt.label}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              {rewriting && (
+                <span className="inline-flex items-center gap-1 text-xs text-gray-500">
+                  <Loader2 size={12} className="animate-spin" /> 🤖 Rewriting…
+                </span>
+              )}
+            </div>
+
+            {undoOriginal && (
+              <div className="mt-2 flex items-center justify-between bg-amber-50 border border-amber-200 rounded-xl px-3 py-1.5">
+                <span className="text-xs text-amber-900">
+                  ✨ Description rewritten — your original is saved for 30 seconds.
+                </span>
+                <button
+                  type="button"
+                  onClick={undoRewrite}
+                  className="text-xs font-semibold text-amber-900 hover:text-amber-950 underline"
+                >
+                  ↩️ Undo
+                </button>
+              </div>
+            )}
+
+            {rewriteError && (
+              <div className="mt-2 flex items-start gap-1.5 text-xs text-red-700 bg-red-50 border border-red-200 rounded-xl px-3 py-1.5">
+                <AlertCircle size={12} className="mt-0.5 shrink-0" />
+                <span className="flex-1">{rewriteError}</span>
+                <button onClick={() => setRewriteError(null)} className="text-red-500 hover:text-red-700">
+                  <X size={12} />
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
