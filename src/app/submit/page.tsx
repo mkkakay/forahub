@@ -1105,10 +1105,16 @@ export default function SubmitPage() {
           <h1 className="text-3xl md:text-4xl font-extrabold text-[#0f2a4a] tracking-tight">
             List your event on ForaHub
           </h1>
-          <p className="text-base text-gray-600 mt-2 mb-6">
+          <p className="text-base text-gray-600 mt-2 mb-3">
             Share your event with thousands of development professionals worldwide.
             We&apos;ll review and publish within 24 hours.
           </p>
+          <Link
+            href="/submit/bulk"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-700 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-full px-3 py-1.5 transition-colors"
+          >
+            📦 Submitting multiple events? Try bulk import <ArrowRight size={14} />
+          </Link>
         </header>
 
         {showResumeBanner && (
