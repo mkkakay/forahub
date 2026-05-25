@@ -51,6 +51,7 @@ export interface EventRow {
   co_organizers: string | null
   event_languages: string[] | null
   uploaded_flyer_url: string | null
+  online_url: string | null
   audience_level: AudienceLevel | null
   is_public: boolean
   expected_attendance: string | null

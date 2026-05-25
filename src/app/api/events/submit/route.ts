@@ -17,6 +17,7 @@ interface SubmitBody {
   timezone?: string;
   format?: "in_person" | "virtual" | "hybrid";
   location?: string | null;
+  online_url?: string | null;
   registration_url?: string | null;
   primary_sdg?: number | null;
   banner_image_url?: string | null;
@@ -168,6 +169,7 @@ export async function POST(req: NextRequest) {
     timezone: (body.timezone ?? "UTC").trim() || "UTC",
     format,
     location: body.location?.trim() || null,
+    online_url: body.online_url?.trim() || null,
     registration_url: body.registration_url?.trim() || null,
     sdg_goals: sdgGoals,
     banner_image_url: body.banner_image_url?.trim() || null,

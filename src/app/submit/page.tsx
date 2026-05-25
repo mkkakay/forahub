@@ -30,6 +30,7 @@ interface FormState {
   timezone: string;
   format: "in_person" | "virtual" | "hybrid";
   location: string;
+  online_url: string;
   registration_url: string;
   primary_sdg: number | null;
   banner_image_url: string;
@@ -144,6 +145,7 @@ function emptyForm(): FormState {
     timezone: tz || "UTC",
     format: "in_person",
     location: "",
+    online_url: "",
     registration_url: "",
     primary_sdg: null,
     banner_image_url: "",
@@ -167,6 +169,94 @@ function emptyAi(): AiFilled {
     cost_type: false, cost_details: false, target_audience: false,
     co_organizers: false, speakers: false, event_languages: false,
   };
+}
+
+/** 8 major timezones shown below the Start Date & Time picker so submitters
+ *  can sanity-check how the event lands for a global audience. */
+const TIMEZONE_STRIP: { city: string; tz: string }[] = [
+  { city: "New York", tz: "America/New_York" },
+  { city: "São Paulo", tz: "America/Sao_Paulo" },
+  { city: "London", tz: "Europe/London" },
+  { city: "Geneva", tz: "Europe/Zurich" },
+  { city: "Dubai", tz: "Asia/Dubai" },
+  { city: "Nairobi", tz: "Africa/Nairobi" },
+  { city: "Singapore", tz: "Asia/Singapore" },
+  { city: "Tokyo", tz: "Asia/Tokyo" },
+];
+
+/** Render a wall-clock instant from (localInput, sourceTimezone) → formatted
+ *  string in `displayTimezone`. Returns null if the input is unparseable. */
+function formatInZone(localInput: string, sourceTimezone: string, displayTimezone: string): string | null {
+  if (!localInput) return null;
+  // Build an instant by treating the local input as wall-time in the source
+  // timezone. We use Intl with a known reference to compute the source offset.
+  try {
+    // Parse Y-M-D-H-M from the datetime-local string.
+    const m = localInput.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+    if (!m) return null;
+    const [, ys, ms, ds, hs, mins] = m;
+    const y = Number(ys), mo = Number(ms) - 1, d = Number(ds), h = Number(hs), mn = Number(mins);
+    // Start with a UTC guess for the wall-time, then correct by the offset
+    // the source zone reports at that instant. Two iterations converges
+    // around DST/standard-time boundaries.
+    let utcGuess = Date.UTC(y, mo, d, h, mn);
+    for (let i = 0; i < 2; i++) {
+      const offset = tzOffsetMinutes(new Date(utcGuess), sourceTimezone);
+      utcGuess = Date.UTC(y, mo, d, h, mn) - offset * 60_000;
+    }
+    const instant = new Date(utcGuess);
+    if (isNaN(instant.getTime())) return null;
+    return new Intl.DateTimeFormat("en-US", {
+      timeZone: displayTimezone,
+      hour: "numeric",
+      minute: "2-digit",
+      weekday: "short",
+      hour12: true,
+    }).format(instant);
+  } catch {
+    return null;
+  }
+}
+
+/** Offset (minutes east of UTC) for a given IANA zone at a specific instant. */
+function tzOffsetMinutes(instant: Date, timeZone: string): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
+  }).formatToParts(instant);
+  const map: Record<string, string> = {};
+  for (const p of parts) if (p.type !== "literal") map[p.type] = p.value;
+  const asUtc = Date.UTC(
+    Number(map.year), Number(map.month) - 1, Number(map.day),
+    Number(map.hour) === 24 ? 0 : Number(map.hour),
+    Number(map.minute), Number(map.second)
+  );
+  return Math.round((asUtc - instant.getTime()) / 60_000);
+}
+
+function TimezoneStrip({ localInput, sourceTimezone }: { localInput: string; sourceTimezone: string }) {
+  if (!localInput) return null;
+  const rows = TIMEZONE_STRIP.map(z => ({
+    city: z.city,
+    text: formatInZone(localInput, sourceTimezone, z.tz),
+  })).filter(r => r.text);
+  if (rows.length === 0) return null;
+  return (
+    <div className="mt-2 bg-gray-50 border border-gray-200 rounded-xl p-3">
+      <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5">
+        🌍 Time in major timezones
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-0.5 text-xs text-gray-700">
+        {rows.map(r => (
+          <div key={r.city} className="flex justify-between">
+            <span className="font-medium">{r.city}</span>
+            <span className="tabular-nums text-gray-600">{r.text}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 /** Convert an ISO timestamp from the API into a value suitable for
@@ -604,6 +694,7 @@ export default function SubmitPage() {
         timezone: form.timezone,
         format: form.format,
         location: form.location.trim() || null,
+        online_url: form.online_url.trim() || null,
         registration_url: form.registration_url.trim() || null,
         primary_sdg: form.primary_sdg,
         banner_image_url: form.banner_image_url.trim() || null,
@@ -1033,16 +1124,7 @@ export default function SubmitPage() {
             </div>
           </div>
 
-          <div>
-            <label className={labelClass}>Timezone</label>
-            <input
-              value={form.timezone}
-              onChange={e => { tzTouchedRef.current = true; setForm(f => ({ ...f, timezone: e.target.value })); }}
-              placeholder="e.g. America/New_York"
-              className={inputClass}
-            />
-            <p className="text-[11px] text-gray-400 mt-1">Auto-set from the selected location. Override if needed.</p>
-          </div>
+          <TimezoneStrip localInput={form.start_date} sourceTimezone={form.timezone} />
 
           <div>
             <label className={labelClass}>Format <span className="text-red-500">*</span></label>
@@ -1070,9 +1152,12 @@ export default function SubmitPage() {
             </div>
           </div>
 
+          {/* Location first — picking a city auto-sets the timezone below. */}
           {(form.format === "in_person" || form.format === "hybrid") && (
             <div>
-              <label className={labelClass}>Location {aiFilled.location && aiBadge}</label>
+              <label className={labelClass}>
+                Location {form.format === "hybrid" && <span className="text-red-500">*</span>} {aiFilled.location && aiBadge}
+              </label>
               <LocationCombobox
                 value={form.location}
                 onChange={v => { setForm(f => ({ ...f, location: v })); setAiFilled(a => ({ ...a, location: false })); }}
@@ -1082,6 +1167,38 @@ export default function SubmitPage() {
               <p className="text-xs text-gray-500 mt-1">Type at least 2 characters to see suggestions.</p>
             </div>
           )}
+
+          {/* Online URL for virtual or hybrid events. */}
+          {(form.format === "virtual" || form.format === "hybrid") && (
+            <div>
+              <label className={labelClass}>
+                Meeting link / Online URL {form.format === "virtual" && <span className="text-red-500">*</span>}
+              </label>
+              <div className="relative">
+                <LinkIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="url"
+                  value={form.online_url}
+                  onChange={e => setForm(f => ({ ...f, online_url: e.target.value }))}
+                  placeholder="https://zoom.us/j/... or any meeting link"
+                  className={`${inputClass} pl-9`}
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Zoom, Teams, Webex, or any meeting link.</p>
+            </div>
+          )}
+
+          {/* Timezone — auto-filled when a location is picked, override if needed. */}
+          <div>
+            <label className={labelClass}>Timezone</label>
+            <input
+              value={form.timezone}
+              onChange={e => { tzTouchedRef.current = true; setForm(f => ({ ...f, timezone: e.target.value })); }}
+              placeholder="e.g. America/New_York"
+              className={inputClass}
+            />
+            <p className="text-[11px] text-gray-400 mt-1">Auto-set from the selected location. Override if needed.</p>
+          </div>
 
           <div>
             <label className={labelClass}>Registration / info URL {aiFilled.registration_url && aiBadge}</label>
