@@ -272,7 +272,7 @@ export default function BulkSubmitPage() {
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Link
-                href="/submit"
+                href="/submit/single"
                 className="inline-flex items-center gap-2 bg-[#0f2a4a] hover:bg-[#1a3f6e] text-white font-semibold px-5 py-2.5 rounded-xl text-sm"
               >
                 Submit another event
@@ -303,7 +303,7 @@ export default function BulkSubmitPage() {
             Paste a list, upload a document, or paste a URL — we&apos;ll detect each event and let you review.
           </p>
           <p className="text-sm text-gray-500 mt-1">
-            Submitting one event? <Link href="/submit" className="text-blue-600 hover:underline font-medium">Use the single-event form →</Link>
+            Submitting one event? <Link href="/submit/single" className="text-blue-600 hover:underline font-medium">Use the single-event form →</Link>
           </p>
         </header>
 
