@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   CalendarDays, ChevronDown, ChevronRight, Loader2, Upload, Sparkles,
-  Search, AlertCircle, Check, X, Link as LinkIcon,
+  Search, AlertCircle, Check, X, Link as LinkIcon, Play,
 } from "lucide-react";
 
 interface EventRow {
@@ -33,6 +33,10 @@ export default function EventsBannerPanel({ adminSecret }: { adminSecret: string
   const [busyId, setBusyId] = useState<string | null>(null);
   const [pasteUrls, setPasteUrls] = useState<Record<string, string>>({});
   const [savedFlash, setSavedFlash] = useState<string | null>(null);
+  const [backfillBusy, setBackfillBusy] = useState(false);
+  const [backfillResult, setBackfillResult] = useState<
+    null | { processed: number; success: number; pexels_hits: number; unsplash_hits: number; failures: number }
+  >(null);
 
   const headers = { "x-admin-key": adminSecret } as const;
 
@@ -141,6 +145,32 @@ export default function EventsBannerPanel({ adminSecret }: { adminSecret: string
     }
   }
 
+  async function runBackfill() {
+    setBackfillBusy(true);
+    setBackfillResult(null);
+    setError(null);
+    try {
+      const res = await fetch("/api/cron/backfill-banners", {
+        method: "POST",
+        headers,
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
+      setBackfillResult({
+        processed: json.processed ?? 0,
+        success: json.success ?? 0,
+        pexels_hits: json.pexels_hits ?? 0,
+        unsplash_hits: json.unsplash_hits ?? 0,
+        failures: json.failures ?? 0,
+      });
+      await refresh();
+    } catch (err) {
+      setError(String(err instanceof Error ? err.message : err));
+    } finally {
+      setBackfillBusy(false);
+    }
+  }
+
   async function refetchPexels(eventId: string) {
     setBusyId(eventId);
     setError(null);
@@ -186,6 +216,30 @@ export default function EventsBannerPanel({ adminSecret }: { adminSecret: string
         <div className="border-t border-blue-900/40 p-5 space-y-4">
           <div className="text-xs text-blue-400 bg-[#0a1a2e] border border-blue-900/40 rounded-lg px-3 py-2">
             Showing the next 50 upcoming events. Upload a specific photo (max 5MB), paste a URL, or re-fetch from Pexels for a fresh stock image.
+          </div>
+
+          <div className="flex items-start gap-3 bg-[#0a1a2e] border border-blue-900/40 rounded-lg px-3 py-3">
+            <div className="flex-1 min-w-0">
+              <p className="text-white text-sm font-semibold">Run backfill now</p>
+              <p className="text-xs text-blue-400 mt-0.5">
+                Fetches SDG-aware banners (Pexels → Unsplash) for up to 50 events with no banner yet. Daily cron also runs at 02:00 UTC.
+              </p>
+              {backfillResult && (
+                <p className="text-xs text-blue-300 mt-2">
+                  Processed {backfillResult.processed} · {backfillResult.success} success
+                  ({backfillResult.pexels_hits} Pexels, {backfillResult.unsplash_hits} Unsplash)
+                  · {backfillResult.failures} failed
+                </p>
+              )}
+            </div>
+            <button
+              onClick={runBackfill}
+              disabled={backfillBusy}
+              className="shrink-0 inline-flex items-center gap-1.5 bg-[#4ea8de] hover:bg-[#3a95cc] disabled:opacity-40 text-white text-xs font-semibold px-3 py-1.5 rounded transition-colors"
+            >
+              {backfillBusy ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} />}
+              {backfillBusy ? "Running…" : "Run backfill now"}
+            </button>
           </div>
 
           {error && (

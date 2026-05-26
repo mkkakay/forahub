@@ -2,7 +2,12 @@
 
 import Link from "next/link";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { Calendar, Flag, MapPin, ArrowRight, ChevronRight } from "lucide-react";
+import {
+  Calendar, Flag, MapPin, ArrowRight, ChevronRight,
+  Heart, Wheat, HeartPulse, GraduationCap, Users, Droplets, Zap,
+  TrendingUp, Settings, Scale, Building2, Recycle, CloudSun, Fish,
+  Trees, Shield, Handshake, type LucideIcon,
+} from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { useLanguage } from "@/context/LanguageContext";
 import { t } from "@/lib/i18n";
@@ -35,6 +40,21 @@ const SDG_LABELS: Record<number, string> = {
   9: "Industry & Innovation", 10: "Reduced Inequalities", 11: "Sustainable Cities",
   12: "Responsible Consumption", 13: "Climate Action", 14: "Life Below Water",
   15: "Life on Land", 16: "Peace & Justice", 17: "Partnerships",
+};
+
+const SDG_NAMES: Record<number, string> = {
+  1: "No Poverty", 2: "Zero Hunger", 3: "Good Health", 4: "Quality Education",
+  5: "Gender Equality", 6: "Clean Water", 7: "Affordable Energy", 8: "Decent Work",
+  9: "Industry & Innovation", 10: "Reduced Inequalities", 11: "Sustainable Cities",
+  12: "Responsible Consumption", 13: "Climate Action", 14: "Life Below Water",
+  15: "Life on Land", 16: "Peace & Justice", 17: "Partnerships",
+};
+
+const SDG_ICONS: Record<number, LucideIcon> = {
+  1: Heart, 2: Wheat, 3: HeartPulse, 4: GraduationCap, 5: Users,
+  6: Droplets, 7: Zap, 8: TrendingUp, 9: Settings, 10: Scale,
+  11: Building2, 12: Recycle, 13: CloudSun, 14: Fish, 15: Trees,
+  16: Shield, 17: Handshake,
 };
 
 
@@ -307,18 +327,20 @@ export function EventCard({ event }: { event: EventPreview }) {
               onError={() => setCoverFailed(true)}
             />
           )}
-          {(!assets.banner_image_url || coverFailed) && (
-            <>
-              <span className="text-white font-extrabold leading-none select-none drop-shadow-md" style={{ fontSize: 48 }}>
-                {orgInitial}
-              </span>
-              {event.organization && (
-                <span className="text-white/90 text-xs mt-1 font-medium px-4 text-center line-clamp-1 max-w-full drop-shadow">
-                  {event.organization}
-                </span>
-              )}
-            </>
-          )}
+          {(!assets.banner_image_url || coverFailed) && (() => {
+            const SdgIcon = sdg ? SDG_ICONS[sdg] : null;
+            const sdgName = sdg ? SDG_NAMES[sdg] : null;
+            return (
+              <div className="flex flex-col items-center justify-center text-center px-4">
+                {SdgIcon && <SdgIcon className="w-16 h-16 text-white/40" strokeWidth={1.5} />}
+                {sdg && sdgName && (
+                  <span className="mt-2 text-white/60 text-xs uppercase tracking-wider font-semibold drop-shadow line-clamp-1 max-w-full">
+                    SDG {sdg} · {sdgName}
+                  </span>
+                )}
+              </div>
+            );
+          })()}
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-black/10 pointer-events-none" />
           {/* Org logo (Brandfetch) or initial fallback */}
           <div className="absolute bottom-2 left-2 flex items-center gap-1.5">
