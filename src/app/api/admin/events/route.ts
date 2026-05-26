@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   const today = new Date().toISOString();
   const { data, error } = await adminSupabase
     .from("events")
-    .select("id, title, organization, start_date, end_date, sdg_goals, banner_image_url, banner_fetched_at, banner_display_mode")
+    .select("id, title, organization, start_date, end_date, sdg_goals, banner_image_url, banner_fetched_at, banner_display_mode, is_featured, featured_until")
     .gte("start_date", today)
     .order("start_date", { ascending: true })
     .limit(50);
@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   if (!checkAuth(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  let body: { event_id?: string; banner_display_mode?: string };
+  let body: { event_id?: string; banner_display_mode?: string; is_featured?: boolean };
   try {
     body = await req.json();
   } catch {
@@ -47,6 +47,12 @@ export async function PATCH(req: NextRequest) {
   if (body.banner_display_mode === "cover" || body.banner_display_mode === "contain") {
     patch.banner_display_mode = body.banner_display_mode;
   }
+  if (typeof body.is_featured === "boolean") {
+    patch.is_featured = body.is_featured;
+    patch.featured_until = body.is_featured
+      ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      : null;
+  }
   if (Object.keys(patch).length === 0) {
     return NextResponse.json({ error: "No supported fields to update" }, { status: 400 });
   }
@@ -55,7 +61,7 @@ export async function PATCH(req: NextRequest) {
     .from("events")
     .update(patch)
     .eq("id", eventId)
-    .select("id, banner_display_mode")
+    .select("id, banner_display_mode, is_featured, featured_until")
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

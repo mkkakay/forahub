@@ -2,7 +2,7 @@ import type { Lang } from "@/context/LanguageContext";
 
 const messages: Record<Lang, Record<string, string>> = {
   en: {
-    "nav.discover": "Discover",
+    "nav.discover": "Events",
     "nav.categories": "Categories",
     "nav.regions": "Regions",
     "nav.saved": "Saved",

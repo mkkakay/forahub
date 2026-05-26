@@ -1,10 +1,63 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { supabase } from "@/lib/supabase/client";
 import type { Database } from "@/lib/supabase/types";
 import EventsClient from "./EventsClient";
 import Navbar from "@/components/Navbar";
+import { getLocationFromIp, type IpLocation } from "@/lib/geo/ipLocation";
 
 type EventRow = Database["public"]["Tables"]["events"]["Row"];
+
+export const dynamic = "force-dynamic";
+
+function pickClientIp(): string | null {
+  // Privacy note: this IP is never persisted. It is read from request headers
+  // for the current request only, used transiently to call the IP-geo lookup,
+  // and discarded when the response returns.
+  const h = headers();
+  const fwd = h.get("x-forwarded-for");
+  if (fwd) {
+    const first = fwd.split(",")[0]?.trim();
+    if (first) return first;
+  }
+  const real = h.get("x-real-ip");
+  if (real) return real.trim();
+  return null;
+}
+
+async function fetchFeatured(now: string): Promise<EventRow[]> {
+  const { data } = await supabase
+    .from("events")
+    .select("*")
+    .eq("is_featured", true)
+    .gte("start_date", now)
+    .or(`featured_until.is.null,featured_until.gte.${now}`)
+    .order("start_date", { ascending: true })
+    .limit(5);
+  return (data as EventRow[] | null) ?? [];
+}
+
+async function fetchNearby(location: IpLocation, now: string): Promise<EventRow[]> {
+  const candidates: string[] = [];
+  if (location.country_name) candidates.push(location.country_name);
+  if (location.country_code) candidates.push(location.country_code);
+  if (candidates.length === 0) return [];
+
+  // PostgREST OR over ILIKE candidates; case-insensitive substring on `location`.
+  const orClause = candidates
+    .map(c => `location.ilike.%${c.replace(/[%,_]/g, "")}%`)
+    .join(",");
+
+  const { data } = await supabase
+    .from("events")
+    .select("*")
+    .eq("is_online", false)
+    .gte("start_date", now)
+    .or(orClause)
+    .order("start_date", { ascending: true })
+    .limit(6);
+  return (data as EventRow[] | null) ?? [];
+}
 
 export default async function EventsPage({
   searchParams,
@@ -16,14 +69,21 @@ export default async function EventsPage({
   const twoYearsAgo = new Date(now.getTime() - 2 * 365 * 24 * 60 * 60 * 1000).toISOString();
   const endOf2030 = "2030-12-31T23:59:59.999Z";
 
-  const { data } = await supabase
-    .from("events")
-    .select("*")
-    .gte("start_date", twoYearsAgo)
-    .lte("start_date", endOf2030)
-    .order("start_date", { ascending: true });
+  const ip = pickClientIp();
+  const [{ data: eventsData }, location, featured] = await Promise.all([
+    supabase
+      .from("events")
+      .select("*")
+      .gte("start_date", twoYearsAgo)
+      .lte("start_date", endOf2030)
+      .order("start_date", { ascending: true }),
+    getLocationFromIp(ip).catch(() => null),
+    fetchFeatured(today),
+  ]);
 
-  const events = (data as EventRow[] | null) ?? [];
+  const events = (eventsData as EventRow[] | null) ?? [];
+  const nearby = location ? await fetchNearby(location, today).catch(() => []) : [];
+
   const searchQuery = searchParams.q?.trim() ?? "";
 
   return (
@@ -38,14 +98,21 @@ export default async function EventsPage({
             <span>/</span>
             <span className="text-white">Events</span>
           </div>
-          <h1 className="text-3xl font-extrabold text-white">Global Events</h1>
+          <h1 className="text-3xl font-extrabold text-white">Events</h1>
           <p className="mt-2 text-blue-200 text-sm">
-            {events.length} events · 2023–2030 · across all SDG goals
+            {events.length.toLocaleString()} events across all SDG goals
           </p>
         </div>
       </div>
 
-      <EventsClient events={events} initialSearch={searchQuery} today={today} />
+      <EventsClient
+        events={events}
+        initialSearch={searchQuery}
+        today={today}
+        featured={featured}
+        nearby={nearby}
+        nearbyCountryName={location?.country_name ?? null}
+      />
     </div>
   );
 }

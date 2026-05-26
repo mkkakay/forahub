@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { MapPin, Calendar, Building2, Tag, Filter, X, Search, Clock } from "lucide-react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { MapPin, Calendar, Building2, Tag, Filter, X, Search, Clock, CalendarDays, List, Sparkles, Star } from "lucide-react";
 import Link from "next/link";
 import type { Database } from "@/lib/supabase/types";
 import { matchesSearch } from "@/lib/search";
@@ -11,6 +11,7 @@ import { useSubscription } from "@/context/SubscriptionContext";
 import BookmarkButton from "@/components/BookmarkButton";
 import CalendarExportMenu from "@/components/CalendarExportMenu";
 import ShareMenu from "@/components/ShareMenu";
+import CalendarSection from "@/components/calendar/CalendarSection";
 
 type EventRow = Database["public"]["Tables"]["events"]["Row"];
 type TimeView = "upcoming" | "past" | "all";
@@ -101,25 +102,76 @@ function getCountdown(event: EventRow, today: string): { label: string; urgent: 
 
 const ALL_REGIONS = ["Africa", "Americas", "Asia-Pacific", "Europe", "Middle East", "Online", "Other"];
 
+type QuickFilter = "free" | "online" | "thisWeek" | "featured";
+
 export default function EventsClient({
   events,
   initialSearch = "",
   today,
+  featured = [],
+  nearby = [],
+  nearbyCountryName = null,
 }: {
   events: EventRow[];
   initialSearch?: string;
   today: string;
+  featured?: EventRow[];
+  nearby?: EventRow[];
+  nearbyCountryName?: string | null;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { hasFullAccess, userId: ctxUserId } = useSubscription();
+
+  const viewMode: "list" | "calendar" = searchParams.get("view") === "calendar" ? "calendar" : "list";
+  const showAll: boolean = searchParams.get("all") === "1";
+
+  // Local-time construction so getFullYear()/getMonth() return the natural values
+  // for the YYYY-MM-DD param regardless of viewer timezone.
+  const initialDate = useMemo(() => {
+    const dateParam = searchParams.get("date");
+    if (dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
+      const [y, m, d] = dateParam.split("-").map(Number);
+      if (y && m && d) return new Date(y, m - 1, d);
+    }
+    return new Date();
+  }, [searchParams]);
+
+  function setViewMode(mode: "list" | "calendar") {
+    const params = new URLSearchParams(searchParams.toString());
+    if (mode === "list") params.delete("view");
+    else params.set("view", "calendar");
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname);
+  }
+
+  function setShowAll(next: boolean) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (next) params.set("all", "1");
+    else params.delete("all");
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname);
+  }
+
   const [search, setSearch] = useState(initialSearch);
   const [sdgFilter, setSdgFilter] = useState<number | null>(null);
   const [formatFilter, setFormatFilter] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const [regionFilter, setRegionFilter] = useState<string | null>(null);
   const [timeView, setTimeView] = useState<TimeView>("upcoming");
+  const [quickFilters, setQuickFilters] = useState<Set<QuickFilter>>(new Set());
   const [userId, setUserId] = useState<string | null>(null);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+
+  function toggleQuick(q: QuickFilter) {
+    setQuickFilters(prev => {
+      const next = new Set(prev);
+      if (next.has(q)) next.delete(q);
+      else next.add(q);
+      return next;
+    });
+  }
 
   useEffect(() => {
     if (!ctxUserId) return;
@@ -141,13 +193,23 @@ export default function EventsClient({
 
   // Past events are always fully visible (no paywall on historical records)
   const baseEvents = useMemo(() => {
+    if (viewMode === "calendar") {
+      // Calendar shows everything the user is allowed to see regardless of timeView.
+      // Free users still see only their 30-day upcoming window; past events are always visible.
+      const allowedUpcoming = hasFullAccess ? upcomingEvents : visibleUpcoming;
+      const calendarSet = [...allowedUpcoming, ...pastEvents];
+      // Flagship-only by default; ?all=1 unlocks the full set.
+      return showAll ? calendarSet : calendarSet.filter(e => e.event_tier === "flagship");
+    }
     if (timeView === "upcoming") return visibleUpcoming;
     if (timeView === "past") return [...pastEvents].reverse(); // most recent first
     // all: upcoming ascending then past descending
     return [...upcomingEvents, ...pastEvents.slice().reverse()];
-  }, [timeView, visibleUpcoming, upcomingEvents, pastEvents]);
+  }, [viewMode, showAll, timeView, visibleUpcoming, upcomingEvents, pastEvents, hasFullAccess]);
 
   const activeSearch = search.trim();
+
+  const oneWeekOut = useMemo(() => new Date(new Date(today).getTime() + 7 * 24 * 60 * 60 * 1000), [today]);
 
   const filtered = useMemo(() => {
     return baseEvents.filter(e => {
@@ -156,9 +218,16 @@ export default function EventsClient({
       if (formatFilter !== null && e.format !== formatFilter) return false;
       if (typeFilter !== null && e.event_type !== typeFilter) return false;
       if (regionFilter !== null && deriveRegion(e.location) !== regionFilter) return false;
+      if (quickFilters.has("free") && e.cost_type !== "free") return false;
+      if (quickFilters.has("online") && e.format !== "virtual") return false;
+      if (quickFilters.has("thisWeek")) {
+        const startDate = new Date(e.start_date);
+        if (startDate < new Date(today) || startDate > oneWeekOut) return false;
+      }
+      if (quickFilters.has("featured") && !e.is_featured) return false;
       return true;
     });
-  }, [baseEvents, search, sdgFilter, formatFilter, typeFilter, regionFilter]);
+  }, [baseEvents, search, sdgFilter, formatFilter, typeFilter, regionFilter, quickFilters, today, oneWeekOut]);
 
   // Show upgrade nudge when upcoming search/filters match events beyond the free window
   const hasBeyondFree = useMemo(() => {
@@ -180,7 +249,8 @@ export default function EventsClient({
     sdgFilter !== null ||
     formatFilter !== null ||
     typeFilter !== null ||
-    regionFilter !== null;
+    regionFilter !== null ||
+    quickFilters.size > 0;
 
   function clearAll() {
     setSearch("");
@@ -188,6 +258,7 @@ export default function EventsClient({
     setFormatFilter(null);
     setTypeFilter(null);
     setRegionFilter(null);
+    setQuickFilters(new Set());
   }
 
   const countLabel = (() => {
@@ -202,6 +273,212 @@ export default function EventsClient({
     { value: "all", label: "All" },
   ];
 
+  // Time buckets — only used when viewing Upcoming in list mode.
+  const buckets = useMemo(() => {
+    const now = new Date(today);
+    const d7 = new Date(now.getTime() + 7 * 86400000);
+    const d14 = new Date(now.getTime() + 14 * 86400000);
+    const d30 = new Date(now.getTime() + 30 * 86400000);
+    const groups: { id: string; label: string; events: EventRow[] }[] = [
+      { id: "this-week", label: "This week", events: [] },
+      { id: "next-week", label: "Next week", events: [] },
+      { id: "this-month", label: "Later this month", events: [] },
+      { id: "further", label: "Further out", events: [] },
+    ];
+    for (const e of filtered) {
+      const s = new Date(e.start_date);
+      if (s < now) continue;
+      if (s <= d7) groups[0].events.push(e);
+      else if (s <= d14) groups[1].events.push(e);
+      else if (s <= d30) groups[2].events.push(e);
+      else groups[3].events.push(e);
+    }
+    return groups;
+  }, [filtered, today]);
+
+  const showSectionedView = viewMode === "list" && timeView === "upcoming";
+
+  // Featured strip is shown when we have at least 3 featured events whose start
+  // date is still in the future. This stays out of the bucket sections.
+  const featuredActive = useMemo(() => {
+    const nowDate = new Date(today);
+    return featured.filter(e => new Date(e.start_date) >= nowDate).slice(0, 5);
+  }, [featured, today]);
+  const showFeaturedStrip = showSectionedView && featuredActive.length >= 3;
+  const showNearbyStrip = showSectionedView && nearby.length > 0;
+
+  const QUICK_FILTER_OPTIONS: { id: QuickFilter; label: string }[] = [
+    { id: "free", label: "Free" },
+    { id: "online", label: "Online" },
+    { id: "thisWeek", label: "This week" },
+    { id: "featured", label: "Featured" },
+  ];
+
+  function renderStandardCard(event: EventRow) {
+    const isPast = event.start_date < today;
+    const primarySdg = event.sdg_goals?.[0];
+    const sdg = primarySdg ? SDG_META[primarySdg] : null;
+    const countdown = isPast ? null : getCountdown(event, today);
+    return (
+      <div
+        key={event.id}
+        onClick={() => router.push(`/events/${event.id}`)}
+        className={`bg-white rounded-xl border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 p-5 flex flex-col gap-3.5 group cursor-pointer ${isPast ? "border-gray-100 opacity-80" : "border-gray-200"}`}
+      >
+        <div className="flex items-start justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
+            {isPast && (
+              <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-500">
+                <Clock size={10} /> Past
+              </span>
+            )}
+            {sdg && (
+              <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${sdg.color}`}>
+                <Tag size={11} />
+                SDG {primarySdg}
+              </span>
+            )}
+            {countdown && (
+              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${countdown.urgent ? "bg-red-50 text-red-700 border border-red-100" : "bg-amber-50 text-amber-700 border border-amber-100"}`}>
+                {countdown.label}
+              </span>
+            )}
+          </div>
+          <span className="text-xs text-gray-400 shrink-0">{FORMAT_LABELS[event.format]}</span>
+        </div>
+        <h3 className="text-[#0f2a4a] font-semibold text-base leading-snug group-hover:text-[#4ea8de] transition-colors">
+          {event.title}
+        </h3>
+        {event.description && (
+          <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">{event.description}</p>
+        )}
+        <div className="flex flex-col gap-2 mt-auto text-sm text-gray-500">
+          <span className="flex items-center gap-2">
+            <Calendar size={14} className="shrink-0 text-gray-400" />
+            {formatDateRange(event.start_date, event.end_date)}
+          </span>
+          {event.location && (
+            <span className="flex items-center gap-2">
+              <MapPin size={14} className="shrink-0 text-gray-400" />
+              {event.location}
+            </span>
+          )}
+          {event.organization && (
+            <span className="flex items-center gap-2">
+              <Building2 size={14} className="shrink-0 text-gray-400" />
+              {event.organization}
+            </span>
+          )}
+        </div>
+        {event.registration_url && !isPast && (
+          <a
+            href={event.registration_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1 text-xs font-medium text-[#4ea8de] hover:text-[#3a95cc] transition-colors"
+            onClick={ev => ev.stopPropagation()}
+          >
+            Register →
+          </a>
+        )}
+        <div className="flex items-center justify-end gap-0.5 pt-2 border-t border-gray-100">
+          <BookmarkButton
+            eventId={event.id}
+            initialSaved={savedIds.has(event.id)}
+            userId={userId}
+            onToggle={(s) => setSavedIds(prev => {
+              const n = new Set(prev);
+              if (s) { n.add(event.id); } else { n.delete(event.id); }
+              return n;
+            })}
+          />
+          <CalendarExportMenu
+            title={event.title}
+            startDate={event.start_date}
+            endDate={event.end_date}
+            location={event.location}
+            description={event.description}
+            registrationUrl={event.registration_url}
+          />
+          <ShareMenu eventId={event.id} eventTitle={event.title} startDate={event.start_date} location={event.location} />
+        </div>
+      </div>
+    );
+  }
+
+  function renderFeaturedCard(event: EventRow) {
+    const primarySdg = event.sdg_goals?.[0];
+    const sdg = primarySdg ? SDG_META[primarySdg] : null;
+    const speakers = (event.speakers ?? []).filter(Boolean).slice(0, 2).join(" · ");
+    return (
+      <div
+        key={event.id}
+        onClick={() => router.push(`/events/${event.id}`)}
+        className="shrink-0 w-[340px] md:w-[380px] snap-start bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 overflow-hidden cursor-pointer group"
+      >
+        <div className="relative h-44 bg-gradient-to-br from-blue-700 to-blue-900 overflow-hidden">
+          {event.banner_image_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={event.banner_image_url}
+              alt=""
+              aria-hidden="true"
+              className={
+                event.banner_display_mode === "contain"
+                  ? "w-full h-full object-contain object-center bg-white"
+                  : "w-full h-full object-cover"
+              }
+              loading="lazy"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <Calendar className="w-12 h-12 text-white/30" />
+            </div>
+          )}
+          <span className="absolute top-3 right-3 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-400 text-amber-950 shadow-md">
+            <Star className="w-3 h-3 fill-amber-950" /> Featured
+          </span>
+        </div>
+        <div className="p-5 flex flex-col gap-3">
+          <div className="flex items-center gap-2 flex-wrap">
+            {sdg && (
+              <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${sdg.color}`}>
+                SDG {primarySdg}
+              </span>
+            )}
+            <span className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold">
+              {FORMAT_LABELS[event.format]}
+            </span>
+          </div>
+          <h3 className="text-[#0f2a4a] font-bold text-lg leading-snug line-clamp-2 group-hover:text-[#4ea8de] transition-colors">
+            {event.title}
+          </h3>
+          {event.description && (
+            <p className="text-gray-600 text-sm leading-relaxed line-clamp-2">{event.description}</p>
+          )}
+          <div className="flex flex-col gap-1.5 text-xs text-gray-500">
+            <span className="flex items-center gap-1.5">
+              <Calendar size={12} className="text-gray-400" />
+              {formatDateRange(event.start_date, event.end_date)}
+            </span>
+            {event.location && (
+              <span className="flex items-center gap-1.5">
+                <MapPin size={12} className="text-gray-400" />
+                {event.location}
+              </span>
+            )}
+            {speakers && (
+              <span className="flex items-center gap-1.5 text-gray-600">
+                <Sparkles size={12} className="text-purple-500" />
+                {speakers}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       {/* Filters bar */}
@@ -209,21 +486,49 @@ export default function EventsClient({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap gap-3 items-center">
           <Filter size={16} className="text-gray-400 shrink-0" />
 
-          {/* Time view toggle */}
+          {/* Time view toggle — list mode only (calendar navigates by month) */}
+          {viewMode === "list" && (
+            <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+              {TIME_VIEW_OPTIONS.map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => setTimeView(opt.value)}
+                  className={`text-sm font-medium px-3 py-1 rounded-md transition-colors ${
+                    timeView === opt.value
+                      ? "bg-white text-[#0f2a4a] shadow-sm"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* View mode toggle: List / Calendar */}
           <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
-            {TIME_VIEW_OPTIONS.map(opt => (
-              <button
-                key={opt.value}
-                onClick={() => setTimeView(opt.value)}
-                className={`text-sm font-medium px-3 py-1 rounded-md transition-colors ${
-                  timeView === opt.value
-                    ? "bg-white text-[#0f2a4a] shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
+            <button
+              onClick={() => setViewMode("list")}
+              aria-pressed={viewMode === "list"}
+              className={`flex items-center gap-1.5 text-sm font-medium px-3 py-1 rounded-md transition-colors ${
+                viewMode === "list"
+                  ? "bg-white text-[#0f2a4a] shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <List size={14} /> List
+            </button>
+            <button
+              onClick={() => setViewMode("calendar")}
+              aria-pressed={viewMode === "calendar"}
+              className={`flex items-center gap-1.5 text-sm font-medium px-3 py-1 rounded-md transition-colors ${
+                viewMode === "calendar"
+                  ? "bg-white text-[#0f2a4a] shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <CalendarDays size={14} /> Calendar
+            </button>
           </div>
 
           {/* Search */}
@@ -304,9 +609,110 @@ export default function EventsClient({
         </div>
       </div>
 
-      {/* Grid */}
+      {/* Quick filter pills */}
+      {viewMode === "list" && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+          <div className="flex flex-wrap gap-2">
+            {QUICK_FILTER_OPTIONS.map(q => {
+              const active = quickFilters.has(q.id);
+              return (
+                <button
+                  key={q.id}
+                  type="button"
+                  onClick={() => toggleQuick(q.id)}
+                  className={`text-sm font-semibold px-3.5 py-1.5 rounded-full border transition-colors ${
+                    active
+                      ? "bg-blue-100 text-blue-700 border-blue-300"
+                      : "bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300"
+                  }`}
+                >
+                  {q.label}
+                </button>
+              );
+            })}
+            {quickFilters.size > 0 && (
+              <button
+                type="button"
+                onClick={() => setQuickFilters(new Set())}
+                className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 px-2 py-1.5"
+              >
+                <X size={12} /> Clear quick filters
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Featured strip (Upcoming only) */}
+      {showFeaturedStrip && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+          <div className="flex items-end justify-between mb-3">
+            <div>
+              <h2 className="text-xl font-semibold text-[#0f2a4a] inline-flex items-center gap-2">
+                <Star className="w-5 h-5 text-amber-500 fill-amber-300" />
+                Featured
+              </h2>
+              <p className="text-sm text-slate-500">Curated upcoming events</p>
+            </div>
+          </div>
+          <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2 -mx-1 px-1">
+            {featuredActive.map(renderFeaturedCard)}
+          </div>
+        </div>
+      )}
+
+      {/* Events near you (Upcoming only) */}
+      {showNearbyStrip && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 mt-2 border-t border-slate-200">
+          <div className="mt-8 mb-4">
+            <h2 className="text-xl font-semibold text-[#0f2a4a] inline-flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-emerald-600" />
+              {nearbyCountryName ? `Events in ${nearbyCountryName}` : "Events near you"}
+            </h2>
+            <p className="text-sm text-slate-500 mt-0.5">
+              {nearby.length} upcoming event{nearby.length === 1 ? "" : "s"} near you
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {nearby.slice(0, 6).map(renderStandardCard)}
+          </div>
+        </section>
+      )}
+
+      {/* Grid / Calendar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        {filtered.length === 0 ? (
+        {viewMode === "calendar" ? (
+          <>
+            <div className="mb-4 flex items-center justify-between bg-blue-50 border border-blue-100 rounded-md px-4 py-2.5 text-sm">
+              <span className="text-blue-900 font-medium">
+                {showAll ? "Showing all events" : "Showing flagship events only"}
+              </span>
+              {showAll ? (
+                <button
+                  type="button"
+                  onClick={() => setShowAll(false)}
+                  className="text-blue-700 hover:text-blue-900 font-semibold transition-colors"
+                >
+                  ← Back to flagship only
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowAll(true)}
+                  className="text-blue-700 hover:text-blue-900 font-semibold transition-colors"
+                >
+                  Show all events →
+                </button>
+              )}
+            </div>
+            <CalendarSection
+              key={searchParams.get("date") ?? "today"}
+              events={filtered}
+              initialYear={initialDate.getFullYear()}
+              initialMonth={initialDate.getMonth()}
+            />
+          </>
+        ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <Calendar size={48} className="text-gray-300 mb-4" />
             {hasBeyondFree ? (
@@ -342,6 +748,43 @@ export default function EventsClient({
               </button>
             )}
           </div>
+        ) : showSectionedView ? (
+          <div className="space-y-2">
+            {buckets.every(b => b.events.length === 0) ? (
+              <p className="text-gray-500 text-sm">No upcoming events match the current filters.</p>
+            ) : (
+              buckets.map((bucket, idx) => {
+                if (bucket.events.length === 0) return null;
+                const preview = bucket.events.slice(0, 6);
+                const hasMore = bucket.events.length > preview.length;
+                return (
+                  <section
+                    key={bucket.id}
+                    className={`${idx === 0 ? "" : "border-t border-slate-200 mt-12 pt-8"}`}
+                  >
+                    <div className="flex items-baseline justify-between mb-4">
+                      <h2 className="text-xl font-semibold text-[#0f2a4a]">
+                        {bucket.label}{" "}
+                        <span className="text-sm font-normal text-slate-500">
+                          · {bucket.events.length} event{bucket.events.length === 1 ? "" : "s"}
+                        </span>
+                      </h2>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                      {preview.map(renderStandardCard)}
+                    </div>
+                    {hasMore && (
+                      <p className="mt-4 text-right">
+                        <span className="text-sm font-medium text-slate-500">
+                          {bucket.events.length - preview.length} more in this bucket — refine filters to narrow down
+                        </span>
+                      </p>
+                    )}
+                  </section>
+                );
+              })
+            )}
+          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map(event => {
@@ -353,7 +796,7 @@ export default function EventsClient({
                 <div
                   key={event.id}
                   onClick={() => router.push(`/events/${event.id}`)}
-                  className={`bg-white rounded-xl border shadow-sm hover:shadow-md transition-shadow p-6 flex flex-col gap-4 group cursor-pointer ${isPast ? "border-gray-100 opacity-80" : "border-gray-200"}`}
+                  className={`bg-white rounded-xl border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 p-5 flex flex-col gap-3.5 group cursor-pointer ${isPast ? "border-gray-100 opacity-80" : "border-gray-200"}`}
                 >
                   <div className="flex items-start justify-between gap-2 flex-wrap">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -369,7 +812,7 @@ export default function EventsClient({
                         </span>
                       )}
                       {countdown && (
-                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${countdown.urgent ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"}`}>
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${countdown.urgent ? "bg-red-50 text-red-700 border border-red-100" : "bg-amber-50 text-amber-700 border border-amber-100"}`}>
                           {countdown.label}
                         </span>
                       )}

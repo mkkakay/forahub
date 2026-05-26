@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   CalendarDays, ChevronDown, ChevronRight, Loader2, Upload, Sparkles,
-  Search, AlertCircle, Check, X, Link as LinkIcon, Play,
+  Search, AlertCircle, Check, X, Link as LinkIcon, Play, Star,
 } from "lucide-react";
 
 interface EventRow {
@@ -16,6 +16,8 @@ interface EventRow {
   banner_image_url: string | null;
   banner_fetched_at: string | null;
   banner_display_mode: "contain" | "cover" | null;
+  is_featured: boolean | null;
+  featured_until: string | null;
 }
 
 function formatDate(d: string) {
@@ -171,6 +173,28 @@ export default function EventsBannerPanel({ adminSecret }: { adminSecret: string
     }
   }
 
+  async function toggleFeatured(eventId: string, next: boolean) {
+    setEvents(list => list.map(e => (e.id === eventId ? { ...e, is_featured: next } : e)));
+    setBusyId(eventId);
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/events", {
+        method: "PATCH",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({ event_id: eventId, is_featured: next }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
+      flashSaved(eventId);
+      await refresh();
+    } catch (err) {
+      setError(String(err instanceof Error ? err.message : err));
+      await refresh();
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   async function refetchPexels(eventId: string) {
     setBusyId(eventId);
     setError(null);
@@ -322,6 +346,28 @@ export default function EventsBannerPanel({ adminSecret }: { adminSecret: string
                           Set
                         </button>
                       </div>
+                      {/* Feature toggle */}
+                      <label className="flex items-center gap-2 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={!!event.is_featured}
+                          disabled={isBusy}
+                          onChange={e => toggleFeatured(event.id, e.target.checked)}
+                          className="accent-amber-400"
+                        />
+                        <Star size={12} className={event.is_featured ? "text-amber-400 fill-amber-300" : "text-blue-500"} />
+                        <span className={`text-[11px] font-semibold ${event.is_featured ? "text-amber-300" : "text-blue-300"}`}>
+                          Feature this event
+                        </span>
+                        <span className="text-[10px] text-blue-500">
+                          {event.is_featured
+                            ? event.featured_until
+                              ? `until ${new Date(event.featured_until).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
+                              : "active"
+                            : "appears at top of /events for 30 days"}
+                        </span>
+                      </label>
+
                       {/* Display-mode toggle — auto-saves */}
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400">Banner</span>
