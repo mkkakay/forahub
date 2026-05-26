@@ -3,7 +3,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { MapPin, Calendar, Building2, Tag, Filter, X, Search, Clock, CalendarDays, List, Sparkles, Star } from "lucide-react";
-import Link from "next/link";
 import type { Database } from "@/lib/supabase/types";
 import { matchesSearch } from "@/lib/search";
 import { supabase } from "@/lib/supabase/client";
@@ -122,7 +121,7 @@ export default function EventsClient({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { hasFullAccess, userId: ctxUserId } = useSubscription();
+  const { userId: ctxUserId } = useSubscription();
 
   const viewMode: "list" | "calendar" = searchParams.get("view") === "calendar" ? "calendar" : "list";
   const showAll: boolean = searchParams.get("all") === "1";
@@ -180,32 +179,20 @@ export default function EventsClient({
       .then(({ data }) => { if (data) setSavedIds(new Set(data.map(s => s.event_id))); });
   }, [ctxUserId]);
 
-  // Free-tier cutoff: 30 days from now (applies to upcoming only; past events are always visible)
-  const freeCutoff = useMemo(() => new Date(new Date(today).getTime() + 30 * 24 * 60 * 60 * 1000), [today]);
-
   const upcomingEvents = useMemo(() => events.filter(e => e.start_date >= today), [events, today]);
   const pastEvents = useMemo(() => events.filter(e => e.start_date < today), [events, today]);
 
-  const visibleUpcoming = useMemo(() => {
-    if (hasFullAccess) return upcomingEvents;
-    return upcomingEvents.filter(e => new Date(e.start_date) <= freeCutoff);
-  }, [upcomingEvents, hasFullAccess, freeCutoff]);
-
-  // Past events are always fully visible (no paywall on historical records)
   const baseEvents = useMemo(() => {
     if (viewMode === "calendar") {
-      // Calendar shows everything the user is allowed to see regardless of timeView.
-      // Free users still see only their 30-day upcoming window; past events are always visible.
-      const allowedUpcoming = hasFullAccess ? upcomingEvents : visibleUpcoming;
-      const calendarSet = [...allowedUpcoming, ...pastEvents];
+      const calendarSet = [...upcomingEvents, ...pastEvents];
       // Flagship-only by default; ?all=1 unlocks the full set.
       return showAll ? calendarSet : calendarSet.filter(e => e.event_tier === "flagship");
     }
-    if (timeView === "upcoming") return visibleUpcoming;
+    if (timeView === "upcoming") return upcomingEvents;
     if (timeView === "past") return [...pastEvents].reverse(); // most recent first
     // all: upcoming ascending then past descending
     return [...upcomingEvents, ...pastEvents.slice().reverse()];
-  }, [viewMode, showAll, timeView, visibleUpcoming, upcomingEvents, pastEvents, hasFullAccess]);
+  }, [viewMode, showAll, timeView, upcomingEvents, pastEvents]);
 
   const activeSearch = search.trim();
 
@@ -228,21 +215,6 @@ export default function EventsClient({
       return true;
     });
   }, [baseEvents, search, sdgFilter, formatFilter, typeFilter, regionFilter, quickFilters, today, oneWeekOut]);
-
-  // Show upgrade nudge when upcoming search/filters match events beyond the free window
-  const hasBeyondFree = useMemo(() => {
-    if (hasFullAccess || filtered.length > 0 || timeView !== "upcoming") return false;
-    return upcomingEvents
-      .filter(e => new Date(e.start_date) > freeCutoff)
-      .some(e => {
-        if (!matchesSearch(e, search)) return false;
-        if (sdgFilter !== null && !e.sdg_goals.includes(sdgFilter)) return false;
-        if (formatFilter !== null && e.format !== formatFilter) return false;
-        if (typeFilter !== null && e.event_type !== typeFilter) return false;
-        if (regionFilter !== null && deriveRegion(e.location) !== regionFilter) return false;
-        return true;
-      });
-  }, [upcomingEvents, filtered.length, hasFullAccess, freeCutoff, search, sdgFilter, formatFilter, typeFilter, regionFilter, timeView]);
 
   const hasFilters =
     activeSearch.length >= 2 ||
@@ -718,22 +690,7 @@ export default function EventsClient({
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <Calendar size={48} className="text-gray-300 mb-4" />
-            {hasBeyondFree ? (
-              <>
-                <p className="text-gray-600 text-lg font-medium mb-2">
-                  Looking for events further ahead?
-                </p>
-                <p className="text-gray-400 text-sm max-w-sm mb-6">
-                  Pro unlocks the full calendar to 2030 for $9.99/year, cancel anytime.
-                </p>
-                <Link
-                  href="/pricing"
-                  className="bg-[#4ea8de] hover:bg-[#3a95cc] text-white font-semibold px-6 py-2.5 rounded-lg text-sm transition-colors"
-                >
-                  See Pro plans →
-                </Link>
-              </>
-            ) : activeSearch.length >= 2 ? (
+            {activeSearch.length >= 2 ? (
               <>
                 <p className="text-gray-500 text-lg font-medium">
                   No events found for &ldquo;{activeSearch}&rdquo;.
@@ -745,11 +702,9 @@ export default function EventsClient({
             ) : (
               <p className="text-gray-500 text-lg font-medium">No events match your filters.</p>
             )}
-            {!hasBeyondFree && (
-              <button onClick={clearAll} className="mt-4 text-[#4ea8de] text-sm hover:underline">
-                Clear {activeSearch.length >= 2 ? "search" : "filters"}
-              </button>
-            )}
+            <button onClick={clearAll} className="mt-4 text-[#4ea8de] text-sm hover:underline">
+              Clear {activeSearch.length >= 2 ? "search" : "filters"}
+            </button>
           </div>
         ) : showSectionedView ? (
           <div className="space-y-2">
