@@ -20,6 +20,7 @@
  * Manual backfill: POST /api/admin/backfill-banners (admin-gated, 50/run).
  */
 import { adminSupabase } from "@/lib/supabase/admin";
+import { waitUntil } from "@vercel/functions";
 import { getSdgQueries } from "./sdgQueries";
 
 const PEXELS_SEARCH = "https://api.pexels.com/v1/search";
@@ -245,11 +246,44 @@ export async function fetchEventBanner(event: EventForBanner): Promise<string | 
   return result.url;
 }
 
+const PAGE_BACKFILL_PACING_MS = 600;
+const PAGE_BACKFILL_CAP = 10;
+
 /**
- * Fire-and-forget background fetch for many events. Does not await — page render never blocks.
+ * Background fetch for many events triggered from a page render. The work is
+ * registered with Vercel's `waitUntil` so it keeps running after the response
+ * is sent — without `waitUntil`, the serverless function would be torn down
+ * mid-loop and most fetches would never complete.
+ *
+ * Caps at PAGE_BACKFILL_CAP per call so a single page render doesn't queue up
+ * an enormous tail. The 600ms pacing keeps us under Pexels' 200/hr free tier.
+ *
+ * Locally (outside Vercel), `waitUntil` is a no-op shim — the loop still runs
+ * but the dev server won't kill it. Skip silently if no events qualify.
  */
 export function backfillBannersAsync(events: EventForBanner[]): void {
-  for (const event of events) {
-    void fetchEventBanner(event).catch(() => {});
+  const candidates = events
+    .filter(e => e?.id && e.title)
+    .slice(0, PAGE_BACKFILL_CAP);
+  if (candidates.length === 0) return;
+
+  const task = (async () => {
+    for (let i = 0; i < candidates.length; i++) {
+      try {
+        await fetchEventBanner(candidates[i]);
+      } catch {
+        // best-effort backfill; one failure must not stop the rest
+      }
+      if (i < candidates.length - 1) {
+        await new Promise(r => setTimeout(r, PAGE_BACKFILL_PACING_MS));
+      }
+    }
+  })();
+
+  try {
+    waitUntil(task);
+  } catch {
+    // Outside a Vercel runtime, waitUntil throws — fall back to fire-and-forget.
+    void task.catch(() => {});
   }
 }

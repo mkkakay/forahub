@@ -5,6 +5,7 @@ import type { Database } from "@/lib/supabase/types";
 import EventsClient from "./EventsClient";
 import Navbar from "@/components/Navbar";
 import { getLocationFromIp, type IpLocation } from "@/lib/geo/ipLocation";
+import { backfillBannersAsync } from "@/lib/events/fetchEventBanner";
 
 type EventRow = Database["public"]["Tables"]["events"]["Row"];
 
@@ -89,6 +90,15 @@ export default async function EventsPage({
   // the main grid is fine, but the strip is supposed to be visually rich.
   const featuredWithBanners = featured.filter(e => !!e.banner_image_url);
   const featuredForStrip = featuredWithBanners.length >= 3 ? featuredWithBanners : [];
+
+  // Background banner backfill for the upcoming events shown on this page.
+  // waitUntil keeps the loop alive after the response is sent so each render
+  // chips away at the pool of bannerless events.
+  backfillBannersAsync(
+    events
+      .filter(e => !e.banner_image_url && e.start_date >= today)
+      .map(e => ({ id: e.id, title: e.title, sdg_goals: e.sdg_goals }))
+  );
 
   const searchQuery = searchParams.q?.trim() ?? "";
 
