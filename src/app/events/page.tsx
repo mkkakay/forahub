@@ -6,6 +6,7 @@ import EventsClient from "./EventsClient";
 import Navbar from "@/components/Navbar";
 import { getLocationFromIp, type IpLocation } from "@/lib/geo/ipLocation";
 import { backfillBannersAsync } from "@/lib/events/fetchEventBanner";
+import { batchGetLogos } from "@/lib/organizations/getLogoUrl";
 
 type EventRow = Database["public"]["Tables"]["events"]["Row"];
 
@@ -100,6 +101,18 @@ export default async function EventsPage({
       .map(e => ({ id: e.id, title: e.title, sdg_goals: e.sdg_goals }))
   );
 
+  // Resolve org logos for events visible on this page so cards can show the
+  // small org-logo badge over the banner (matches the homepage treatment).
+  const orgNames = Array.from(
+    new Set(
+      events
+        .filter(e => e.start_date >= today)
+        .map(e => e.organization)
+        .filter((o): o is string => typeof o === "string" && o.trim().length > 0)
+    )
+  );
+  const orgLogos = await batchGetLogos(orgNames).catch(() => ({} as Record<string, string>));
+
   const searchQuery = searchParams.q?.trim() ?? "";
 
   return (
@@ -128,6 +141,7 @@ export default async function EventsPage({
         featured={featuredForStrip}
         nearby={nearby}
         nearbyCountryName={location?.country_name ?? null}
+        orgLogos={orgLogos}
       />
     </div>
   );

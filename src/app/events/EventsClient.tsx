@@ -2,7 +2,12 @@
 
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { MapPin, Calendar, Building2, Tag, Filter, X, Search, Clock, CalendarDays, List, Sparkles, Star } from "lucide-react";
+import {
+  MapPin, Calendar, Building2, Tag, Filter, X, Search, Clock, CalendarDays, List, Sparkles, Star,
+  Heart, Wheat, HeartPulse, GraduationCap, Users, Droplets, Zap, TrendingUp, Settings, Scale,
+  Recycle, CloudSun, Fish, Trees, Shield, Handshake, type LucideIcon,
+} from "lucide-react";
+import { getEventAssets } from "@/lib/assets/eventAssetService";
 import type { Database } from "@/lib/supabase/types";
 import { matchesSearch } from "@/lib/search";
 import { supabase } from "@/lib/supabase/client";
@@ -46,6 +51,21 @@ const FORMAT_LABELS: Record<string, string> = {
   in_person: "In Person",
   virtual: "Virtual",
   hybrid: "Hybrid",
+};
+
+const SDG_NAMES: Record<number, string> = {
+  1: "No Poverty", 2: "Zero Hunger", 3: "Good Health", 4: "Quality Education",
+  5: "Gender Equality", 6: "Clean Water", 7: "Affordable Energy", 8: "Decent Work",
+  9: "Industry & Innovation", 10: "Reduced Inequalities", 11: "Sustainable Cities",
+  12: "Responsible Consumption", 13: "Climate Action", 14: "Life Below Water",
+  15: "Life on Land", 16: "Peace & Justice", 17: "Partnerships",
+};
+
+const SDG_ICONS: Record<number, LucideIcon> = {
+  1: Heart, 2: Wheat, 3: HeartPulse, 4: GraduationCap, 5: Users,
+  6: Droplets, 7: Zap, 8: TrendingUp, 9: Settings, 10: Scale,
+  11: Building2, 12: Recycle, 13: CloudSun, 14: Fish, 15: Trees,
+  16: Shield, 17: Handshake,
 };
 
 const REGIONS: Record<string, string[]> = {
@@ -110,6 +130,7 @@ export default function EventsClient({
   featured = [],
   nearby = [],
   nearbyCountryName = null,
+  orgLogos = {},
 }: {
   events: EventRow[];
   initialSearch?: string;
@@ -117,6 +138,7 @@ export default function EventsClient({
   featured?: EventRow[];
   nearby?: EventRow[];
   nearbyCountryName?: string | null;
+  orgLogos?: Record<string, string>;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -307,88 +329,150 @@ export default function EventsClient({
     const primarySdg = event.sdg_goals?.[0];
     const sdg = primarySdg ? SDG_META[primarySdg] : null;
     const countdown = isPast ? null : getCountdown(event, today);
+    const logoUrl = event.organization ? orgLogos[event.organization] ?? null : null;
+    const assets = getEventAssets({
+      banner_image_url: event.banner_image_url,
+      organization: event.organization,
+      sdg_goals: event.sdg_goals,
+      org_logo_url: logoUrl,
+    });
+    const SdgIcon = primarySdg ? SDG_ICONS[primarySdg] : null;
+    const sdgName = primarySdg ? SDG_NAMES[primarySdg] : null;
     return (
       <div
         key={event.id}
         onClick={() => router.push(`/events/${event.id}`)}
-        className={`bg-white rounded-xl border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 p-5 flex flex-col gap-3.5 group cursor-pointer ${isPast ? "border-gray-100 opacity-80" : "border-gray-200"}`}
+        className={`bg-white rounded-2xl border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col group cursor-pointer overflow-hidden ${isPast ? "border-gray-100 opacity-80" : "border-gray-200"}`}
       >
-        <div className="flex items-start justify-between gap-2 flex-wrap">
-          <div className="flex items-center gap-2 flex-wrap">
-            {isPast && (
-              <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-500">
-                <Clock size={10} /> Past
+        {/* Cover */}
+        <div
+          className="relative h-40 md:h-44 shrink-0 overflow-hidden flex items-center justify-center"
+          style={!assets.banner_image_url ? { background: assets.banner_gradient } : undefined}
+        >
+          {assets.banner_image_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={assets.banner_image_url}
+              alt=""
+              aria-hidden="true"
+              className={
+                event.banner_display_mode === "contain"
+                  ? "w-full h-full object-contain object-center bg-white"
+                  : "w-full h-full object-cover object-center"
+              }
+              loading="lazy"
+            />
+          ) : (
+            <div className="flex flex-col items-center justify-center text-center px-4">
+              {SdgIcon && <SdgIcon className="w-12 h-12 text-white/40" strokeWidth={1.5} />}
+              {primarySdg && sdgName && (
+                <span className="mt-1.5 text-white/60 text-[11px] uppercase tracking-wider font-semibold drop-shadow line-clamp-1 max-w-full">
+                  SDG {primarySdg} · {sdgName}
+                </span>
+              )}
+            </div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-black/0 pointer-events-none" />
+          {logoUrl && event.organization && (
+            <div className="absolute bottom-2 left-2 flex items-center gap-1.5">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={logoUrl}
+                alt={event.organization}
+                className="w-8 h-8 rounded-md bg-white border border-white/40 object-contain p-1 shadow-sm"
+                loading="lazy"
+              />
+              <span className="text-white text-xs font-semibold truncate max-w-[140px] drop-shadow-sm">
+                {event.organization}
+              </span>
+            </div>
+          )}
+          {primarySdg && (
+            <span className="absolute top-2 right-2 text-xs font-bold px-2 py-0.5 rounded-full bg-black/30 backdrop-blur-sm text-white">
+              SDG {primarySdg}
+            </span>
+          )}
+        </div>
+
+        {/* Body */}
+        <div className="p-5 flex flex-col gap-3.5 flex-1">
+          <div className="flex items-start justify-between gap-2 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap">
+              {isPast && (
+                <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-500">
+                  <Clock size={10} /> Past
+                </span>
+              )}
+              {sdg && (
+                <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${sdg.color}`}>
+                  <Tag size={11} />
+                  SDG {primarySdg}
+                </span>
+              )}
+              {countdown && (
+                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${countdown.urgent ? "bg-red-50 text-red-700 border border-red-100" : "bg-amber-50 text-amber-700 border border-amber-100"}`}>
+                  {countdown.label}
+                </span>
+              )}
+            </div>
+            <span className="text-xs text-gray-400 shrink-0">{FORMAT_LABELS[event.format]}</span>
+          </div>
+          <h3 className="text-[#0f2a4a] font-semibold text-base leading-snug group-hover:text-[#4ea8de] transition-colors">
+            {event.title}
+          </h3>
+          {event.description && (
+            <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">{event.description}</p>
+          )}
+          <div className="flex flex-col gap-2 mt-auto text-sm text-gray-500">
+            <span className="flex items-center gap-2">
+              <Calendar size={14} className="shrink-0 text-gray-400" />
+              {formatDateRange(event.start_date, event.end_date)}
+            </span>
+            {event.location && (
+              <span className="flex items-center gap-2">
+                <MapPin size={14} className="shrink-0 text-gray-400" />
+                {event.location}
               </span>
             )}
-            {sdg && (
-              <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${sdg.color}`}>
-                <Tag size={11} />
-                SDG {primarySdg}
-              </span>
-            )}
-            {countdown && (
-              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${countdown.urgent ? "bg-red-50 text-red-700 border border-red-100" : "bg-amber-50 text-amber-700 border border-amber-100"}`}>
-                {countdown.label}
+            {event.organization && (
+              <span className="flex items-center gap-2">
+                <Building2 size={14} className="shrink-0 text-gray-400" />
+                {event.organization}
               </span>
             )}
           </div>
-          <span className="text-xs text-gray-400 shrink-0">{FORMAT_LABELS[event.format]}</span>
-        </div>
-        <h3 className="text-[#0f2a4a] font-semibold text-base leading-snug group-hover:text-[#4ea8de] transition-colors">
-          {event.title}
-        </h3>
-        {event.description && (
-          <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">{event.description}</p>
-        )}
-        <div className="flex flex-col gap-2 mt-auto text-sm text-gray-500">
-          <span className="flex items-center gap-2">
-            <Calendar size={14} className="shrink-0 text-gray-400" />
-            {formatDateRange(event.start_date, event.end_date)}
-          </span>
-          {event.location && (
-            <span className="flex items-center gap-2">
-              <MapPin size={14} className="shrink-0 text-gray-400" />
-              {event.location}
-            </span>
+          {event.registration_url && !isPast && (
+            <a
+              href={event.registration_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1 text-xs font-medium text-[#4ea8de] hover:text-[#3a95cc] transition-colors"
+              onClick={ev => ev.stopPropagation()}
+            >
+              Register →
+            </a>
           )}
-          {event.organization && (
-            <span className="flex items-center gap-2">
-              <Building2 size={14} className="shrink-0 text-gray-400" />
-              {event.organization}
-            </span>
-          )}
-        </div>
-        {event.registration_url && !isPast && (
-          <a
-            href={event.registration_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-1 text-xs font-medium text-[#4ea8de] hover:text-[#3a95cc] transition-colors"
-            onClick={ev => ev.stopPropagation()}
-          >
-            Register →
-          </a>
-        )}
-        <div className="flex items-center justify-end gap-0.5 pt-2 border-t border-gray-100">
-          <BookmarkButton
-            eventId={event.id}
-            initialSaved={savedIds.has(event.id)}
-            userId={userId}
-            onToggle={(s) => setSavedIds(prev => {
-              const n = new Set(prev);
-              if (s) { n.add(event.id); } else { n.delete(event.id); }
-              return n;
-            })}
-          />
-          <CalendarExportMenu
-            title={event.title}
-            startDate={event.start_date}
-            endDate={event.end_date}
-            location={event.location}
-            description={event.description}
-            registrationUrl={event.registration_url}
-          />
-          <ShareMenu eventId={event.id} eventTitle={event.title} startDate={event.start_date} location={event.location} />
+          <div className="flex items-center justify-end gap-0.5 pt-2 border-t border-gray-100">
+            <BookmarkButton
+              eventId={event.id}
+              initialSaved={savedIds.has(event.id)}
+              userId={userId}
+              onToggle={(s) => setSavedIds(prev => {
+                const n = new Set(prev);
+                if (s) { n.add(event.id); } else { n.delete(event.id); }
+                return n;
+              })}
+            />
+            <CalendarExportMenu
+              title={event.title}
+              startDate={event.start_date}
+              endDate={event.end_date}
+              location={event.location}
+              description={event.description}
+              registrationUrl={event.registration_url}
+            />
+            <ShareMenu eventId={event.id} eventTitle={event.title} startDate={event.start_date} location={event.location} />
+          </div>
         </div>
       </div>
     );
@@ -398,17 +482,29 @@ export default function EventsClient({
     const primarySdg = event.sdg_goals?.[0];
     const sdg = primarySdg ? SDG_META[primarySdg] : null;
     const speakers = (event.speakers ?? []).filter(Boolean).slice(0, 2).join(" · ");
+    const logoUrl = event.organization ? orgLogos[event.organization] ?? null : null;
+    const assets = getEventAssets({
+      banner_image_url: event.banner_image_url,
+      organization: event.organization,
+      sdg_goals: event.sdg_goals,
+      org_logo_url: logoUrl,
+    });
+    const SdgIcon = primarySdg ? SDG_ICONS[primarySdg] : null;
+    const sdgName = primarySdg ? SDG_NAMES[primarySdg] : null;
     return (
       <div
         key={event.id}
         onClick={() => router.push(`/events/${event.id}`)}
         className="shrink-0 w-[340px] md:w-[380px] snap-start bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 overflow-hidden cursor-pointer group"
       >
-        <div className="relative h-44 bg-gradient-to-br from-blue-700 to-blue-900 overflow-hidden">
-          {event.banner_image_url ? (
+        <div
+          className="relative h-52 overflow-hidden flex items-center justify-center"
+          style={!assets.banner_image_url ? { background: assets.banner_gradient } : undefined}
+        >
+          {assets.banner_image_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={event.banner_image_url}
+              src={assets.banner_image_url}
               alt=""
               aria-hidden="true"
               className={
@@ -419,8 +515,28 @@ export default function EventsClient({
               loading="lazy"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <Calendar className="w-12 h-12 text-white/30" />
+            <div className="flex flex-col items-center justify-center text-center px-4">
+              {SdgIcon && <SdgIcon className="w-16 h-16 text-white/40" strokeWidth={1.5} />}
+              {primarySdg && sdgName && (
+                <span className="mt-2 text-white/60 text-xs uppercase tracking-wider font-semibold drop-shadow line-clamp-1 max-w-full">
+                  SDG {primarySdg} · {sdgName}
+                </span>
+              )}
+            </div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-black/0 pointer-events-none" />
+          {logoUrl && event.organization && (
+            <div className="absolute bottom-2 left-2 flex items-center gap-1.5">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={logoUrl}
+                alt={event.organization}
+                className="w-8 h-8 rounded-md bg-white border border-white/40 object-contain p-1 shadow-sm"
+                loading="lazy"
+              />
+              <span className="text-white text-xs font-semibold truncate max-w-[160px] drop-shadow-sm">
+                {event.organization}
+              </span>
             </div>
           )}
           <span className="absolute top-3 right-3 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-400 text-amber-950 shadow-md">
