@@ -152,7 +152,7 @@ export default function EventsBannerPanel({ adminSecret }: { adminSecret: string
     setBackfillResult(null);
     setError(null);
     try {
-      const res = await fetch("/api/cron/backfill-banners", {
+      const res = await fetch("/api/admin/backfill-banners", {
         method: "POST",
         headers,
       });
@@ -239,14 +239,14 @@ export default function EventsBannerPanel({ adminSecret }: { adminSecret: string
       {open && (
         <div className="border-t border-blue-900/40 p-5 space-y-4">
           <div className="text-xs text-blue-400 bg-[#0a1a2e] border border-blue-900/40 rounded-lg px-3 py-2">
-            Showing the next 50 upcoming events. Upload a specific photo (max 5MB), paste a URL, or re-fetch from Pexels for a fresh stock image.
+            Showing the next 50 upcoming events. Upload a specific photo (max 5MB), paste a URL, or re-fetch the banner (Pexels → Unsplash) for a fresh stock image. Featured events display in the Events page strip when 3+ have real banners. Run banner backfill if needed.
           </div>
 
           <div className="flex items-start gap-3 bg-[#0a1a2e] border border-blue-900/40 rounded-lg px-3 py-3">
             <div className="flex-1 min-w-0">
-              <p className="text-white text-sm font-semibold">Run backfill now</p>
+              <p className="text-white text-sm font-semibold">Run banner backfill</p>
               <p className="text-xs text-blue-400 mt-0.5">
-                Fetches SDG-aware banners (Pexels → Unsplash) for up to 50 events with no banner yet. Daily cron also runs at 02:00 UTC.
+                Fetches SDG-aware banners (Pexels → Unsplash) for up to 50 events with no banner yet.
               </p>
               {backfillResult && (
                 <p className="text-xs text-blue-300 mt-2">
@@ -262,7 +262,7 @@ export default function EventsBannerPanel({ adminSecret }: { adminSecret: string
               className="shrink-0 inline-flex items-center gap-1.5 bg-[#4ea8de] hover:bg-[#3a95cc] disabled:opacity-40 text-white text-xs font-semibold px-3 py-1.5 rounded transition-colors"
             >
               {backfillBusy ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} />}
-              {backfillBusy ? "Running…" : "Run backfill now"}
+              {backfillBusy ? "Running…" : "Run banner backfill"}
             </button>
           </div>
 
@@ -423,7 +423,7 @@ export default function EventsBannerPanel({ adminSecret }: { adminSecret: string
                         disabled={isBusy}
                         className="inline-flex items-center gap-1.5 text-xs text-blue-300 hover:text-white border border-blue-900/40 hover:border-[#4ea8de]/50 disabled:opacity-40 rounded px-2 py-1.5 transition-colors"
                       >
-                        <Sparkles size={12} /> Re-fetch Pexels
+                        <Sparkles size={12} /> Re-fetch banner
                       </button>
                     </div>
                   </div>

@@ -1,3 +1,24 @@
+/**
+ * Event banner fetcher.
+ *
+ * Query construction:
+ *   - Pick one query from SDG_QUERY_MAP for event.sdg_goals[0] (fallback to
+ *     a generic "global development conference" pair when no SDG).
+ *   - Append 1–2 meaningful keywords pulled from the event title, with
+ *     stopwords stripped.
+ *
+ * Fallback chain:
+ *   1. Pexels (requires PEXELS_API_KEY) — landscape-oriented search.
+ *   2. Unsplash (requires UNSPLASH_ACCESS_KEY) — only when Pexels returns
+ *      nothing. Skipped silently if the key is missing (warn once at startup).
+ *   3. Return null — the UI renders the SDG gradient + icon fallback.
+ *
+ * Cache: 60 days. Persisted on events.banner_image_url + banner_fetched_at,
+ * with banner_source ('pexels' | 'unsplash') and banner_query stored for
+ * debugging / admin tooling.
+ *
+ * Manual backfill: POST /api/admin/backfill-banners (admin-gated, 50/run).
+ */
 import { adminSupabase } from "@/lib/supabase/admin";
 import { getSdgQueries } from "./sdgQueries";
 

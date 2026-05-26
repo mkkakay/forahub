@@ -273,24 +273,24 @@ export default function EventsClient({
     { value: "all", label: "All" },
   ];
 
-  // Time buckets — only used when viewing Upcoming in list mode.
+  // Action-oriented time buckets — only used when viewing Upcoming in list mode.
   const buckets = useMemo(() => {
     const now = new Date(today);
     const d7 = new Date(now.getTime() + 7 * 86400000);
-    const d14 = new Date(now.getTime() + 14 * 86400000);
     const d30 = new Date(now.getTime() + 30 * 86400000);
+    const d90 = new Date(now.getTime() + 90 * 86400000);
     const groups: { id: string; label: string; events: EventRow[] }[] = [
       { id: "this-week", label: "This week", events: [] },
-      { id: "next-week", label: "Next week", events: [] },
-      { id: "this-month", label: "Later this month", events: [] },
-      { id: "further", label: "Further out", events: [] },
+      { id: "this-month", label: "This month", events: [] },
+      { id: "next-3-months", label: "Next 3 months", events: [] },
+      { id: "later", label: "Later", events: [] },
     ];
     for (const e of filtered) {
       const s = new Date(e.start_date);
       if (s < now) continue;
       if (s <= d7) groups[0].events.push(e);
-      else if (s <= d14) groups[1].events.push(e);
-      else if (s <= d30) groups[2].events.push(e);
+      else if (s <= d30) groups[1].events.push(e);
+      else if (s <= d90) groups[2].events.push(e);
       else groups[3].events.push(e);
     }
     return groups;

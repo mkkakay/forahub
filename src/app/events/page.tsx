@@ -84,6 +84,12 @@ export default async function EventsPage({
   const events = (eventsData as EventRow[] | null) ?? [];
   const nearby = location ? await fetchNearby(location, today).catch(() => []) : [];
 
+  // Auto-hide the Featured strip when fewer than 3 featured events have a real
+  // banner. A wall of gradient-only cards reads as broken; the SDG fallback in
+  // the main grid is fine, but the strip is supposed to be visually rich.
+  const featuredWithBanners = featured.filter(e => !!e.banner_image_url);
+  const featuredForStrip = featuredWithBanners.length >= 3 ? featuredWithBanners : [];
+
   const searchQuery = searchParams.q?.trim() ?? "";
 
   return (
@@ -109,7 +115,7 @@ export default async function EventsPage({
         events={events}
         initialSearch={searchQuery}
         today={today}
-        featured={featured}
+        featured={featuredForStrip}
         nearby={nearby}
         nearbyCountryName={location?.country_name ?? null}
       />
