@@ -10,7 +10,7 @@ import { useLanguage, LANGUAGES } from "@/context/LanguageContext";
 import { t } from "@/lib/i18n";
 import {
   Globe, Sun, Moon, Contrast, Bell, ChevronDown, X, Menu,
-  Sparkles, BookmarkCheck, LogOut, User, LayoutDashboard, Star,
+  Sparkles, BookmarkCheck, LogOut, User, LayoutDashboard, Star, Plus,
 } from "lucide-react";
 
 export default function Navbar() {
@@ -68,7 +68,6 @@ export default function Navbar() {
 
   const navLinks = [
     { href: "/events", label: t(lang, "nav.discover") },
-    { href: "/funding", label: t(lang, "nav.funding") },
     { href: "/saved", label: t(lang, "nav.saved") },
     { href: "/pricing", label: t(lang, "nav.pricing") },
   ];
@@ -110,15 +109,7 @@ export default function Navbar() {
             </div>
           </div>
 
-          <div className="flex items-center gap-1">
-            <button
-              onClick={cycleTheme}
-              className="hidden sm:flex p-2 rounded-md text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
-              title={`Theme: ${theme}`}
-            >
-              <ThemeIcon />
-            </button>
-
+          <div className="flex items-center gap-1.5 md:gap-2">
             <div ref={langRef} className="relative hidden sm:block">
               <button
                 onClick={() => setLangOpen(!langOpen)}
@@ -145,11 +136,20 @@ export default function Navbar() {
               )}
             </div>
 
+            <button
+              onClick={cycleTheme}
+              className="hidden sm:flex p-2 rounded-md text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
+              title={`Theme: ${theme}`}
+            >
+              <ThemeIcon />
+            </button>
+
             <Link
               href="/submit"
-              className="hidden md:flex text-sm font-semibold px-3 py-1.5 rounded-md bg-[#4ea8de]/20 text-[#4ea8de] border border-[#4ea8de]/30 hover:bg-[#4ea8de]/30 transition-colors"
+              className="hidden md:inline-flex items-center gap-1.5 text-sm font-semibold px-5 py-2.5 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-md hover:shadow-lg transition-all"
             >
-              + {t(lang, "nav.submit")}
+              <Plus className="w-4 h-4" />
+              {t(lang, "nav.submit")}
             </Link>
 
             {isLoggedIn ? (
@@ -201,11 +201,17 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <Link href="/auth/signin" className="hidden sm:flex text-sm font-medium px-3 py-2 rounded-md text-gray-300 hover:text-white hover:bg-white/10 transition-colors">
+                <Link
+                  href="/auth/signin"
+                  className="hidden sm:inline-flex text-sm font-medium px-2 py-2 text-slate-200 hover:text-white transition-colors"
+                >
                   {t(lang, "nav.signin")}
                 </Link>
-                <Link href="/auth/signup" className="text-sm font-semibold px-4 py-2 rounded-md bg-[#4ea8de] hover:bg-[#3a95cc] text-white transition-colors">
-                  {t(lang, "nav.getstarted")}
+                <Link
+                  href="/auth/signup"
+                  className="text-sm font-medium px-4 py-2 rounded-lg bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 transition-colors"
+                >
+                  Sign Up
                 </Link>
               </>
             )}
@@ -221,18 +227,43 @@ export default function Navbar() {
       </div>
 
       {mobileOpen && (
-        <div className="md:hidden bg-[#0f2a4a] border-t border-white/10 px-4 py-4 space-y-1">
-          {navLinks.map(({ href, label }) => (
-            <Link key={href} href={href} className="block px-3 py-2.5 text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 rounded-md">
-              {label}
+        <div className="md:hidden bg-[#0f2a4a] border-t border-white/10 px-4 py-4 space-y-3">
+          <Link
+            href="/submit"
+            className="flex items-center justify-center gap-1.5 w-full px-4 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold text-sm shadow-md"
+          >
+            <Plus className="w-4 h-4" />
+            {t(lang, "nav.submit")}
+          </Link>
+
+          {!isLoggedIn && (
+            <div className="grid grid-cols-2 gap-2">
+              <Link
+                href="/auth/signin"
+                className="flex items-center justify-center px-3 py-2 text-sm font-medium text-slate-200 hover:text-white hover:bg-white/10 rounded-md"
+              >
+                {t(lang, "nav.signin")}
+              </Link>
+              <Link
+                href="/auth/signup"
+                className="flex items-center justify-center px-3 py-2 text-sm font-medium rounded-lg bg-white text-slate-700 border border-slate-300 hover:bg-slate-50"
+              >
+                Sign Up
+              </Link>
+            </div>
+          )}
+
+          <div className="space-y-1 pt-1 border-t border-white/10">
+            {navLinks.map(({ href, label }) => (
+              <Link key={href} href={href} className="block px-3 py-2.5 text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 rounded-md">
+                {label}
+              </Link>
+            ))}
+            <Link href="/assistant" className="flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 rounded-md">
+              <Sparkles size={15} /> AI Assistant
             </Link>
-          ))}
-          <Link href="/submit" className="block px-3 py-2.5 text-sm font-medium text-[#4ea8de] hover:bg-white/5 rounded-md">
-            + Submit Event
-          </Link>
-          <Link href="/assistant" className="flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 rounded-md">
-            <Sparkles size={15} /> AI Assistant
-          </Link>
+          </div>
+
           <div className="pt-2 border-t border-white/10">
             <button onClick={cycleTheme} className="flex items-center gap-2 text-sm text-gray-300 hover:text-white px-3 py-2">
               <ThemeIcon /> {theme} mode
