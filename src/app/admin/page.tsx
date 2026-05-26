@@ -64,7 +64,7 @@ async function getDashboardData() {
 function StatCard({
   label, value, sub, icon: Icon, accent = false, href,
 }: {
-  label: string; value: string | number; sub?: string
+  label: string; value: React.ReactNode; sub?: string
   icon: React.ElementType; accent?: boolean; href?: string
 }) {
   const inner = (
@@ -143,7 +143,12 @@ export default async function AdminDashboard() {
         />
         <StatCard
           label="Scraping Sources"
-          value={d.attentionSources.length > 0 ? `⚠ ${d.attentionSources.length} issues` : 'All OK'}
+          value={d.attentionSources.length > 0 ? (
+            <span className="inline-flex items-center gap-2">
+              <AlertTriangle className="w-6 h-6 text-amber-500" />
+              {d.attentionSources.length} issues
+            </span>
+          ) : 'All OK'}
           sub={d.attentionSources.length > 0 ? 'needs attention' : 'all sources healthy'}
           icon={Radio}
           accent={d.attentionSources.length > 0}

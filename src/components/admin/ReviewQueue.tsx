@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { publishEvent, rejectEvent, updateEvent } from '@/app/admin/actions'
-import { CheckCircle, XCircle, Edit, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react'
+import { CheckCircle, XCircle, Edit, ExternalLink, ChevronDown, ChevronUp, Building2, Calendar, MapPin, Globe, Theater, Target } from 'lucide-react'
 
 type PendingEvent = {
   id: string; title: string; description: string | null; organization: string | null
@@ -111,12 +111,12 @@ function ReviewCard({ event, onDone }: { event: PendingEvent; onDone: () => void
 
         {/* Meta row */}
         <div className="flex flex-wrap gap-4 mt-3 text-xs text-blue-400">
-          {event.organization && <span>🏢 {event.organization}</span>}
-          <span>📅 {new Date(event.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}{event.end_date ? ` — ${new Date(event.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : ''}</span>
-          {event.location && <span>📍 {event.location}</span>}
-          {event.region && <span>🌍 {event.region}</span>}
-          <span>🎭 {event.event_type} · {event.format}</span>
-          {event.sdg_goals?.length > 0 && <span>🎯 SDG {event.sdg_goals.join(', ')}</span>}
+          {event.organization && <span className="inline-flex items-center gap-1.5"><Building2 size={12} className="text-indigo-400" />{event.organization}</span>}
+          <span className="inline-flex items-center gap-1.5"><Calendar size={12} className="text-blue-400" />{new Date(event.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}{event.end_date ? ` — ${new Date(event.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : ''}</span>
+          {event.location && <span className="inline-flex items-center gap-1.5"><MapPin size={12} className="text-emerald-400" />{event.location}</span>}
+          {event.region && <span className="inline-flex items-center gap-1.5"><Globe size={12} className="text-emerald-400" />{event.region}</span>}
+          <span className="inline-flex items-center gap-1.5"><Theater size={12} className="text-rose-400" />{event.event_type} · {event.format}</span>
+          {event.sdg_goals?.length > 0 && <span className="inline-flex items-center gap-1.5"><Target size={12} className="text-blue-400" />SDG {event.sdg_goals.join(', ')}</span>}
         </div>
       </div>
 
@@ -209,8 +209,8 @@ export default function ReviewQueue({ events }: { events: PendingEvent[] }) {
     <div className="space-y-4">
       <div className="flex items-center gap-4 text-xs text-blue-500">
         <span>{list.length} remaining</span>
-        {approved > 0 && <span className="text-green-400">✓ {approved} approved</span>}
-        {rejected > 0 && <span className="text-red-400">✗ {rejected} rejected</span>}
+        {approved > 0 && <span className="text-green-400 inline-flex items-center gap-1"><CheckCircle size={11} /> {approved} approved</span>}
+        {rejected > 0 && <span className="text-red-400 inline-flex items-center gap-1"><XCircle size={11} /> {rejected} rejected</span>}
       </div>
       {list.map(ev => (
         <ReviewCard

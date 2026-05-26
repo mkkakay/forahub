@@ -12,6 +12,7 @@ import {
   Plus,
   ChevronDown,
   Loader2,
+  Check,
 } from "lucide-react";
 import Link from "next/link";
 import CalendarExportMenu from "@/components/CalendarExportMenu";
@@ -188,7 +189,7 @@ function CollectionDropdown({
                   className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   <span className={`w-3.5 h-3.5 rounded border flex-shrink-0 flex items-center justify-center ${isIn ? "bg-[#4ea8de] border-[#4ea8de]" : "border-gray-300"}`}>
-                    {isIn && <span className="text-white text-[9px] font-bold">✓</span>}
+                    {isIn && <Check className="text-white w-2.5 h-2.5" strokeWidth={3} />}
                   </span>
                   {c.name}
                 </button>

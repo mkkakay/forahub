@@ -10,7 +10,7 @@ import { useLanguage, LANGUAGES } from "@/context/LanguageContext";
 import { t } from "@/lib/i18n";
 import {
   Globe, Sun, Moon, Contrast, Bell, ChevronDown, X, Menu,
-  Sparkles, BookmarkCheck, LogOut, User, LayoutDashboard
+  Sparkles, BookmarkCheck, LogOut, User, LayoutDashboard, Star,
 } from "lucide-react";
 
 export default function Navbar() {
@@ -166,8 +166,8 @@ export default function Navbar() {
                       {initials}
                     </div>
                     {(tier === "pro" || tier === "founding") && (
-                      <span className="hidden sm:inline text-xs font-bold px-1.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300">
-                        {tier === "founding" ? "★" : "Pro"}
+                      <span className="hidden sm:inline-flex items-center gap-1 text-xs font-bold px-1.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300">
+                        {tier === "founding" ? <Star className="w-3 h-3 fill-amber-300" /> : "Pro"}
                       </span>
                     )}
                     <ChevronDown size={14} className="text-gray-400 hidden sm:block" />

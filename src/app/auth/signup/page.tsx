@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Mail } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 
 export default function SignupPage() {
@@ -56,7 +57,9 @@ export default function SignupPage() {
         </nav>
         <div className="flex-1 flex items-center justify-center px-4 py-12">
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 w-full max-w-md text-center">
-            <div className="text-4xl mb-4">📬</div>
+            <div className="mx-auto w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mb-4">
+              <Mail className="w-7 h-7 text-blue-600" />
+            </div>
             <h1 className="text-2xl font-bold text-[#0f2a4a] mb-2">Check your email</h1>
             <p className="text-gray-500 text-sm">
               We sent a confirmation link to <strong>{email}</strong>. Click it to activate your

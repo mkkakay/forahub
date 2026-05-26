@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Hand } from "lucide-react";
 import Navbar from "@/components/Navbar";
 
 export default function PaymentCancelPage() {
@@ -7,7 +8,9 @@ export default function PaymentCancelPage() {
       <Navbar />
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] px-4 py-16 text-center">
         <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-10 max-w-md w-full">
-          <div className="text-4xl mb-4">👋</div>
+          <div className="mx-auto w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mb-4">
+            <Hand className="w-7 h-7 text-blue-600" />
+          </div>
           <h1 className="text-2xl font-bold text-[#0f2a4a] mb-2">No worries</h1>
           <p className="text-gray-500 mb-8">You can upgrade anytime. The free tier still gives you full access to events in the next 30 days.</p>
           <div className="flex flex-col gap-3">

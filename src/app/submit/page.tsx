@@ -2,29 +2,32 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Calendar, FileText, Building2, ArrowRight, Loader2, CheckCircle2, X, AlertCircle } from "lucide-react";
+import {
+  Calendar, FileText, Building2, ArrowRight, Loader2, CheckCircle2, X, AlertCircle,
+  Sparkles, Rocket, ClipboardList, Paperclip, Link2, BadgeCheck, BarChart3, RefreshCw, Users,
+} from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { parseApiResponse } from "@/lib/admin/fetchJson";
 
-type Feature = { icon: string; label: string };
+type Feature = { icon: React.ReactNode; label: string };
 
 const SINGLE_FEATURES: Feature[] = [
-  { icon: "✨", label: "AI-assisted form" },
-  { icon: "🚀", label: "Takes 2 minutes" },
-  { icon: "📋", label: "Save as draft" },
+  { icon: <Sparkles className="w-4 h-4 text-purple-600" />, label: "AI-assisted form" },
+  { icon: <Rocket className="w-4 h-4 text-violet-600" />, label: "Takes 2 minutes" },
+  { icon: <ClipboardList className="w-4 h-4 text-slate-600" />, label: "Save as draft" },
 ];
 
 const BULK_FEATURES: Feature[] = [
-  { icon: "📎", label: "Upload PDF, Word, CSV, Excel" },
-  { icon: "🔗", label: "Paste any URL" },
-  { icon: "✨", label: "AI parses everything" },
+  { icon: <Paperclip className="w-4 h-4 text-slate-600" />, label: "Upload PDF, Word, CSV, Excel" },
+  { icon: <Link2 className="w-4 h-4 text-blue-600" />, label: "Paste any URL" },
+  { icon: <Sparkles className="w-4 h-4 text-purple-600" />, label: "AI parses everything" },
 ];
 
 const ORG_FEATURES: Feature[] = [
-  { icon: "🏷️", label: "Verified org badge" },
-  { icon: "📊", label: "Event analytics" },
-  { icon: "🔄", label: "Recurring events" },
-  { icon: "👥", label: "Team accounts" },
+  { icon: <BadgeCheck className="w-4 h-4 text-emerald-600" />, label: "Verified org badge" },
+  { icon: <BarChart3 className="w-4 h-4 text-violet-600" />, label: "Event analytics" },
+  { icon: <RefreshCw className="w-4 h-4 text-blue-500" />, label: "Recurring events" },
+  { icon: <Users className="w-4 h-4 text-violet-600" />, label: "Team accounts" },
 ];
 
 export default function SubmitChooserPage() {
@@ -47,7 +50,7 @@ export default function SubmitChooserPage() {
           {/* Card 1 — Single event */}
           <ChooserCard
             href="/submit/single"
-            icon={<Calendar size={44} className="text-blue-600" />}
+            icon={<Calendar className="w-12 h-12 text-blue-600" />}
             title="Submit one event"
             description="Quick and easy. AI helps fill the form from a flyer, URL, or by hand."
             features={SINGLE_FEATURES}
@@ -57,7 +60,7 @@ export default function SubmitChooserPage() {
           {/* Card 2 — Bulk import */}
           <ChooserCard
             href="/submit/bulk"
-            icon={<FileText size={44} className="text-blue-600" />}
+            icon={<FileText className="w-12 h-12 text-amber-600" />}
             title="Submit multiple events"
             description="Paste a list, upload a document, or paste a URL. AI detects each event for review."
             features={BULK_FEATURES}
@@ -68,7 +71,7 @@ export default function SubmitChooserPage() {
           {/* Card 3 — Organization account (coming soon) */}
           <ChooserCard
             onClick={() => setOrgModalOpen(true)}
-            icon={<Building2 size={44} className="text-[#0f2a4a]" />}
+            icon={<Building2 className="w-12 h-12 text-indigo-600" />}
             title="My organization"
             description="Claim your org, manage all your events in one dashboard, and unlock advanced features."
             features={ORG_FEATURES}
@@ -131,8 +134,8 @@ function ChooserCard({
 
       <ul className="mt-5 space-y-1.5 flex-1">
         {features.map((f, i) => (
-          <li key={i} className="flex items-center gap-2 text-sm text-gray-500">
-            <span aria-hidden="true">{f.icon}</span>
+          <li key={i} className="flex items-center gap-2 text-sm text-gray-600">
+            <span aria-hidden="true" className="shrink-0">{f.icon}</span>
             <span>{f.label}</span>
           </li>
         ))}
@@ -234,7 +237,7 @@ function EarlyAccessModal({ onClose }: { onClose: () => void }) {
             <div className="mx-auto w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-3">
               <CheckCircle2 size={24} className="text-green-600" />
             </div>
-            <h3 className="text-xl font-bold text-[#0f2a4a]">You&apos;re on the list 🎉</h3>
+            <h3 className="text-xl font-bold text-[#0f2a4a]">You&apos;re on the list</h3>
             <p className="text-sm text-gray-600 mt-2">{success}</p>
             <button
               type="button"
@@ -246,7 +249,10 @@ function EarlyAccessModal({ onClose }: { onClose: () => void }) {
           </div>
         ) : (
           <>
-            <h3 className="text-xl font-bold text-[#0f2a4a]">🚀 Organization accounts launching soon</h3>
+            <h3 className="text-xl font-bold text-[#0f2a4a] flex items-center gap-2">
+              <Rocket className="w-5 h-5 text-violet-600" />
+              Organization accounts launching soon
+            </h3>
             <p className="text-sm text-gray-600 mt-2">
               Be the first to know when verified org accounts go live. You&apos;ll get:
             </p>

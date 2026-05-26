@@ -65,7 +65,11 @@ export default function SourcesTable({ sources }: { sources: SourceRow[] }) {
               filter === f ? 'bg-[#4ea8de] text-white' : 'bg-[#0a1929] border border-blue-900/60 text-blue-300 hover:text-white'
             }`}
           >
-            {f === 'all' ? `All (${sources.length})` : f === 'attention' ? `⚠ Attention (${sources.filter(s => s.needs_attention).length})` : `Inactive (${sources.filter(s => !s.is_active).length})`}
+            {f === 'all'
+              ? `All (${sources.length})`
+              : f === 'attention'
+              ? <span className="inline-flex items-center gap-1"><AlertTriangle className="w-3 h-3 text-amber-500" /> Attention ({sources.filter(s => s.needs_attention).length})</span>
+              : `Inactive (${sources.filter(s => !s.is_active).length})`}
           </button>
         ))}
       </div>

@@ -6,7 +6,7 @@ import { useSubscription } from "@/context/SubscriptionContext";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import Link from "next/link";
-import { Calendar, Globe, Star, Bookmark, Trophy, ArrowRight } from "lucide-react";
+import { Calendar, Globe, Star, Bookmark, Trophy, ArrowRight, Sparkles, Target, Award, Palette } from "lucide-react";
 
 const SDG_COLORS: Record<number, string> = {
   1:"#E5243B",2:"#DDA63A",3:"#4C9F38",4:"#C5192D",5:"#FF3A21",
@@ -15,12 +15,14 @@ const SDG_COLORS: Record<number, string> = {
   16:"#00689D",17:"#19486A",
 };
 
-const BADGES = [
-  { id: "first", icon: "🌟", label: "First Event Saved", desc: "Save your first event" },
-  { id: "five", icon: "🎯", label: "5 Events", desc: "Save 5 events" },
-  { id: "ten", icon: "🏆", label: "10 Events", desc: "Save 10 events" },
-  { id: "global", icon: "🌍", label: "Global Citizen", desc: "Events in 5+ countries" },
-  { id: "sdgs", icon: "🎨", label: "SDG Explorer", desc: "Events across 5+ SDGs" },
+type BadgeDef = { id: string; icon: React.ReactNode; label: string; desc: string };
+
+const BADGES: BadgeDef[] = [
+  { id: "first", icon: <Sparkles className="w-6 h-6 text-purple-600" />, label: "First Event Saved", desc: "Save your first event" },
+  { id: "five", icon: <Target className="w-6 h-6 text-blue-600" />, label: "5 Events", desc: "Save 5 events" },
+  { id: "ten", icon: <Award className="w-6 h-6 text-amber-500" />, label: "10 Events", desc: "Save 10 events" },
+  { id: "global", icon: <Globe className="w-6 h-6 text-emerald-600" />, label: "Global Citizen", desc: "Events in 5+ countries" },
+  { id: "sdgs", icon: <Palette className="w-6 h-6 text-rose-600" />, label: "SDG Explorer", desc: "Events across 5+ SDGs" },
 ];
 
 interface SavedEvent {
@@ -202,7 +204,7 @@ export default function DashboardPage() {
                     ? "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-700"
                     : "bg-gray-50 dark:bg-[#1e293b] border-gray-200 dark:border-[#334155] opacity-40"
                 }`}>
-                  <div className="text-2xl mb-1">{badge.icon}</div>
+                  <div className="mb-1 flex justify-center">{badge.icon}</div>
                   <p className="text-xs font-bold text-[#0f2a4a] dark:text-white">{badge.label}</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{badge.desc}</p>
                 </div>

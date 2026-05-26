@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import {
   Upload, LinkIcon, Loader2, Sparkles, CheckCircle2, AlertCircle, X, ArrowRight, Trash2, ChevronDown, ChevronUp,
+  Package, ClipboardList, Paperclip, Link2, Target, AlertTriangle,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { useSubscription } from "@/context/SubscriptionContext";
@@ -259,8 +260,9 @@ export default function BulkSubmitPage() {
             <div className="mx-auto w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mb-4">
               <CheckCircle2 size={28} className="text-green-600" />
             </div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-[#0f2a4a]">
-              ✅ {submitSuccess.submitted} event{submitSuccess.submitted === 1 ? "" : "s"} submitted for review
+            <h1 className="text-2xl md:text-3xl font-extrabold text-[#0f2a4a] flex items-center justify-center gap-2">
+              <CheckCircle2 className="w-7 h-7 text-green-600" />
+              {submitSuccess.submitted} event{submitSuccess.submitted === 1 ? "" : "s"} submitted for review
             </h1>
             {submitSuccess.skipped > 0 && (
               <p className="text-sm text-amber-700 mt-2">
@@ -296,8 +298,9 @@ export default function BulkSubmitPage() {
       <Navbar />
       <main className="max-w-3xl mx-auto px-4 py-8 md:py-12">
         <header className="mb-6 text-center md:text-left">
-          <h1 className="text-3xl md:text-4xl font-extrabold text-[#0f2a4a] tracking-tight">
-            📦 Bulk import events
+          <h1 className="text-3xl md:text-4xl font-extrabold text-[#0f2a4a] tracking-tight flex items-center justify-center md:justify-start gap-3">
+            <Package className="w-8 h-8 text-amber-600" />
+            Bulk import events
           </h1>
           <p className="text-base text-gray-600 mt-2">
             Paste a list, upload a document, or paste a URL — we&apos;ll detect each event and let you review.
@@ -321,9 +324,9 @@ export default function BulkSubmitPage() {
                     : "text-gray-700 hover:bg-gray-100"
                 }`}
               >
-                {t === "paste" && <span>📋</span>}
-                {t === "upload" && <span>📎</span>}
-                {t === "url" && <span>🔗</span>}
+                {t === "paste" && <ClipboardList className={`w-5 h-5 ${tab === t ? "text-white" : "text-slate-600"}`} />}
+                {t === "upload" && <Paperclip className={`w-5 h-5 ${tab === t ? "text-white" : "text-slate-600"}`} />}
+                {t === "url" && <Link2 className={`w-5 h-5 ${tab === t ? "text-white" : "text-blue-600"}`} />}
                 <span>{t === "paste" ? "Paste content" : t === "upload" ? "Upload file" : "Paste URL"}</span>
               </button>
             ))}
@@ -429,11 +432,15 @@ export default function BulkSubmitPage() {
           <div className="mt-8">
             <div className="flex items-end justify-between mb-3">
               <div>
-                <h2 className="text-xl md:text-2xl font-bold text-[#0f2a4a]">
-                  🎯 Detected {detected.filter(e => !e.removed).length} event{detected.filter(e => !e.removed).length === 1 ? "" : "s"}
+                <h2 className="text-xl md:text-2xl font-bold text-[#0f2a4a] flex items-center gap-2">
+                  <Target className="w-5 h-5 text-blue-600" />
+                  Detected {detected.filter(e => !e.removed).length} event{detected.filter(e => !e.removed).length === 1 ? "" : "s"}
                 </h2>
                 {truncated && (
-                  <p className="text-xs text-amber-700 mt-1">⚠️ Content was truncated — only the first chunk was analyzed. Re-paste in smaller batches if events are missing.</p>
+                  <p className="text-xs text-amber-700 mt-1 flex items-start gap-1.5">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600 mt-0.5 shrink-0" />
+                    <span>Content was truncated — only the first chunk was analyzed. Re-paste in smaller batches if events are missing.</span>
+                  </p>
                 )}
               </div>
               <p className="text-xs text-gray-500">{detected.filter(e => e.removed).length} removed</p>

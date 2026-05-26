@@ -4,7 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   Upload, LinkIcon, PencilLine, Loader2, Sparkles, CheckCircle2,
-  AlertCircle, X, ArrowRight, Globe,
+  AlertCircle, X, ArrowRight, Globe, ClipboardList, Calendar, Ticket, Users,
+  Film, Scissors, FileText, Undo2, AlertTriangle, Video, Package, ChevronDown,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { useSubscription } from "@/context/SubscriptionContext";
@@ -186,7 +187,7 @@ function RewriteButton({
   onClick: () => void;
   disabled: boolean;
   active: boolean;
-  icon: string;
+  icon: React.ReactNode;
   label: string;
 }) {
   return (
@@ -194,13 +195,13 @@ function RewriteButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex items-center gap-1 text-xs font-semibold border rounded-full px-3 py-1.5 transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+      className={`inline-flex items-center gap-1.5 text-xs font-semibold border rounded-full px-3 py-1.5 transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
         active
           ? "bg-gradient-to-r from-purple-500 to-violet-500 border-purple-500 text-white shadow-md"
           : "border-gray-200 hover:border-purple-300 hover:bg-gradient-to-r hover:from-purple-50 hover:to-violet-50 text-gray-700"
       }`}
     >
-      <span aria-hidden="true">{icon}</span> {label}
+      <span aria-hidden="true" className="inline-flex">{icon}</span> {label}
     </button>
   );
 }
@@ -219,7 +220,7 @@ function FormSection({
     <section id={id} className={`scroll-mt-32 ${first ? "" : "border-t border-gray-200 pt-8 mt-8 md:pt-10 md:mt-10"}`}>
       <header className="mb-5">
         <div className="flex items-center gap-2">
-          <span className="text-xl" aria-hidden="true">{icon}</span>
+          <span aria-hidden="true" className="inline-flex">{icon}</span>
           <h2 className="text-lg md:text-xl font-bold text-[#0f2a4a]">{title}</h2>
         </div>
         {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
@@ -231,7 +232,7 @@ function FormSection({
 
 type ProgressSection = {
   id: string;
-  icon: string;
+  icon: React.ReactNode;
   name: string;
   complete: boolean;
 };
@@ -258,8 +259,14 @@ function SubmitProgressBar({
       <div className="max-w-5xl mx-auto py-3 px-4 flex items-center gap-3 md:gap-4">
         <div className="shrink-0 hidden md:block">
           <p className="text-xs font-semibold text-[#0f2a4a]">Your event submission</p>
-          <p className={`text-[11px] mt-0.5 ${allComplete ? "text-green-700 font-semibold" : "text-gray-500"}`}>
-            {allComplete ? "Ready to submit ✨" : `${completedCount} of ${total} sections complete`}
+          <p className={`text-[11px] mt-0.5 ${allComplete ? "text-green-700 font-semibold" : "text-gray-500"} inline-flex items-center gap-1`}>
+            {allComplete ? (
+              <>
+                Ready to submit <Sparkles className="w-3 h-3 text-purple-600" />
+              </>
+            ) : (
+              `${completedCount} of ${total} sections complete`
+            )}
           </p>
         </div>
 
@@ -270,8 +277,14 @@ function SubmitProgressBar({
               style={{ width: `${pct}%` }}
             />
           </div>
-          <span className={`md:hidden text-[11px] font-semibold shrink-0 ${allComplete ? "text-green-700" : "text-gray-600"}`}>
-            {allComplete ? "Ready ✨" : `${completedCount}/${total}`}
+          <span className={`md:hidden text-[11px] font-semibold shrink-0 inline-flex items-center gap-1 ${allComplete ? "text-green-700" : "text-gray-600"}`}>
+            {allComplete ? (
+              <>
+                Ready <Sparkles className="w-3 h-3 text-purple-600" />
+              </>
+            ) : (
+              `${completedCount}/${total}`
+            )}
           </span>
         </div>
 
@@ -292,9 +305,9 @@ function SubmitProgressBar({
                   aria-current={isCurrent ? "true" : undefined}
                   className={`${base} ${stateClass} hover:bg-gray-50`}
                 >
-                  <span aria-hidden="true">{s.icon}</span>
+                  <span aria-hidden="true" className="inline-flex">{s.icon}</span>
                   <span className="hidden lg:inline">{s.name}</span>
-                  {s.complete && <span aria-label="complete" className="text-green-600 font-bold">✓</span>}
+                  {s.complete && <CheckCircle2 aria-label="complete" className="w-3.5 h-3.5 text-green-600" />}
                 </button>
               </li>
             );
@@ -378,8 +391,9 @@ function TimezoneStrip({ localInput, sourceTimezone }: { localInput: string; sou
   if (rows.length === 0) return null;
   return (
     <div className="mt-2 bg-gray-50 border border-gray-200 rounded-xl p-3">
-      <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5">
-        🌍 Time in major timezones
+      <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5 inline-flex items-center gap-1.5">
+        <Globe className="w-3.5 h-3.5 text-emerald-600" />
+        Time in major timezones
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-0.5 text-xs text-gray-700">
         {rows.map(r => (
@@ -463,11 +477,11 @@ export default function SubmitPage() {
     const finalComplete = userId ? true : !!form.submitter_email.trim();
 
     return [
-      { id: "section-basics", icon: "📋", name: "Basics", complete: basicsComplete },
-      { id: "section-when-where", icon: "📅", name: "When & Where", complete: whenWhereComplete },
-      { id: "section-cost-audience", icon: "🎫", name: "Cost & Audience", complete: costComplete },
-      { id: "section-partners-speakers", icon: "👥", name: "Partners & Speakers", complete: partnersComplete },
-      { id: "section-final-details", icon: "🎬", name: "Final Details", complete: finalComplete },
+      { id: "section-basics", icon: <ClipboardList className="w-4 h-4 text-slate-600" />, name: "Basics", complete: basicsComplete },
+      { id: "section-when-where", icon: <Calendar className="w-4 h-4 text-blue-600" />, name: "When & Where", complete: whenWhereComplete },
+      { id: "section-cost-audience", icon: <Ticket className="w-4 h-4 text-amber-600" />, name: "Cost & Audience", complete: costComplete },
+      { id: "section-partners-speakers", icon: <Users className="w-4 h-4 text-violet-600" />, name: "Partners & Speakers", complete: partnersComplete },
+      { id: "section-final-details", icon: <Film className="w-4 h-4 text-rose-600" />, name: "Final Details", complete: finalComplete },
     ];
   }, [form, userId]);
 
@@ -1113,7 +1127,7 @@ export default function SubmitPage() {
             href="/submit/bulk"
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-700 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-full px-3 py-1.5 transition-colors"
           >
-            📦 Submitting multiple events? Try bulk import <ArrowRight size={14} />
+            <Package className="w-4 h-4 text-amber-600" /> Submitting multiple events? Try bulk import <ArrowRight size={14} />
           </Link>
         </header>
 
@@ -1176,10 +1190,10 @@ export default function SubmitPage() {
                 {t === "manual" && <PencilLine size={16} />}
                 <span>{t === "flyer" ? "Upload Flyer" : t === "url" ? "Paste URL" : "Enter Manually"}</span>
                 {t === "flyer" && (
-                  <span className={`hidden sm:inline-flex absolute -top-1 -right-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full shadow-sm ${
+                  <span className={`hidden sm:inline-flex items-center gap-0.5 absolute -top-1 -right-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full shadow-sm ${
                     tab === t ? "bg-white text-purple-600" : "bg-gradient-to-r from-purple-500 to-violet-500 text-white"
                   }`}>
-                    ✨ Recommended
+                    <Sparkles className="w-2.5 h-2.5" /> Recommended
                   </span>
                 )}
               </button>
@@ -1204,8 +1218,11 @@ export default function SubmitPage() {
                 >
                   {extracting ? (
                     <div className="flex flex-col items-center gap-2 text-gray-600">
-                      <Loader2 size={28} className="animate-spin text-[#4ea8de]" />
-                      <p className="text-sm font-medium">🤖 Reading your flyer…</p>
+                      <Loader2 size={28} className="animate-spin text-purple-600" />
+                      <p className="text-sm font-medium inline-flex items-center gap-1.5">
+                        <Sparkles className="w-4 h-4 text-purple-600" />
+                        Reading your flyer…
+                      </p>
                     </div>
                   ) : (
                     <>
@@ -1322,7 +1339,7 @@ export default function SubmitPage() {
 
         {/* The shared verify-and-submit form */}
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 md:p-8">
-          <FormSection id="section-basics" first icon="📋" title="The Basics" subtitle="What is your event and who is hosting it?">
+          <FormSection id="section-basics" first icon={<ClipboardList className="w-5 h-5 text-slate-600" />} title="The Basics" subtitle="What is your event and who is hosting it?">
 
           <div>
             <label className={labelClass}>
@@ -1365,8 +1382,9 @@ export default function SubmitPage() {
               </select>
               {sdgSuggestion && (
                 <div className="mt-2 flex items-center gap-2 text-xs">
-                  <span className="text-gray-600">
-                    ✨ AI suggests: <span className="font-semibold">SDG {sdgSuggestion.sdg} — {sdgSuggestion.label}</span>
+                  <span className="text-gray-600 inline-flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-purple-600" />
+                    AI suggests: <span className="font-semibold">SDG {sdgSuggestion.sdg} — {sdgSuggestion.label}</span>
                   </span>
                   <button
                     type="button"
@@ -1411,17 +1429,17 @@ export default function SubmitPage() {
 
             {/* AI Polish toolbar */}
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <RewriteButton onClick={() => rewriteDescription("polish")} disabled={!!rewriting || rewriteCount >= MAX_REWRITES} active={rewriting === "polish"} icon="✨" label="Polish" />
-              <RewriteButton onClick={() => rewriteDescription("shorten")} disabled={!!rewriting || rewriteCount >= MAX_REWRITES} active={rewriting === "shorten"} icon="✂️" label="Shorten" />
-              <RewriteButton onClick={() => rewriteDescription("expand")} disabled={!!rewriting || rewriteCount >= MAX_REWRITES} active={rewriting === "expand"} icon="📝" label="Expand" />
+              <RewriteButton onClick={() => rewriteDescription("polish")} disabled={!!rewriting || rewriteCount >= MAX_REWRITES} active={rewriting === "polish"} icon={<Sparkles className={`w-3.5 h-3.5 ${rewriting === "polish" ? "text-white" : "text-purple-600"}`} />} label="Polish" />
+              <RewriteButton onClick={() => rewriteDescription("shorten")} disabled={!!rewriting || rewriteCount >= MAX_REWRITES} active={rewriting === "shorten"} icon={<Scissors className={`w-3.5 h-3.5 ${rewriting === "shorten" ? "text-white" : "text-purple-600"}`} />} label="Shorten" />
+              <RewriteButton onClick={() => rewriteDescription("expand")} disabled={!!rewriting || rewriteCount >= MAX_REWRITES} active={rewriting === "expand"} icon={<FileText className={`w-3.5 h-3.5 ${rewriting === "expand" ? "text-white" : "text-purple-600"}`} />} label="Expand" />
               <div className="relative">
                 <button
                   type="button"
                   onClick={() => setTranslateOpen(o => !o)}
                   disabled={!!rewriting || rewriteCount >= MAX_REWRITES}
-                  className="inline-flex items-center gap-1 text-xs font-semibold border border-gray-200 hover:border-[#4ea8de] hover:bg-[#4ea8de]/5 disabled:opacity-40 disabled:cursor-not-allowed rounded-full px-2.5 py-1 text-gray-700 transition-colors"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold border border-gray-200 hover:border-[#4ea8de] hover:bg-[#4ea8de]/5 disabled:opacity-40 disabled:cursor-not-allowed rounded-full px-2.5 py-1 text-gray-700 transition-colors"
                 >
-                  🌐 Translate <span className="text-gray-400">▼</span>
+                  <Globe className="w-3.5 h-3.5 text-purple-600" /> Translate <ChevronDown className="w-3 h-3 text-slate-500" />
                 </button>
                 {translateOpen && (
                   <ul className="absolute z-10 mt-1 right-0 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden min-w-[160px]">
@@ -1445,23 +1463,26 @@ export default function SubmitPage() {
                 )}
               </div>
               {rewriting && (
-                <span className="inline-flex items-center gap-1 text-xs text-gray-500">
-                  <Loader2 size={12} className="animate-spin" /> 🤖 Rewriting…
+                <span className="inline-flex items-center gap-1.5 text-xs text-gray-500">
+                  <Loader2 size={12} className="animate-spin text-purple-600" />
+                  <Sparkles className="w-3 h-3 text-purple-600" />
+                  Rewriting…
                 </span>
               )}
             </div>
 
             {undoOriginal && (
               <div className="mt-2 flex items-center justify-between bg-amber-50 border border-amber-200 rounded-xl px-3 py-1.5">
-                <span className="text-xs text-amber-900">
-                  ✨ Description rewritten — your original is saved for 30 seconds.
+                <span className="text-xs text-amber-900 inline-flex items-center gap-1.5">
+                  <Sparkles className="w-3 h-3 text-purple-600" />
+                  Description rewritten — your original is saved for 30 seconds.
                 </span>
                 <button
                   type="button"
                   onClick={undoRewrite}
-                  className="text-xs font-semibold text-amber-900 hover:text-amber-950 underline"
+                  className="text-xs font-semibold text-amber-900 hover:text-amber-950 underline inline-flex items-center gap-1"
                 >
-                  ↩️ Undo
+                  <Undo2 className="w-3 h-3" /> Undo
                 </button>
               </div>
             )}
@@ -1478,7 +1499,7 @@ export default function SubmitPage() {
           </div>
           </FormSection>
 
-          <FormSection id="section-when-where" icon="📅" title="When & Where" subtitle="When does it happen and where can people join?">
+          <FormSection id="section-when-where" icon={<Calendar className="w-5 h-5 text-blue-600" />} title="When & Where" subtitle="When does it happen and where can people join?">
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -1593,7 +1614,7 @@ export default function SubmitPage() {
           </div>
           </FormSection>
 
-          <FormSection id="section-cost-audience" icon="🎫" title="Cost & Audience" subtitle="Who is it for and what does it cost?">
+          <FormSection id="section-cost-audience" icon={<Ticket className="w-5 h-5 text-amber-600" />} title="Cost & Audience" subtitle="Who is it for and what does it cost?">
 
           {/* ── Cost ─────────────────────────────────────────────── */}
           <div>
@@ -1672,7 +1693,7 @@ export default function SubmitPage() {
           </div>
           </FormSection>
 
-          <FormSection id="section-partners-speakers" icon="👥" title="Partners & Speakers" subtitle="Who else is involved?">
+          <FormSection id="section-partners-speakers" icon={<Users className="w-5 h-5 text-violet-600" />} title="Partners & Speakers" subtitle="Who else is involved?">
 
           {/* ── Co-organizers / partners ─────────────────────────── */}
           <div>
@@ -1699,7 +1720,7 @@ export default function SubmitPage() {
           </div>
           </FormSection>
 
-          <FormSection id="section-final-details" icon="🎬" title="Final Details" subtitle="Last few things to make your event shine">
+          <FormSection id="section-final-details" icon={<Film className="w-5 h-5 text-rose-600" />} title="Final Details" subtitle="Last few things to make your event shine">
 
           {/* ── Banner ───────────────────────────────────────────── */}
           <div>
@@ -1732,10 +1753,15 @@ export default function SubmitPage() {
                 <img src={form.banner_image_url} alt="Banner preview" className="w-full max-h-48 object-cover" />
               </div>
             )}
-            <p className="text-[11px] text-gray-400 mt-1">
-              {form.uploaded_flyer_url && form.banner_image_url === form.uploaded_flyer_url
-                ? "✨ Using your uploaded flyer as the banner. Paste a URL or upload a different image to override."
-                : "Leave blank and we'll auto-fetch a relevant Pexels image."}
+            <p className="text-[11px] text-gray-400 mt-1 inline-flex items-start gap-1.5">
+              {form.uploaded_flyer_url && form.banner_image_url === form.uploaded_flyer_url ? (
+                <>
+                  <Sparkles className="w-3 h-3 text-purple-600 mt-0.5 shrink-0" />
+                  <span>Using your uploaded flyer as the banner. Paste a URL or upload a different image to override.</span>
+                </>
+              ) : (
+                "Leave blank and we'll auto-fetch a relevant Pexels image."
+              )}
             </p>
           </div>
 
@@ -1749,7 +1775,7 @@ export default function SubmitPage() {
                 onChange={e => setForm(f => ({ ...f, will_be_recorded: e.target.checked, recording_url: e.target.checked ? f.recording_url : "" }))}
                 className="accent-[#4ea8de]"
               />
-              📹 This event will be recorded
+              <Video className="w-4 h-4 text-rose-600" /> This event will be recorded
             </label>
             {form.will_be_recorded && (
               <input
@@ -1866,8 +1892,8 @@ export default function SubmitPage() {
               onClick={e => e.stopPropagation()}
             >
               <div className="flex items-start gap-3 mb-3">
-                <div className="shrink-0 w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-xl">
-                  ⚠️
+                <div className="shrink-0 w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+                  <AlertTriangle className="w-5 h-5 text-amber-600" />
                 </div>
                 <div className="flex-1">
                   <h3 className="text-lg font-bold text-[#0f2a4a]">We may already have this event</h3>

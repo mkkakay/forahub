@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSubscription } from "@/context/SubscriptionContext";
-import { Check } from "lucide-react";
+import { Check, PartyPopper } from "lucide-react";
 
 const FOUNDING_LIMIT = 100;
 
@@ -63,7 +63,7 @@ export default function PricingClient({ foundingCount }: { foundingCount: number
         </p>
         {isOnTrial && (
           <div className="inline-flex items-center gap-2 mt-4 bg-blue-50 border border-blue-200 text-blue-700 text-sm font-medium px-4 py-2 rounded-full">
-            <span>🎉</span>
+            <PartyPopper className="w-4 h-4 text-amber-500" />
             Your 7-day Pro trial is active — you have full access right now.
           </div>
         )}
@@ -140,8 +140,8 @@ export default function PricingClient({ foundingCount }: { foundingCount: number
             </li>
           </ul>
           {isProOrFounding ? (
-            <div className="text-sm text-center text-[#4ea8de] py-2.5 border border-[#4ea8de]/40 rounded-lg font-semibold">
-              ✓ Active on your account
+            <div className="text-sm text-center text-[#4ea8de] py-2.5 border border-[#4ea8de]/40 rounded-lg font-semibold inline-flex items-center justify-center gap-1.5 w-full">
+              <Check className="w-4 h-4" /> Active on your account
             </div>
           ) : (
             <button
@@ -182,8 +182,8 @@ export default function PricingClient({ foundingCount }: { foundingCount: number
             <Checkmark text="Early access to new features" />
           </ul>
           {tier === "founding" ? (
-            <div className="text-sm text-center text-amber-600 py-2.5 border border-amber-300 rounded-lg font-semibold">
-              ✓ You are a Founding Member
+            <div className="text-sm text-center text-amber-600 py-2.5 border border-amber-300 rounded-lg font-semibold inline-flex items-center justify-center gap-1.5 w-full">
+              <Check className="w-4 h-4" /> You are a Founding Member
             </div>
           ) : isProOrFounding || foundingFull ? (
             <div className="text-sm text-center text-gray-400 py-2.5 border border-gray-200 rounded-lg font-medium">

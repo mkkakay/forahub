@@ -133,7 +133,7 @@ export default function PendingSubmissionsPanel({ adminSecret }: { adminSecret: 
             </div>
           ) : rows.length === 0 ? (
             <div className="px-4 py-8 text-center text-blue-500 text-sm">
-              No pending user submissions. ✨
+              No pending user submissions.
             </div>
           ) : (
             <div className="space-y-3">
