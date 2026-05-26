@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { MapPin, Calendar, Building2, Tag, Filter, X, Search, Clock, CalendarDays, List, Sparkles, Star } from "lucide-react";
 import type { Database } from "@/lib/supabase/types";
@@ -101,7 +101,7 @@ function getCountdown(event: EventRow, today: string): { label: string; urgent: 
 
 const ALL_REGIONS = ["Africa", "Americas", "Asia-Pacific", "Europe", "Middle East", "Online", "Other"];
 
-type QuickFilter = "free" | "online" | "thisWeek" | "featured";
+type QuickFilter = "free" | "online" | "featured";
 
 export default function EventsClient({
   events,
@@ -196,8 +196,6 @@ export default function EventsClient({
 
   const activeSearch = search.trim();
 
-  const oneWeekOut = useMemo(() => new Date(new Date(today).getTime() + 7 * 24 * 60 * 60 * 1000), [today]);
-
   const filtered = useMemo(() => {
     return baseEvents.filter(e => {
       if (!matchesSearch(e, search)) return false;
@@ -207,14 +205,10 @@ export default function EventsClient({
       if (regionFilter !== null && deriveRegion(e.location) !== regionFilter) return false;
       if (quickFilters.has("free") && e.cost_type !== "free") return false;
       if (quickFilters.has("online") && e.format !== "virtual") return false;
-      if (quickFilters.has("thisWeek")) {
-        const startDate = new Date(e.start_date);
-        if (startDate < new Date(today) || startDate > oneWeekOut) return false;
-      }
       if (quickFilters.has("featured") && !e.is_featured) return false;
       return true;
     });
-  }, [baseEvents, search, sdgFilter, formatFilter, typeFilter, regionFilter, quickFilters, today, oneWeekOut]);
+  }, [baseEvents, search, sdgFilter, formatFilter, typeFilter, regionFilter, quickFilters]);
 
   const hasFilters =
     activeSearch.length >= 2 ||
@@ -285,9 +279,28 @@ export default function EventsClient({
   const QUICK_FILTER_OPTIONS: { id: QuickFilter; label: string }[] = [
     { id: "free", label: "Free" },
     { id: "online", label: "Online" },
-    { id: "thisWeek", label: "This week" },
     { id: "featured", label: "Featured" },
   ];
+
+  const TIME_PILL_LABELS: Record<string, string> = {
+    "this-week": "Week",
+    "this-month": "Month",
+    "next-3-months": "3 Months",
+    "this-year": "This Year",
+    "later": "Later",
+  };
+
+  const [flashSectionId, setFlashSectionId] = useState<string | null>(null);
+  const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function jumpToBucket(id: string) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
+    setFlashSectionId(id);
+    flashTimerRef.current = setTimeout(() => setFlashSectionId(null), 1000);
+  }
 
   function renderStandardCard(event: EventRow) {
     const isPast = event.start_date < today;
@@ -584,10 +597,11 @@ export default function EventsClient({
         </div>
       </div>
 
-      {/* Quick filter pills */}
+      {/* Quick filter pills + time navigation */}
       {viewMode === "list" && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Content filter pills (toggle) */}
             {QUICK_FILTER_OPTIONS.map(q => {
               const active = quickFilters.has(q.id);
               return (
@@ -613,6 +627,27 @@ export default function EventsClient({
               >
                 <X size={12} /> Clear quick filters
               </button>
+            )}
+
+            {/* Time navigation pills (scroll, no filtering) — only when sections exist */}
+            {showSectionedView && buckets.some(b => b.events.length > 0) && (
+              <>
+                <span className="hidden sm:inline-block self-stretch w-px bg-slate-200 mx-2" aria-hidden="true" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 mr-1">Jump to</span>
+                {buckets
+                  .filter(b => b.events.length > 0)
+                  .map(b => (
+                    <button
+                      key={b.id}
+                      type="button"
+                      onClick={() => jumpToBucket(b.id)}
+                      className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-full border border-slate-200 bg-slate-50 text-slate-700 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 transition-colors"
+                    >
+                      <Calendar className="w-3.5 h-3.5" />
+                      {TIME_PILL_LABELS[b.id] ?? b.label}
+                    </button>
+                  ))}
+              </>
             )}
           </div>
         </div>
@@ -715,13 +750,19 @@ export default function EventsClient({
                 if (bucket.events.length === 0) return null;
                 const preview = bucket.events.slice(0, 6);
                 const hasMore = bucket.events.length > preview.length;
+                const isFlashing = flashSectionId === bucket.id;
                 return (
                   <section
                     key={bucket.id}
-                    className={`${idx === 0 ? "" : "border-t border-slate-200 mt-12 pt-8"}`}
+                    id={bucket.id}
+                    className={`scroll-mt-24 ${idx === 0 ? "" : "border-t border-slate-200 mt-12 pt-8"}`}
                   >
                     <div className="flex items-baseline justify-between mb-4">
-                      <h2 className="text-xl font-semibold text-[#0f2a4a]">
+                      <h2
+                        className={`text-xl font-semibold text-[#0f2a4a] rounded-md transition-colors duration-700 ${
+                          isFlashing ? "bg-blue-50 px-2 -mx-2" : ""
+                        }`}
+                      >
                         {bucket.label}{" "}
                         <span className="text-sm font-normal text-slate-500">
                           · {bucket.events.length} event{bucket.events.length === 1 ? "" : "s"}
