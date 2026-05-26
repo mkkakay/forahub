@@ -13,6 +13,7 @@ import { batchGetLogos } from "@/lib/organizations/getLogoUrl";
 import { backfillBannersAsync } from "@/lib/events/fetchEventBanner";
 import { getResolvedFeaturedCalendars } from "@/lib/organizations/getResolvedOrg";
 import { getActiveRegions } from "@/lib/regions/getActiveRegions";
+import { adminSupabase } from "@/lib/supabase/admin";
 
 // Search queries aligned to each slide's content — specific enough for accurate Pexels results
 const SLIDE_QUERIES = [
@@ -124,6 +125,18 @@ export default async function Home() {
   const featuredCalendars = await getResolvedFeaturedCalendars().catch(() => []);
   const regions = await getActiveRegions().catch(() => []);
 
+  const featuredSlugs = featuredCalendars.map(o => o.slug);
+  const claimedBySlug = new Map<string, { is_claimed: boolean; is_verified: boolean }>();
+  if (featuredSlugs.length > 0) {
+    const { data: claimedRows } = await adminSupabase
+      .from("organizations_directory")
+      .select("slug, is_claimed, is_verified")
+      .in("slug", featuredSlugs);
+    for (const r of (claimedRows ?? []) as { slug: string; is_claimed: boolean | null; is_verified: boolean | null }[]) {
+      claimedBySlug.set(r.slug, { is_claimed: !!r.is_claimed, is_verified: !!r.is_verified });
+    }
+  }
+
   const orgLogos = await batchGetLogos([
     ...events
       .map(e => e.organization)
@@ -149,16 +162,21 @@ export default async function Home() {
         pastEvents={[]}
         totalCount={totalCount ?? 0}
         orgLogos={orgLogos}
-        featuredCalendars={featuredCalendars.map(o => ({
-          slug: o.slug,
-          name: o.name,
-          short: o.short,
-          description: o.description,
-          color: o.color,
-          needs_dark_background: o.needs_dark_background,
-          logo_url: o.logo_url,
-          logo_display_mode: o.logo_display_mode,
-        }))}
+        featuredCalendars={featuredCalendars.map(o => {
+          const claim = claimedBySlug.get(o.slug);
+          return {
+            slug: o.slug,
+            name: o.name,
+            short: o.short,
+            description: o.description,
+            color: o.color,
+            needs_dark_background: o.needs_dark_background,
+            logo_url: o.logo_url,
+            logo_display_mode: o.logo_display_mode,
+            is_claimed: claim?.is_claimed ?? false,
+            is_verified: claim?.is_verified ?? false,
+          };
+        })}
         regions={regions.map(r => ({
           slug: r.slug,
           name: r.name,

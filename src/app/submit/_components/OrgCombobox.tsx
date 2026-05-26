@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Loader2, Building2, Plus } from "lucide-react";
+import { Loader2, Building2, Plus, BadgeCheck } from "lucide-react";
 import { orgTypeBadge, type OrgSuggestion } from "./orgTypes";
 
 export type { OrgSuggestion };
@@ -175,7 +175,12 @@ function ResultRow({ org, onPick }: { org: OrgSuggestion; onPick: () => void }) 
           )}
         </span>
         <span className="flex-1 min-w-0">
-          <span className="font-semibold text-gray-900 block truncate">{org.short}</span>
+          <span className="font-semibold text-gray-900 truncate inline-flex items-center gap-1">
+            {org.short}
+            {org.is_verified && org.is_claimed && (
+              <BadgeCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" aria-label="Verified organization" />
+            )}
+          </span>
           <span className="text-[11px] text-gray-500 block truncate">{org.name}</span>
         </span>
         <span className={`shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded ${badge.className}`}>

@@ -6,7 +6,7 @@ import {
   Calendar, Flag, MapPin, ArrowRight, ChevronRight,
   Heart, Wheat, HeartPulse, GraduationCap, Users, Droplets, Zap,
   TrendingUp, Settings, Scale, Building2, Recycle, CloudSun, Fish,
-  Trees, Shield, Handshake, type LucideIcon,
+  Trees, Shield, Handshake, BadgeCheck, type LucideIcon,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { useLanguage } from "@/context/LanguageContext";
@@ -24,6 +24,8 @@ export interface FeaturedOrg {
   needs_dark_background: boolean;
   logo_url: string | null;
   logo_display_mode?: "contain" | "cover";
+  is_claimed?: boolean;
+  is_verified?: boolean;
 }
 
 export interface HomeRegion {
@@ -204,7 +206,14 @@ function FeaturedOrgCard({ org }: { org: FeaturedOrg }) {
       </div>
       {/* Body */}
       <div className="p-4 flex flex-col flex-1">
-        <p className="text-sm font-bold text-[#0f2a4a] dark:text-white group-hover:text-[#4ea8de] transition-colors">{org.short}</p>
+        <p className="text-sm font-bold text-[#0f2a4a] dark:text-white group-hover:text-[#4ea8de] transition-colors inline-flex items-center gap-1">
+          {org.short}
+          {org.is_claimed && org.is_verified && (
+            <span title="Verified organization" className="inline-flex">
+              <BadgeCheck className="w-4 h-4 text-emerald-600 shrink-0" aria-label="Verified organization" />
+            </span>
+          )}
+        </p>
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2 flex-1">{org.name}</p>
         <span className="mt-3 block w-full py-2 rounded-lg text-sm font-semibold text-center border border-[#4ea8de]/40 text-[#4ea8de] group-hover:bg-[#4ea8de] group-hover:text-white transition-colors">
           {t(lang, "calendar.follow")}

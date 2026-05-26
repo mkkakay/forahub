@@ -1,13 +1,9 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
 import {
-  Calendar, FileText, Building2, ArrowRight, Loader2, CheckCircle2, X, AlertCircle,
+  Calendar, FileText, Building2, ArrowRight,
   Sparkles, Rocket, ClipboardList, Paperclip, Link2, BadgeCheck, BarChart3, RefreshCw, Users,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import { parseApiResponse } from "@/lib/admin/fetchJson";
 
 type Feature = { icon: React.ReactNode; label: string };
 
@@ -25,14 +21,12 @@ const BULK_FEATURES: Feature[] = [
 
 const ORG_FEATURES: Feature[] = [
   { icon: <BadgeCheck className="w-4 h-4 text-emerald-600" />, label: "Verified org badge" },
-  { icon: <BarChart3 className="w-4 h-4 text-violet-600" />, label: "Event analytics" },
-  { icon: <RefreshCw className="w-4 h-4 text-blue-500" />, label: "Recurring events" },
-  { icon: <Users className="w-4 h-4 text-violet-600" />, label: "Team accounts" },
+  { icon: <BarChart3 className="w-4 h-4 text-violet-600" />, label: "Event analytics (coming soon)" },
+  { icon: <RefreshCw className="w-4 h-4 text-blue-500" />, label: "Recurring events (coming soon)" },
+  { icon: <Users className="w-4 h-4 text-violet-600" />, label: "Team accounts (coming soon)" },
 ];
 
 export default function SubmitChooserPage() {
-  const [orgModalOpen, setOrgModalOpen] = useState(false);
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -68,16 +62,14 @@ export default function SubmitChooserPage() {
             badge={{ label: "Best for orgs hosting 5+ events", tone: "blue" }}
           />
 
-          {/* Card 3 — Organization account (coming soon) */}
+          {/* Card 3 — Claim your org */}
           <ChooserCard
-            onClick={() => setOrgModalOpen(true)}
+            href="/claim"
             icon={<Building2 className="w-12 h-12 text-indigo-600" />}
             title="My organization"
-            description="Claim your org, manage all your events in one dashboard, and unlock advanced features."
+            description="Claim your org with a work-email verification to unlock the verified badge today. More features rolling out soon."
             features={ORG_FEATURES}
-            ctaLabel="Join early access"
-            ctaSubtitle="Coming soon"
-            comingSoon
+            ctaLabel="Claim your org"
           />
         </div>
 
@@ -85,8 +77,6 @@ export default function SubmitChooserPage() {
           Have questions? <Link href="/contact" className="text-blue-600 hover:underline font-medium">Contact us →</Link>
         </p>
       </main>
-
-      {orgModalOpen && <EarlyAccessModal onClose={() => setOrgModalOpen(false)} />}
     </div>
   );
 }
@@ -181,117 +171,3 @@ function ChooserCard({
   );
 }
 
-function EarlyAccessModal({ onClose }: { onClose: () => void }) {
-  const [email, setEmail] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    if (!email.trim()) {
-      setError("Email is required.");
-      return;
-    }
-    setSubmitting(true);
-    try {
-      const res = await fetch("/api/early-access", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), interest: "org_accounts" }),
-      });
-      const parsed = await parseApiResponse<{ success?: boolean; message?: string; error?: string }>(res);
-      if (!parsed.ok) {
-        setError(parsed.error || "Could not save signup.");
-        return;
-      }
-      setSuccess(parsed.data.message ?? "You're on the list.");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative"
-        onClick={e => e.stopPropagation()}
-      >
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
-          aria-label="Close"
-        >
-          <X size={20} />
-        </button>
-
-        {success ? (
-          <div className="text-center py-3">
-            <div className="mx-auto w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-3">
-              <CheckCircle2 size={24} className="text-green-600" />
-            </div>
-            <h3 className="text-xl font-bold text-[#0f2a4a]">You&apos;re on the list</h3>
-            <p className="text-sm text-gray-600 mt-2">{success}</p>
-            <button
-              type="button"
-              onClick={onClose}
-              className="mt-5 inline-flex items-center gap-2 bg-[#0f2a4a] hover:bg-[#1a3f6e] text-white font-semibold px-5 py-2.5 rounded-xl text-sm"
-            >
-              Got it
-            </button>
-          </div>
-        ) : (
-          <>
-            <h3 className="text-xl font-bold text-[#0f2a4a] flex items-center gap-2">
-              <Rocket className="w-5 h-5 text-violet-600" />
-              Organization accounts launching soon
-            </h3>
-            <p className="text-sm text-gray-600 mt-2">
-              Be the first to know when verified org accounts go live. You&apos;ll get:
-            </p>
-            <ul className="mt-3 space-y-1.5 text-sm text-gray-700">
-              <li className="flex items-start gap-2"><span>•</span><span>Priority access during beta</span></li>
-              <li className="flex items-start gap-2"><span>•</span><span>Free verified badge for the first 100 orgs</span></li>
-              <li className="flex items-start gap-2"><span>•</span><span>Direct support to claim your org</span></li>
-            </ul>
-
-            <form onSubmit={handleSubmit} className="mt-5 space-y-3">
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                required
-                className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-800 placeholder-gray-400 hover:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-colors"
-              />
-              {error && (
-                <div className="flex items-start gap-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
-                  <AlertCircle size={13} className="mt-0.5 shrink-0" />
-                  <span className="flex-1">{error}</span>
-                </div>
-              )}
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-300 disabled:to-gray-300 text-white font-semibold px-5 py-3 rounded-xl text-sm shadow-md transition-all"
-              >
-                {submitting ? <Loader2 size={16} className="animate-spin" /> : null}
-                {submitting ? "Saving…" : "Notify me when ready"}
-              </button>
-              <p className="text-[11px] text-gray-500 text-center">
-                We&apos;ll only email you when org accounts launch.
-              </p>
-            </form>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}

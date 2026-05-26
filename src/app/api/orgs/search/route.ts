@@ -13,6 +13,9 @@ interface DirectoryRow {
   tier: number;
   logo_url: string | null;
   aliases: string[] | null;
+  domain: string | null;
+  is_verified: boolean | null;
+  is_claimed: boolean | null;
 }
 
 interface OverrideRow {
@@ -36,6 +39,9 @@ export interface OrgSuggestion {
   region: string | null;
   tier: number;
   logo_url: string | null;
+  domain: string | null;
+  is_verified: boolean;
+  is_claimed: boolean;
 }
 
 // Tiny in-memory cache so a busy combobox doesn't slam the DB. Per-process.
@@ -74,7 +80,7 @@ export async function GET(req: NextRequest) {
   const ilike = `%${q.replace(/[%_]/g, "")}%`;
   const { data: rawRows } = await adminSupabase
     .from("organizations_directory")
-    .select("slug, name, short_name, org_type, region, tier, logo_url, aliases")
+    .select("slug, name, short_name, org_type, region, tier, logo_url, aliases, domain, is_verified, is_claimed")
     .eq("status", "active")
     .in("tier", [1, 2])
     .or(`name.ilike.${ilike},short_name.ilike.${ilike},slug.ilike.${ilike}`)
@@ -87,7 +93,7 @@ export async function GET(req: NextRequest) {
   if (candidates.length < 8) {
     const { data: tier1All } = await adminSupabase
       .from("organizations_directory")
-      .select("slug, name, short_name, org_type, region, tier, logo_url, aliases")
+      .select("slug, name, short_name, org_type, region, tier, logo_url, aliases, domain, is_verified, is_claimed")
       .eq("status", "active")
       .eq("tier", 1)
       .not("aliases", "is", null)
@@ -144,6 +150,9 @@ export async function GET(req: NextRequest) {
       region: c.region,
       tier: c.tier,
       logo_url: logo,
+      domain: c.domain ?? null,
+      is_verified: !!c.is_verified,
+      is_claimed: !!c.is_claimed,
     };
   });
 

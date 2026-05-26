@@ -50,4 +50,7 @@ export interface OrgSuggestion {
   region: string | null;
   tier: number;
   logo_url: string | null;
+  domain?: string | null;
+  is_verified?: boolean;
+  is_claimed?: boolean;
 }
