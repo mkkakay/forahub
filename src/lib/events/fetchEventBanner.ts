@@ -288,9 +288,14 @@ export async function fetchEventBannerDetailed(event: EventForBanner): Promise<F
     }
   }
 
+  // Deterministic per-event skip so two events sharing the same Pexels query
+  // land on different result positions. Last 2 hex chars of the UUID give a
+  // uniform 0–255 distribution; modulo 5 yields a stable position in the
+  // 5-result Pexels page. Variant clicks add an extra rotation on top.
+  const baseSkip = parseInt(event.id.slice(-2), 16);
   const seed = variant ? rerollSeed++ : 0;
-  const skip = variant ? (seed % 4) + 1 : 0;
-  const query = buildQuery(event, variant, seed);
+  const skip = variant ? (baseSkip + seed + 1) % 5 : baseSkip % 5;
+  const query = buildQuery(event, variant, seed + baseSkip);
 
   let url: string | null = null;
   let source: BannerSource | null = null;
@@ -306,7 +311,7 @@ export async function fetchEventBannerDetailed(event: EventForBanner): Promise<F
   if (!url) {
     const wikiQuery = wikimediaQueryForTitle(event.title);
     if (wikiQuery) {
-      url = await tryWikimediaImage(wikiQuery).catch(() => null);
+      url = await tryWikimediaImage(wikiQuery, skip).catch(() => null);
       if (url) source = "wikimedia";
     }
   }

@@ -60,10 +60,11 @@ async function fetchWithTimeout(url: string): Promise<Response | null> {
 
 /**
  * Query Wikimedia Commons for a landscape photo matching `query`. Filters out
- * maps, portraits, drawings, and undersized images. Returns the first usable
- * file URL, or null.
+ * maps, portraits, drawings, and undersized images. Returns the Nth usable
+ * file URL (after the optional `skip`), or null. Skip lets two events that
+ * trigger the same wikimedia query land on different images.
  */
-export async function tryWikimediaImage(query: string): Promise<string | null> {
+export async function tryWikimediaImage(query: string, skip = 0): Promise<string | null> {
   const trimmed = query.trim();
   if (!trimmed) return null;
 
@@ -86,8 +87,8 @@ export async function tryWikimediaImage(query: string): Promise<string | null> {
   const pages = json?.query?.pages;
   if (!pages) return null;
 
-  const candidates = Object.values(pages);
-  for (const page of candidates) {
+  const usable: string[] = [];
+  for (const page of Object.values(pages)) {
     if (!page.title || isUnwantedTitle(page.title)) continue;
     const info = page.imageinfo?.[0];
     if (!info?.url || !info.width || !info.height) continue;
@@ -95,10 +96,13 @@ export async function tryWikimediaImage(query: string): Promise<string | null> {
     if (info.mime === "image/svg+xml") continue;
     if (info.width < MIN_WIDTH) continue;
     if (info.width / Math.max(1, info.height) < MIN_LANDSCAPE_RATIO) continue;
-    return info.url;
+    usable.push(info.url);
   }
 
-  return null;
+  if (usable.length === 0) return null;
+  // Wrap skip into the available set so we never return null just because
+  // skip exceeded length — every event still gets a deterministic photo.
+  return usable[skip % usable.length];
 }
 
 const WIKIMEDIA_TRIGGERS: { pattern: RegExp; query: string }[] = [
