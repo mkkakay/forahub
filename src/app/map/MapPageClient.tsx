@@ -4,6 +4,8 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { MapPin, Tag, Calendar } from "lucide-react";
+import type { ShowFilter, ColorMode } from "@/components/EventsMap";
+import { ShowFilterPills, ColorByPills } from "@/components/MapFilterPills";
 
 const EventsMap = dynamic(() => import("@/components/EventsMap"), {
   ssr: false,
@@ -37,6 +39,8 @@ export default function MapPageClient() {
   const [sdgs, setSdgs] = useState<Set<number>>(new Set());
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
+  const [showFilter, setShowFilter] = useState<ShowFilter>("all");
+  const [colorBy, setColorBy] = useState<ColorMode>("sdg");
   const [visibleIds, setVisibleIds] = useState<string[]>([]);
   const [visibleDetails, setVisibleDetails] = useState<VisibleEvent[]>([]);
 
@@ -90,10 +94,16 @@ export default function MapPageClient() {
             <MapPin size={16} className="text-emerald-600" />
             <span>Showing in-person events. Pan and zoom to refine — pins update for the visible area.</span>
           </div>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 mb-4">
+            <ShowFilterPills value={showFilter} onChange={setShowFilter} />
+            <ColorByPills value={colorBy} onChange={setColorBy} />
+          </div>
           <EventsMap
             mode="full"
             height="70vh"
             initialFilters={filters}
+            showFilter={showFilter}
+            colorBy={colorBy}
             onPinsLoaded={handlePinsLoaded}
           />
         </div>

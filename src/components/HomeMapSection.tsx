@@ -4,7 +4,8 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, Globe } from "lucide-react";
-import type { MapPin } from "./EventsMap";
+import type { MapPin, ShowFilter } from "./EventsMap";
+import { ShowFilterPills } from "./MapFilterPills";
 
 // Lazy-loaded so leaflet's window-dependent module only runs in the browser.
 const EventsMap = dynamic(() => import("./EventsMap"), {
@@ -33,6 +34,7 @@ export default function HomeMapSection({ totalWithCoords }: { totalWithCoords: n
   const [shouldLoad, setShouldLoad] = useState(false);
   const [pinsVisible, setPinsVisible] = useState<number | null>(null);
   const [regionsCovered, setRegionsCovered] = useState<number | null>(null);
+  const [showFilter, setShowFilter] = useState<ShowFilter>("all");
 
   useEffect(() => {
     if (!sectionRef.current || typeof IntersectionObserver === "undefined") {
@@ -55,8 +57,8 @@ export default function HomeMapSection({ totalWithCoords }: { totalWithCoords: n
     return () => observer.disconnect();
   }, []);
 
-  const handlePinsLoaded = useMemo(() => (pins: MapPin[]) => {
-    setPinsVisible(pins.length);
+  const handlePinsLoaded = useMemo(() => (pins: MapPin[], total: number) => {
+    setPinsVisible(total);
     setRegionsCovered(distinctRegions(pins));
   }, []);
 
@@ -85,11 +87,16 @@ export default function HomeMapSection({ totalWithCoords }: { totalWithCoords: n
           </Link>
         </div>
 
+        {/* Toggle filters above the map (homepage = simple, Show only) */}
+        <div className="mb-4">
+          <ShowFilterPills value={showFilter} onChange={setShowFilter} />
+        </div>
+
         {/* Map card — matches design system */}
         <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-[#334155] shadow-sm bg-white dark:bg-[#1e293b]">
           <div className="h-[320px] sm:h-[400px]">
             {shouldLoad ? (
-              <EventsMap mode="teaser" height="100%" onPinsLoaded={handlePinsLoaded} />
+              <EventsMap mode="teaser" height="100%" showFilter={showFilter} onPinsLoaded={handlePinsLoaded} />
             ) : (
               <MapSkeleton />
             )}

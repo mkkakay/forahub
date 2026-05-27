@@ -3,16 +3,26 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import L, { LatLngBoundsExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
-import "leaflet.markercluster/dist/MarkerCluster.css";
-import "leaflet.markercluster/dist/MarkerCluster.Default.css";
-import "leaflet.markercluster";
 import { SDG_COLORS } from "@/lib/assets/sdgFallbacks";
+
+export type ColorMode = "sdg" | "date" | "format";
+export type ShowFilter = "all" | "this-week" | "this-month" | "featured";
 
 export interface MapPin {
   id: string;
   lat: number;
   lng: number;
   sdg: number | null;
+  color?: string;
+}
+
+export interface MapCluster {
+  type: "cluster";
+  key: string;
+  name: string | null;
+  lat: number;
+  lng: number;
+  count: number;
 }
 
 export interface MapEventDetail {
@@ -37,37 +47,29 @@ export interface EventsMapProps {
     dateFrom?: string | null;
     dateTo?: string | null;
   };
-  onPinsLoaded?: (pins: MapPin[]) => void;
+  showFilter?: ShowFilter;
+  colorBy?: ColorMode;
+  onPinsLoaded?: (pins: MapPin[], total: number) => void;
 }
 
-// CartoDB Positron — clean light basemap that integrates with white card UI.
 const TILE_URL = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
 const TILE_SUBDOMAINS = ["a", "b", "c", "d"];
 const ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer">CARTO</a>';
-const FETCH_DEBOUNCE_MS = 500;
+const FETCH_DEBOUNCE_MS = 400;
+const FORAHUB_BLUE = "#2563eb";
 
-const FORAHUB_BLUE = "#4ea8de";
-
-function pinColor(sdg: number | null): string {
-  if (sdg && SDG_COLORS[sdg]) return SDG_COLORS[sdg];
-  return FORAHUB_BLUE;
+function pinColor(pin: MapPin): string {
+  if (pin.color) return pin.color;
+  if (pin.sdg && SDG_COLORS[pin.sdg]) return SDG_COLORS[pin.sdg];
+  return "#4ea8de";
 }
 
-function buildPinIcon(sdg: number | null, isMobile: boolean): L.DivIcon {
-  const color = pinColor(sdg);
+function buildPinIcon(pin: MapPin, isMobile: boolean): L.DivIcon {
+  const color = pinColor(pin);
   const size = isMobile ? 18 : 14;
-  const hoverSize = isMobile ? 22 : 18;
   const half = size / 2;
-  const html = `
-    <span class="forahub-pin-dot" style="
-      display:block;width:${size}px;height:${size}px;border-radius:9999px;
-      background:${color};border:2px solid #ffffff;
-      box-shadow:0 2px 4px rgba(0,0,0,0.15);
-      transition:transform 120ms ease-out;
-    "
-    data-hover-size="${hoverSize}"
-    ></span>`;
+  const html = `<span style="display:block;width:${size}px;height:${size}px;border-radius:9999px;background:${color};border:2px solid #ffffff;box-shadow:0 2px 4px rgba(0,0,0,0.15);transition:transform 120ms ease-out;"></span>`;
   return L.divIcon({
     html,
     className: "forahub-event-pin",
@@ -77,46 +79,36 @@ function buildPinIcon(sdg: number | null, isMobile: boolean): L.DivIcon {
   });
 }
 
-function buildClusterIcon(cluster: L.MarkerCluster): L.DivIcon {
-  const count = cluster.getChildCount();
+function buildClusterIcon(cluster: MapCluster, level: "continent" | "country" | "city"): L.DivIcon {
+  const count = cluster.count;
   let size: number;
-  let label: string;
-  if (count < 10) { size = 30; label = String(count); }
-  else if (count < 50) { size = 36; label = String(count); }
-  else { size = 44; label = String(count); }
-
-  // Pick the dominant SDG among children for color.
-  const counts = new Map<number, number>();
-  cluster.getAllChildMarkers().forEach(m => {
-    const sdg = (m as L.Marker & { __sdg?: number }).__sdg;
-    if (sdg) counts.set(sdg, (counts.get(sdg) ?? 0) + 1);
-  });
-  let dominant: number | null = null;
-  let max = 0;
-  counts.forEach((c, sdg) => { if (c > max) { max = c; dominant = sdg; } });
-  const bg = dominant ? pinColor(dominant) : "#0f2a4a";
-
+  if (count < 10) size = 40;
+  else if (count < 50) size = 48;
+  else size = 60;
+  const fontSize = size <= 40 ? 12 : 13;
+  const label = level === "continent" && cluster.name
+    ? `<div style="font-size:${fontSize - 2}px;font-weight:500;line-height:1.1;opacity:.95;">${escapeHtml(cluster.name)}</div><div style="font-weight:700;font-size:${fontSize}px;">${count.toLocaleString()}</div>`
+    : `<div style="font-weight:700;font-size:${fontSize + 1}px;">${count.toLocaleString()}</div>`;
   const html = `
     <div style="
       width:${size}px;height:${size}px;border-radius:9999px;
-      background:${bg};color:#fff;display:flex;align-items:center;justify-content:center;
-      font-weight:600;font-size:${size <= 30 ? 12 : 13}px;
+      background:${FORAHUB_BLUE};color:#fff;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
       border:2px solid #ffffff;
-      box-shadow:0 4px 10px rgba(15,42,74,0.25);
+      box-shadow:0 6px 14px rgba(15,42,74,0.28);
+      padding:0 4px;text-align:center;line-height:1.1;
     ">${label}</div>`;
   return L.divIcon({
     html,
     className: "forahub-cluster",
     iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
   });
 }
 
 function fmtDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "UTC",
+    month: "short", day: "numeric", year: "numeric", timeZone: "UTC",
   });
 }
 
@@ -126,9 +118,9 @@ function buildPopupHtml(detail: MapEventDetail): string {
          <img src="${escapeAttr(detail.banner_image_url)}" alt=""
               style="width:100%;height:100%;object-fit:${detail.banner_display_mode === "contain" ? "contain" : "cover"};" />
        </div>`
-    : `<div style="height:64px;background:linear-gradient(135deg, ${pinColor(detail.sdg)}cc, ${pinColor(detail.sdg)}88);"></div>`;
+    : `<div style="height:64px;background:linear-gradient(135deg, #2563eb 0%, #4ea8de 100%);"></div>`;
   return `
-    <div style="font-family:Inter,system-ui,sans-serif;width:240px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(15,42,74,0.12);">
+    <div style="font-family:Inter,system-ui,sans-serif;width:240px;background:#ffffff;border-radius:16px;overflow:hidden;">
       ${banner}
       <div style="padding:12px;">
         <div style="font-weight:600;font-size:13px;line-height:1.35;color:#0f2a4a;">${escapeHtml(detail.title)}</div>
@@ -151,7 +143,6 @@ function escapeAttr(s: string): string {
 }
 
 const detailCache = new Map<string, MapEventDetail>();
-
 async function fetchEventDetail(id: string): Promise<MapEventDetail | null> {
   const cached = detailCache.get(id);
   if (cached) return cached;
@@ -166,20 +157,37 @@ async function fetchEventDetail(id: string): Promise<MapEventDetail | null> {
   }
 }
 
+interface AggregatedResponse {
+  type: "aggregated";
+  level: "continent" | "country" | "city";
+  items: MapCluster[];
+  total: number;
+}
+interface PinsResponse {
+  type: "pins";
+  level: "pin";
+  items: MapPin[];
+  total: number;
+  truncated?: boolean;
+}
+type PinsApiResponse = AggregatedResponse | PinsResponse;
+
 export default function EventsMap({
   mode,
   height = 400,
   initialBounds,
   initialFilters,
+  showFilter = "all",
+  colorBy = "sdg",
   onPinsLoaded,
 }: EventsMapProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
-  const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
+  const layerRef = useRef<L.LayerGroup | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [emptyAfterFilter, setEmptyAfterFilter] = useState(false);
 
   const filterQS = useMemo(() => {
     const params = new URLSearchParams();
@@ -188,22 +196,41 @@ export default function EventsMap({
     }
     if (initialFilters?.dateFrom) params.set("date_from", initialFilters.dateFrom);
     if (initialFilters?.dateTo) params.set("date_to", initialFilters.dateTo);
-    return params;
-  }, [initialFilters]);
 
-  const fetchPins = useCallback(async (bbox: L.LatLngBounds | null) => {
+    // Convert showFilter into date_from/date_to/featured params.
+    const now = new Date();
+    if (showFilter === "this-week") {
+      const to = new Date(now.getTime() + 7 * 86_400_000);
+      params.set("date_to", to.toISOString());
+    } else if (showFilter === "this-month") {
+      const to = new Date(now.getTime() + 30 * 86_400_000);
+      params.set("date_to", to.toISOString());
+    } else if (showFilter === "featured") {
+      params.set("featured", "true");
+    }
+
+    if (colorBy && colorBy !== "sdg") params.set("color_by", colorBy);
+
+    return params;
+  }, [initialFilters, showFilter, colorBy]);
+
+  const fetchData = useCallback(async (map: L.Map | null) => {
     const params = new URLSearchParams(filterQS);
     if (mode === "teaser") params.set("teaser", "1");
-    if (bbox && mode === "full") {
-      params.set("bbox", `${bbox.getWest()},${bbox.getSouth()},${bbox.getEast()},${bbox.getNorth()}`);
+    if (mode === "full" && map) {
+      const b = map.getBounds();
+      params.set("bbox", `${b.getWest()},${b.getSouth()},${b.getEast()},${b.getNorth()}`);
+      params.set("zoom", String(map.getZoom()));
     }
     try {
       const res = await fetch(`/api/map/pins?${params.toString()}`);
       if (!res.ok) { setError("Map temporarily unavailable."); return; }
-      const json = (await res.json()) as { pins: MapPin[] };
+      const json = (await res.json()) as PinsApiResponse;
       setError(null);
-      drawPins(json.pins);
-      onPinsLoaded?.(json.pins);
+      setEmptyAfterFilter(json.total === 0);
+      drawData(json);
+      if (json.type === "pins") onPinsLoaded?.(json.items, json.total);
+      else onPinsLoaded?.([], json.total);
     } catch {
       setError("Map temporarily unavailable.");
     } finally {
@@ -211,39 +238,51 @@ export default function EventsMap({
     }
   }, [filterQS, mode, onPinsLoaded]);
 
-  function drawPins(pins: MapPin[]) {
-    const cluster = clusterRef.current;
-    if (!cluster) return;
-    cluster.clearLayers();
+  function drawData(payload: PinsApiResponse) {
+    const layer = layerRef.current;
+    const map = mapRef.current;
+    if (!layer || !map) return;
+    layer.clearLayers();
     const mobile = window.matchMedia("(max-width: 640px)").matches;
-    for (const p of pins) {
-      const marker = L.marker([p.lat, p.lng], { icon: buildPinIcon(p.sdg, mobile) }) as L.Marker & { __sdg?: number };
-      if (p.sdg) marker.__sdg = p.sdg;
-      marker.on("click", async () => {
-        const detail = await fetchEventDetail(p.id);
-        if (detail) {
-          marker.bindPopup(buildPopupHtml(detail), {
-            maxWidth: 260,
-            minWidth: 240,
-            className: "forahub-event-popup",
-            closeButton: true,
-            autoPan: true,
-          }).openPopup();
-        }
+
+    if (payload.type === "pins") {
+      for (const p of payload.items) {
+        const marker = L.marker([p.lat, p.lng], { icon: buildPinIcon(p, mobile) });
+        marker.on("click", async () => {
+          const detail = await fetchEventDetail(p.id);
+          if (detail) {
+            marker.bindPopup(buildPopupHtml(detail), {
+              maxWidth: 260, minWidth: 240,
+              className: "forahub-event-popup",
+              closeButton: true, autoPan: true,
+            }).openPopup();
+          }
+        });
+        layer.addLayer(marker);
+      }
+      return;
+    }
+
+    // Aggregated clusters — clicking zooms in toward the cluster center.
+    for (const c of payload.items) {
+      const marker = L.marker([c.lat, c.lng], { icon: buildClusterIcon(c, payload.level) });
+      marker.on("click", () => {
+        const currentZoom = map.getZoom();
+        const targetZoom = payload.level === "continent" ? 4 : payload.level === "country" ? 7 : 11;
+        map.flyTo([c.lat, c.lng], Math.max(currentZoom + 2, targetZoom), { duration: 0.6 });
       });
-      cluster.addLayer(marker);
+      layer.addLayer(marker);
     }
   }
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     const mobile = window.matchMedia("(max-width: 640px)").matches;
-    setIsMobile(mobile);
 
     const map = L.map(containerRef.current, {
       worldCopyJump: true,
       attributionControl: true,
-      zoomControl: !mobile, // hide +/- controls on mobile for a cleaner look
+      zoomControl: !mobile,
       scrollWheelZoom: true,
     });
 
@@ -259,41 +298,34 @@ export default function EventsMap({
       maxZoom: 19,
     }).addTo(map);
 
-    const cluster = L.markerClusterGroup({
-      chunkedLoading: true,
-      spiderfyOnMaxZoom: true,
-      showCoverageOnHover: false,
-      maxClusterRadius: 60,
-      iconCreateFunction: buildClusterIcon,
-    });
-    map.addLayer(cluster);
-
+    const layer = L.layerGroup().addTo(map);
     mapRef.current = map;
-    clusterRef.current = cluster;
+    layerRef.current = layer;
 
     const onMoveEnd = () => {
       if (mode !== "full") return;
       if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => fetchPins(map.getBounds()), FETCH_DEBOUNCE_MS);
+      debounceRef.current = setTimeout(() => fetchData(map), FETCH_DEBOUNCE_MS);
     };
     map.on("moveend", onMoveEnd);
 
-    fetchPins(mode === "full" ? map.getBounds() : null);
+    fetchData(mode === "full" ? map : null);
 
     return () => {
       map.off("moveend", onMoveEnd);
       if (debounceRef.current) clearTimeout(debounceRef.current);
       map.remove();
       mapRef.current = null;
-      clusterRef.current = null;
+      layerRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Refetch on filter changes.
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-    fetchPins(mode === "full" ? map.getBounds() : null);
+    fetchData(mode === "full" ? map : null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterQS]);
 
@@ -305,21 +337,23 @@ export default function EventsMap({
           <div className="animate-pulse text-xs text-slate-500">Loading map…</div>
         </div>
       )}
+      {emptyAfterFilter && !loading && (
+        <div className="absolute inset-x-0 top-3 mx-auto w-fit max-w-[90%] bg-white border border-slate-200 text-slate-700 text-xs rounded-full px-4 py-2 shadow-md text-center">
+          No events match this filter — adjust filters or{" "}
+          <a href="/events" className="font-semibold text-blue-600 hover:underline">browse all events</a>.
+        </div>
+      )}
       {error && (
         <div className="absolute inset-x-0 bottom-3 mx-auto w-fit bg-white border border-red-200 text-red-700 text-xs rounded-full px-3 py-1.5 shadow-md flex items-center gap-2">
           {error}
           <button
             type="button"
-            onClick={() => { setLoading(true); fetchPins(mapRef.current?.getBounds() ?? null); }}
+            onClick={() => { setLoading(true); fetchData(mapRef.current); }}
             className="text-blue-600 hover:underline"
           >
             Retry
           </button>
         </div>
-      )}
-      {/* Mobile-only hint that pins are larger */}
-      {isMobile && mode === "teaser" && (
-        <span className="sr-only">Touch any pin to view event details</span>
       )}
     </div>
   );
