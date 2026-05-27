@@ -2,45 +2,108 @@
 
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, Globe } from "lucide-react";
+import type { MapPin } from "./EventsMap";
 
+// Lazy-loaded so leaflet's window-dependent module only runs in the browser.
 const EventsMap = dynamic(() => import("./EventsMap"), {
   ssr: false,
-  loading: () => (
-    <div className="w-full h-[300px] rounded-2xl border border-gray-200 bg-gray-50 animate-pulse" />
-  ),
+  loading: () => <MapSkeleton />,
 });
 
-export default function HomeMapSection({ totalWithCoords }: { totalWithCoords: number }) {
+function MapSkeleton() {
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-      <div className="flex items-end justify-between mb-3">
-        <div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight inline-flex items-center gap-2">
-            <Globe className="w-5 h-5 text-emerald-600" />
-            Events around the world
-          </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-            {totalWithCoords.toLocaleString()} upcoming in-person event{totalWithCoords === 1 ? "" : "s"} mapped globally
-          </p>
+    <div className="w-full h-[320px] sm:h-[400px] bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 animate-pulse" />
+  );
+}
+
+// Bin pins into ~5° lat/lng buckets to give a quick "regions covered" count
+// without needing a country_code column on the events table.
+function distinctRegions(pins: MapPin[]): number {
+  const bins = new Set<string>();
+  for (const p of pins) {
+    bins.add(`${Math.round(p.lat / 5)}_${Math.round(p.lng / 5)}`);
+  }
+  return bins.size;
+}
+
+export default function HomeMapSection({ totalWithCoords }: { totalWithCoords: number }) {
+  const sectionRef = useRef<HTMLDivElement | null>(null);
+  const [shouldLoad, setShouldLoad] = useState(false);
+  const [pinsVisible, setPinsVisible] = useState<number | null>(null);
+  const [regionsCovered, setRegionsCovered] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!sectionRef.current || typeof IntersectionObserver === "undefined") {
+      setShouldLoad(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      entries => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setShouldLoad(true);
+            observer.disconnect();
+            break;
+          }
+        }
+      },
+      { rootMargin: "200px 0px" }
+    );
+    observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  const handlePinsLoaded = useMemo(() => (pins: MapPin[]) => {
+    setPinsVisible(pins.length);
+    setRegionsCovered(distinctRegions(pins));
+  }, []);
+
+  return (
+    <section ref={sectionRef} className="py-12 px-4">
+      <div className="max-w-7xl mx-auto">
+        {/* Header row matching other homepage sections */}
+        <div className="flex items-end justify-between mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight inline-flex items-center gap-2">
+              <Globe className="w-5 h-5 text-emerald-600" />
+              Events around the world
+            </h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              {totalWithCoords.toLocaleString()} upcoming in-person event{totalWithCoords === 1 ? "" : "s"}
+              {regionsCovered != null && regionsCovered > 0 && (
+                <> across {regionsCovered} region{regionsCovered === 1 ? "" : "s"}</>
+              )}
+            </p>
+          </div>
+          <Link
+            href="/map"
+            className="text-sm font-medium text-blue-600 hover:text-blue-700 inline-flex items-center gap-1 shrink-0"
+          >
+            Explore the full map <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
-        <Link
-          href="/map"
-          className="hidden sm:inline-flex items-center gap-1 text-sm font-semibold text-[#4ea8de] hover:text-[#3a95cc]"
-        >
-          Explore the full map <ArrowRight className="w-3.5 h-3.5" />
-        </Link>
-      </div>
 
-      <EventsMap mode="teaser" height={300} />
+        {/* Map card — matches design system */}
+        <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-[#334155] shadow-sm bg-white dark:bg-[#1e293b]">
+          <div className="h-[320px] sm:h-[400px]">
+            {shouldLoad ? (
+              <EventsMap mode="teaser" height="100%" onPinsLoaded={handlePinsLoaded} />
+            ) : (
+              <MapSkeleton />
+            )}
+          </div>
+        </div>
 
-      <div className="mt-2 sm:hidden text-right">
-        <Link
-          href="/map"
-          className="inline-flex items-center gap-1 text-sm font-semibold text-[#4ea8de] hover:text-[#3a95cc]"
-        >
-          Explore the full map <ArrowRight className="w-3.5 h-3.5" />
-        </Link>
+        {/* Stats row below the map */}
+        <div className="flex items-center gap-6 mt-4 text-xs text-slate-500">
+          <span className="inline-flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-blue-500" />
+            {pinsVisible != null ? `${pinsVisible} events visible` : "Loading events…"}
+          </span>
+          <span className="hidden sm:inline">Click any pin to view event details</span>
+        </div>
       </div>
     </section>
   );
