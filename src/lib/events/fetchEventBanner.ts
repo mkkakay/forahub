@@ -1,27 +1,32 @@
 /**
- * Event banner fetcher.
+ * Event banner fetcher — 5-layer priority chain.
  *
- * Query construction:
- *   - Pick one query from SDG_QUERY_MAP for event.sdg_goals[0] (fallback to
- *     a generic "global development conference" pair when no SDG).
- *   - Append 1–2 meaningful keywords pulled from the event title, with
- *     stopwords stripped.
+ *   1. Admin-uploaded banner          (stored URL, never overwritten)
+ *   2. og:image from registration_url (event's own page — best fit)
+ *   3. Wikimedia Commons              (famous recurring events only)
+ *   4. Pexels (title+org keywords)    (stock landscape photo)
+ *   5. Unsplash                       (fallback stock photo)
+ *   — gradient + SDG icon rendered by the UI when all five miss.
  *
- * Fallback chain:
- *   1. Pexels (requires PEXELS_API_KEY) — landscape-oriented search.
- *   2. Unsplash (requires UNSPLASH_ACCESS_KEY) — only when Pexels returns
- *      nothing. Skipped silently if the key is missing (warn once at startup).
- *   3. Return null — the UI renders the SDG gradient + icon fallback.
+ * Query construction (Pexels/Unsplash):
+ *   • Up to 4 keywords from the event title (stopwords stripped, critical
+ *     short tokens like UN/WHO/COP preserved).
+ *   • Org short_name appended after title keywords if not already present.
+ *   • One SDG-themed query appended last as topical context.
  *
  * Cache: 60 days. Persisted on events.banner_image_url + banner_fetched_at,
- * with banner_source ('pexels' | 'unsplash') and banner_query stored for
- * debugging / admin tooling.
+ * with banner_source ('og_image' | 'wikimedia' | 'pexels' | 'unsplash') and
+ * banner_query stored for debugging / admin tooling.
  *
- * Manual backfill: POST /api/admin/backfill-banners (admin-gated, 50/run).
+ * Admin re-roll: POST /api/admin/events/fetch-banner with { variant: true }
+ * skips the cache and rotates strategy (different SDG query + skip first
+ * Pexels/Unsplash result) to produce a different image on each click.
  */
 import { adminSupabase } from "@/lib/supabase/admin";
 import { waitUntil } from "@vercel/functions";
 import { getSdgQueries } from "./sdgQueries";
+import { tryOgImageFromUrl } from "./fetchOgImage";
+import { tryWikimediaImage, wikimediaQueryForTitle } from "./wikimedia";
 
 const PEXELS_SEARCH = "https://api.pexels.com/v1/search";
 const UNSPLASH_SEARCH = "https://api.unsplash.com/search/photos";
@@ -33,9 +38,15 @@ const STOPWORDS = new Set([
   "the", "a", "an", "and", "or", "but", "of", "for", "to", "in", "on", "at",
   "by", "with", "from", "as", "is", "are", "was", "were", "be", "this",
   "that", "these", "those", "&", "-", "—", "vs", "vs.", "via", "about",
-  "annual", "session", "summit", "forum", "meeting", "event", "th", "st", "nd", "rd",
-  "conference", "workshop", "webinar", "online", "virtual", "global", "world",
-  "international", "national", "regional",
+  "annual", "session", "th", "st", "nd", "rd",
+  "workshop", "webinar", "online", "virtual", "global", "world",
+  "international", "national", "regional", "event", "meeting",
+]);
+
+// Short uppercase acronyms that must survive keyword extraction.
+const PROTECTED_TOKENS = new Set([
+  "un", "who", "eu", "au", "oecd", "imf", "cop", "hlpf", "sdg", "ngo", "unga",
+  "wha", "wto", "g7", "g20", "msc", "imo", "wfp", "ilo", "iom", "unicef",
 ]);
 
 const RELEVANCE_HINTS = [
@@ -43,12 +54,21 @@ const RELEVANCE_HINTS = [
   "professional", "business", "workshop", "presentation", "discussion",
 ];
 
-export type BannerSource = "pexels" | "unsplash";
+export type BannerSource = "og_image" | "wikimedia" | "pexels" | "unsplash";
 
 export interface EventForBanner {
   id: string;
   title: string;
   sdg_goals: number[] | null;
+  registration_url?: string | null;
+  organization?: string | null;
+  /** When true: skip cache, rotate strategy (different SDG query, skip first
+   *  Pexels/Unsplash result) to produce a different image. */
+  variant?: boolean;
+}
+
+export interface FetchBannerOptions {
+  variant?: boolean;
 }
 
 interface PexelsPhoto {
@@ -78,21 +98,62 @@ interface CachedRow {
   banner_fetched_at: string | null;
 }
 
-function extractTitleKeywords(title: string, max = 2): string[] {
-  return (title ?? "")
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, " ")
+function extractTitleKeywords(title: string, max = 4): string[] {
+  const tokens = (title ?? "")
+    .replace(/[^A-Za-z0-9\s-]/g, " ")
     .split(/\s+/)
-    .filter(w => w.length >= 4 && !STOPWORDS.has(w))
-    .slice(0, max);
+    .filter(Boolean);
+  const out: string[] = [];
+  for (const raw of tokens) {
+    const lc = raw.toLowerCase();
+    const protectedToken = PROTECTED_TOKENS.has(lc);
+    if (!protectedToken && lc.length < 3) continue;
+    if (STOPWORDS.has(lc)) continue;
+    // Preserve original casing for protected tokens so Pexels sees "UN" not "un".
+    out.push(protectedToken ? raw.toUpperCase() : lc);
+    if (out.length >= max) break;
+  }
+  return out;
 }
 
-function buildQuery(event: EventForBanner): string {
-  const primarySdg = event.sdg_goals?.[0] ?? null;
-  const candidates = getSdgQueries(primarySdg);
-  const sdgQuery = candidates[Math.floor(Math.random() * candidates.length)];
+function extractOrgKeyword(organization: string | null | undefined, alreadyInTitle: string[]): string | null {
+  if (!organization) return null;
+  const cleaned = organization.replace(/[^A-Za-z0-9\s-]/g, " ").trim();
+  if (!cleaned) return null;
+  // Prefer the acronym form when the org name contains one (e.g. "African
+  // Development Bank (AfDB)" → "AfDB").
+  const acroMatch = cleaned.match(/\(([A-Za-z]{2,8})\)/);
+  if (acroMatch) {
+    const acro = acroMatch[1];
+    if (!alreadyInTitle.some(w => w.toLowerCase() === acro.toLowerCase())) return acro;
+  }
+  // Otherwise take the first two short-name tokens.
+  const orgTokens = cleaned.split(/\s+/).filter(t => t.length >= 2).slice(0, 2);
+  if (orgTokens.length === 0) return null;
+  const joined = orgTokens.join(" ");
+  if (alreadyInTitle.some(w => joined.toLowerCase().includes(w))) return null;
+  return joined;
+}
+
+function pickSdgQuery(sdg: number | null, variant: boolean, seed: number): string {
+  const candidates = getSdgQueries(sdg);
+  if (variant) {
+    // Rotate through deterministically so successive variant clicks land on
+    // different queries each time.
+    const idx = seed % candidates.length;
+    return candidates[idx];
+  }
+  return candidates[Math.floor(Math.random() * candidates.length)];
+}
+
+function buildQuery(event: EventForBanner, variant = false, seed = 0): string {
   const titleWords = extractTitleKeywords(event.title);
-  return [...titleWords, sdgQuery].join(" ").trim() || sdgQuery;
+  const orgPart = extractOrgKeyword(event.organization, titleWords);
+  const sdgQuery = pickSdgQuery(event.sdg_goals?.[0] ?? null, variant, seed);
+  const parts = [...titleWords];
+  if (orgPart) parts.push(orgPart);
+  parts.push(sdgQuery);
+  return parts.join(" ").trim() || sdgQuery;
 }
 
 function isRelevant(text: string | null | undefined): boolean {
@@ -101,21 +162,23 @@ function isRelevant(text: string | null | undefined): boolean {
   return RELEVANCE_HINTS.some(h => lc.includes(h));
 }
 
-function pickPexelsPhoto(photos: PexelsPhoto[]): PexelsPhoto | null {
-  if (photos.length === 0) return null;
-  const relevant = photos.find(p => isRelevant(p.alt));
-  return relevant ?? photos[0];
+function pickPexelsPhoto(photos: PexelsPhoto[], skip = 0): PexelsPhoto | null {
+  const pool = photos.slice(skip);
+  if (pool.length === 0) return null;
+  const relevant = pool.find(p => isRelevant(p.alt));
+  return relevant ?? pool[0];
 }
 
 function pexelsPhotoUrl(photo: PexelsPhoto): string | null {
   return photo.src?.large2x ?? photo.src?.landscape ?? photo.src?.large ?? photo.src?.original ?? null;
 }
 
-function pickUnsplashPhoto(photos: UnsplashPhoto[]): UnsplashPhoto | null {
-  if (photos.length === 0) return null;
-  const wideEnough = photos.find(p => (p.width ?? 0) >= MIN_UNSPLASH_WIDTH);
+function pickUnsplashPhoto(photos: UnsplashPhoto[], skip = 0): UnsplashPhoto | null {
+  const pool = photos.slice(skip);
+  if (pool.length === 0) return null;
+  const wideEnough = pool.find(p => (p.width ?? 0) >= MIN_UNSPLASH_WIDTH);
   if (wideEnough) {
-    const relevant = photos.find(
+    const relevant = pool.find(
       p => (p.width ?? 0) >= MIN_UNSPLASH_WIDTH && (isRelevant(p.alt_description) || isRelevant(p.description))
     );
     return relevant ?? wideEnough;
@@ -136,17 +199,18 @@ async function readCached(eventId: string): Promise<CachedRow | null> {
   return (data as CachedRow | null) ?? null;
 }
 
-async function fetchPexels(query: string): Promise<string | null> {
+async function fetchPexels(query: string, skip = 0): Promise<string | null> {
   const apiKey = process.env.PEXELS_API_KEY;
   if (!apiKey) return null;
-  const url = `${PEXELS_SEARCH}?query=${encodeURIComponent(query)}&per_page=5&orientation=landscape`;
+  const perPage = Math.max(5, skip + 5);
+  const url = `${PEXELS_SEARCH}?query=${encodeURIComponent(query)}&per_page=${perPage}&orientation=landscape`;
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
     const res = await fetch(url, { headers: { Authorization: apiKey }, signal: controller.signal });
     if (!res.ok) return null;
     const payload = (await res.json()) as PexelsResponse;
-    const best = pickPexelsPhoto(payload.photos ?? []);
+    const best = pickPexelsPhoto(payload.photos ?? [], skip);
     return best ? pexelsPhotoUrl(best) : null;
   } catch {
     return null;
@@ -155,10 +219,11 @@ async function fetchPexels(query: string): Promise<string | null> {
   }
 }
 
-async function fetchUnsplash(query: string): Promise<string | null> {
+async function fetchUnsplash(query: string, skip = 0): Promise<string | null> {
   const apiKey = process.env.UNSPLASH_ACCESS_KEY;
   if (!apiKey) return null;
-  const url = `${UNSPLASH_SEARCH}?query=${encodeURIComponent(query)}&per_page=5&orientation=landscape`;
+  const perPage = Math.max(5, skip + 5);
+  const url = `${UNSPLASH_SEARCH}?query=${encodeURIComponent(query)}&per_page=${perPage}&orientation=landscape`;
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
@@ -168,7 +233,7 @@ async function fetchUnsplash(query: string): Promise<string | null> {
     });
     if (!res.ok) return null;
     const payload = (await res.json()) as UnsplashResponse;
-    const best = pickUnsplashPhoto(payload.results ?? []);
+    const best = pickUnsplashPhoto(payload.results ?? [], skip);
     return best ? unsplashPhotoUrl(best) : null;
   } catch {
     return null;
@@ -193,33 +258,62 @@ export interface FetchBannerResult {
 }
 
 /**
- * Fetch (or read from cache) a banner image for an event.
- * Priority: SDG-aware query → Pexels → Unsplash → null.
- * Persists URL + source + query on events.* with 60-day TTL.
+ * Fetch (or read from cache) a banner image for an event using the 5-layer
+ * priority chain. Persists URL + source + query on events.* with 60-day TTL.
+ *
+ * With `variant: true`, the cache is bypassed and each call rotates the
+ * SDG-query selection + skips one Pexels/Unsplash result. The skip count
+ * increases each invocation so successive admin re-rolls produce different
+ * images.
  */
+let rerollSeed = 1;
+
 export async function fetchEventBannerDetailed(event: EventForBanner): Promise<FetchBannerResult> {
   warnIfUnsplashMissing();
   const empty: FetchBannerResult = { url: null, source: null, query: "" };
   if (!event?.id) return empty;
 
+  const variant = !!event.variant;
   const cached = await readCached(event.id).catch(() => null);
-  if (cached?.banner_image_url && cached.banner_fetched_at) {
+  if (!variant && cached?.banner_image_url && cached.banner_fetched_at) {
     const age = Date.now() - new Date(cached.banner_fetched_at).getTime();
     if (age < CACHE_TTL_MS) {
       return { url: cached.banner_image_url, source: null, query: "" };
     }
   }
 
-  const query = buildQuery(event);
+  const seed = variant ? rerollSeed++ : 0;
+  const skip = variant ? (seed % 4) + 1 : 0;
+  const query = buildQuery(event, variant, seed);
 
   let url: string | null = null;
   let source: BannerSource | null = null;
 
-  url = await fetchPexels(query);
-  if (url) source = "pexels";
+  // Layer 2: og:image from the event's registration page (skipped on variant
+  // since variant intent is "different stock image", not "different scrape").
+  if (!variant && event.registration_url) {
+    url = await tryOgImageFromUrl(event.registration_url).catch(() => null);
+    if (url) source = "og_image";
+  }
 
+  // Layer 3: Wikimedia Commons for famous recurring events.
   if (!url) {
-    url = await fetchUnsplash(query);
+    const wikiQuery = wikimediaQueryForTitle(event.title);
+    if (wikiQuery) {
+      url = await tryWikimediaImage(wikiQuery).catch(() => null);
+      if (url) source = "wikimedia";
+    }
+  }
+
+  // Layer 4: Pexels with title + org + SDG query.
+  if (!url) {
+    url = await fetchPexels(query, skip);
+    if (url) source = "pexels";
+  }
+
+  // Layer 5: Unsplash as final stock-photo fallback.
+  if (!url) {
+    url = await fetchUnsplash(query, skip);
     if (url) source = "unsplash";
   }
 
@@ -241,8 +335,8 @@ export async function fetchEventBannerDetailed(event: EventForBanner): Promise<F
   return { url, source, query };
 }
 
-export async function fetchEventBanner(event: EventForBanner): Promise<string | null> {
-  const result = await fetchEventBannerDetailed(event);
+export async function fetchEventBanner(event: EventForBanner, opts: FetchBannerOptions = {}): Promise<string | null> {
+  const result = await fetchEventBannerDetailed({ ...event, variant: opts.variant ?? event.variant });
   return result.url;
 }
 

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   CalendarDays, ChevronDown, ChevronRight, Loader2, Upload, Sparkles,
-  Search, AlertCircle, Check, X, Link as LinkIcon, Play, Star,
+  Search, AlertCircle, Check, X, Link as LinkIcon, Play, Star, RefreshCw,
 } from "lucide-react";
 
 interface EventRow {
@@ -199,10 +199,30 @@ export default function EventsBannerPanel({ adminSecret }: { adminSecret: string
     setBusyId(eventId);
     setError(null);
     try {
-      const res = await fetch("/api/events/fetch-banner", {
+      const res = await fetch("/api/admin/events/fetch-banner", {
         method: "POST",
         headers: { ...headers, "Content-Type": "application/json" },
         body: JSON.stringify({ event_id: eventId }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
+      flashSaved(eventId);
+      await refresh();
+    } catch (err) {
+      setError(String(err instanceof Error ? err.message : err));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function tryDifferentImage(eventId: string) {
+    setBusyId(eventId);
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/events/fetch-banner", {
+        method: "POST",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({ event_id: eventId, variant: true }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
@@ -424,6 +444,14 @@ export default function EventsBannerPanel({ adminSecret }: { adminSecret: string
                         className="inline-flex items-center gap-1.5 text-xs text-blue-300 hover:text-white border border-blue-900/40 hover:border-[#4ea8de]/50 disabled:opacity-40 rounded px-2 py-1.5 transition-colors"
                       >
                         <Sparkles size={12} /> Re-fetch banner
+                      </button>
+                      <button
+                        onClick={() => tryDifferentImage(event.id)}
+                        disabled={isBusy}
+                        title="Skip cache and rotate strategy — click again for another attempt"
+                        className="inline-flex items-center gap-1.5 text-xs text-amber-300 hover:text-white border border-amber-900/40 hover:border-amber-400/60 disabled:opacity-40 rounded px-2 py-1.5 transition-colors"
+                      >
+                        <RefreshCw size={12} /> Try different image
                       </button>
                     </div>
                   </div>
