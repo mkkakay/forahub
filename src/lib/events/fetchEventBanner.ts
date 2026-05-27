@@ -31,6 +31,7 @@ import { tryWikimediaImage, wikimediaQueryForTitle } from "./wikimedia";
 const PEXELS_SEARCH = "https://api.pexels.com/v1/search";
 const UNSPLASH_SEARCH = "https://api.unsplash.com/search/photos";
 const CACHE_TTL_MS = 60 * 24 * 60 * 60 * 1000; // 60 days
+const FAILURE_BACKOFF_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 const FETCH_TIMEOUT_MS = 10_000;
 const MIN_UNSPLASH_WIDTH = 1200;
 
@@ -275,10 +276,15 @@ export async function fetchEventBannerDetailed(event: EventForBanner): Promise<F
 
   const variant = !!event.variant;
   const cached = await readCached(event.id).catch(() => null);
-  if (!variant && cached?.banner_image_url && cached.banner_fetched_at) {
+  if (!variant && cached?.banner_fetched_at) {
     const age = Date.now() - new Date(cached.banner_fetched_at).getTime();
-    if (age < CACHE_TTL_MS) {
+    if (cached.banner_image_url && age < CACHE_TTL_MS) {
       return { url: cached.banner_image_url, source: null, query: "" };
+    }
+    // A recent attempt that returned nothing — back off so we don't hammer
+    // the same unmatchable event on every page render or migration loop.
+    if (!cached.banner_image_url && age < FAILURE_BACKOFF_MS) {
+      return { url: null, source: null, query: "" };
     }
   }
 
@@ -318,6 +324,11 @@ export async function fetchEventBannerDetailed(event: EventForBanner): Promise<F
   }
 
   if (!url) {
+    // Record the attempt timestamp so the backoff above kicks in next time.
+    await adminSupabase
+      .from("events")
+      .update({ banner_fetched_at: new Date().toISOString(), banner_query: query })
+      .eq("id", event.id);
     return { url: cached?.banner_image_url ?? null, source: null, query };
   }
 

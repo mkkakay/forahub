@@ -30,6 +30,8 @@ interface CandidateEvent {
   id: string;
   title: string;
   sdg_goals: number[] | null;
+  organization: string | null;
+  registration_url: string | null;
 }
 
 export async function GET(req: NextRequest) {
@@ -37,10 +39,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // Honor the 7-day failure backoff — events the chain has already tried
+  // recently and missed on are skipped until the backoff window expires.
+  const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const { data, error } = await adminSupabase
     .from("events")
-    .select("id, title, sdg_goals")
+    .select("id, title, sdg_goals, organization, registration_url")
     .is("banner_image_url", null)
+    .or(`banner_fetched_at.is.null,banner_fetched_at.lt.${cutoff}`)
     .order("start_date", { ascending: true })
     .limit(BATCH_SIZE);
 
@@ -52,6 +58,8 @@ export async function GET(req: NextRequest) {
   const summary = {
     processed: 0,
     success: 0,
+    og_image_hits: 0,
+    wikimedia_hits: 0,
     pexels_hits: 0,
     unsplash_hits: 0,
     failures: 0,
@@ -65,10 +73,14 @@ export async function GET(req: NextRequest) {
         id: event.id,
         title: event.title,
         sdg_goals: event.sdg_goals,
+        organization: event.organization,
+        registration_url: event.registration_url,
       });
       if (result.url) {
         summary.success += 1;
-        if (result.source === "pexels") summary.pexels_hits += 1;
+        if (result.source === "og_image") summary.og_image_hits += 1;
+        else if (result.source === "wikimedia") summary.wikimedia_hits += 1;
+        else if (result.source === "pexels") summary.pexels_hits += 1;
         else if (result.source === "unsplash") summary.unsplash_hits += 1;
       } else {
         summary.failures += 1;
@@ -84,7 +96,8 @@ export async function GET(req: NextRequest) {
   const { count } = await adminSupabase
     .from("events")
     .select("id", { count: "exact", head: true })
-    .is("banner_image_url", null);
+    .is("banner_image_url", null)
+    .or(`banner_fetched_at.is.null,banner_fetched_at.lt.${cutoff}`);
   summary.remaining_after = count ?? 0;
 
   return NextResponse.json({
