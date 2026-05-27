@@ -125,6 +125,13 @@ export default async function Home() {
   const featuredCalendars = await getResolvedFeaturedCalendars().catch(() => []);
   const regions = await getActiveRegions().catch(() => []);
 
+  const { count: mapEventsCount } = await adminSupabase
+    .from("events")
+    .select("id", { count: "exact", head: true })
+    .not("latitude", "is", null)
+    .in("format", ["in_person", "hybrid"])
+    .gte("start_date", new Date().toISOString());
+
   const featuredSlugs = featuredCalendars.map(o => o.slug);
   const claimedBySlug = new Map<string, { is_claimed: boolean; is_verified: boolean }>();
   if (featuredSlugs.length > 0) {
@@ -161,6 +168,7 @@ export default async function Home() {
         events={events}
         pastEvents={[]}
         totalCount={totalCount ?? 0}
+        mapEventsCount={mapEventsCount ?? 0}
         orgLogos={orgLogos}
         featuredCalendars={featuredCalendars.map(o => {
           const claim = claimedBySlug.get(o.slug);

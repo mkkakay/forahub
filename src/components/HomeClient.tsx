@@ -35,6 +35,7 @@ export interface HomeRegion {
 }
 import { getEventAssets } from "@/lib/assets/eventAssetService";
 import { SDG_COLORS } from "@/lib/assets/sdgFallbacks";
+import HomeMapSection from "./HomeMapSection";
 
 const SDG_LABELS: Record<number, string> = {
   1: "No Poverty", 2: "Zero Hunger", 3: "Good Health", 4: "Quality Education",
@@ -495,6 +496,7 @@ export default function HomeClient({
   orgLogos = {},
   featuredCalendars,
   regions = [],
+  mapEventsCount = 0,
 }: {
   events: EventPreview[];
   pastEvents: EventPreview[];
@@ -502,6 +504,7 @@ export default function HomeClient({
   orgLogos?: Record<string, string>;
   featuredCalendars?: FeaturedOrg[];
   regions?: HomeRegion[];
+  mapEventsCount?: number;
 }) {
   const { lang } = useLanguage();
   const [sdgCounts, setSdgCounts] = useState<Record<number, number>>({});
@@ -559,6 +562,13 @@ export default function HomeClient({
             {pastEvents.map(event => <EventCard key={event.id} event={event} />)}
           </div>
         </section>
+      )}
+
+      {/* Events around the world (map teaser) — only when enough events have coordinates */}
+      {mapEventsCount >= 5 && (
+        <div className="border-t border-gray-100 dark:border-[#334155]">
+          <HomeMapSection totalWithCoords={mapEventsCount} />
+        </div>
       )}
 
       {/* Featured Calendars */}

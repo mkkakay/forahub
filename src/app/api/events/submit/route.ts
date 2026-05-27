@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { waitUntil } from "@vercel/functions";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { slugify } from "@/lib/organizations";
+import { geocodeLocation } from "@/lib/geo/geocode";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -210,6 +212,27 @@ export async function POST(req: NextRequest) {
   if (error) {
     console.error("[events/submit] insert failed:", error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  // Auto-geocode in-person events in the background so they appear on the map
+  // without blocking the submission response.
+  const locationText = typeof insertRow.location === "string" ? insertRow.location : null;
+  if (locationText && format !== "virtual") {
+    const eventId = data.id;
+    const task = (async () => {
+      const result = await geocodeLocation(locationText);
+      await adminSupabase
+        .from("events")
+        .update({
+          latitude: result.lat ?? null,
+          longitude: result.lng ?? null,
+          geocode_status: result.status,
+          geocode_error: result.error ?? null,
+          geocoded_at: new Date().toISOString(),
+        })
+        .eq("id", eventId);
+    })();
+    try { waitUntil(task); } catch { void task.catch(() => {}); }
   }
 
   const message = autoApprove

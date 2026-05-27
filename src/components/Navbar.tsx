@@ -68,6 +68,7 @@ export default function Navbar() {
 
   const navLinks = [
     { href: "/events", label: t(lang, "nav.discover") },
+    { href: "/map", label: "Map" },
     { href: "/saved", label: t(lang, "nav.saved") },
     { href: "/pricing", label: t(lang, "nav.pricing") },
   ];

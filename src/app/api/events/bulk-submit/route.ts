@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { waitUntil } from "@vercel/functions";
 import { adminSupabase } from "@/lib/supabase/admin";
+import { geocodeLocation } from "@/lib/geo/geocode";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -154,7 +156,9 @@ export async function POST(req: NextRequest) {
   const { data, error } = await adminSupabase
     .from("events")
     .insert(validRows)
-    .select("id");
+    .select("id, location, format");
+
+  let insertedRows: { id: string; location: string | null; format: string | null }[] = [];
 
   if (error) {
     // If the column doesn't exist, fall back to inserting without batch_id.
@@ -164,22 +168,46 @@ export async function POST(req: NextRequest) {
         delete copy.submission_batch_id;
         return copy;
       });
-      const retry = await adminSupabase.from("events").insert(stripped).select("id");
+      const retry = await adminSupabase.from("events").insert(stripped).select("id, location, format");
       if (retry.error) {
         insertError = retry.error.message;
       } else {
-        inserted = retry.data?.length ?? 0;
+        insertedRows = (retry.data ?? []) as typeof insertedRows;
+        inserted = insertedRows.length;
       }
     } else {
       insertError = error.message;
     }
   } else {
-    inserted = data?.length ?? 0;
+    insertedRows = (data ?? []) as typeof insertedRows;
+    inserted = insertedRows.length;
   }
 
   if (insertError) {
     console.error("[events/bulk-submit] insert failed:", insertError);
     return NextResponse.json({ error: insertError }, { status: 500 });
+  }
+
+  // Background-geocode every in-person event in the batch.
+  const geocodeTargets = insertedRows.filter(r => r.location && r.format !== "virtual");
+  if (geocodeTargets.length > 0) {
+    const task = (async () => {
+      for (const row of geocodeTargets) {
+        const result = await geocodeLocation(row.location);
+        await adminSupabase
+          .from("events")
+          .update({
+            latitude: result.lat ?? null,
+            longitude: result.lng ?? null,
+            geocode_status: result.status,
+            geocode_error: result.error ?? null,
+            geocoded_at: new Date().toISOString(),
+          })
+          .eq("id", row.id);
+        await new Promise(r => setTimeout(r, 500));
+      }
+    })();
+    try { waitUntil(task); } catch { void task.catch(() => {}); }
   }
 
   return NextResponse.json({
