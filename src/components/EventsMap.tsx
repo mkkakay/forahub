@@ -38,6 +38,14 @@ export interface MapEventDetail {
   format: string | null;
 }
 
+export interface FlyToTarget {
+  lat: number;
+  lng: number;
+  zoom?: number;
+  /** Bump this to re-fire the flyTo effect even with the same coords. */
+  nonce: number;
+}
+
 export interface EventsMapProps {
   mode: "teaser" | "full";
   height?: number | string;
@@ -49,6 +57,7 @@ export interface EventsMapProps {
   };
   showFilter?: ShowFilter;
   colorBy?: ColorMode;
+  flyToTarget?: FlyToTarget;
   onPinsLoaded?: (pins: MapPin[], total: number) => void;
 }
 
@@ -183,6 +192,7 @@ export default function EventsMap({
   initialFilters,
   showFilter = "all",
   colorBy = "sdg",
+  flyToTarget,
   onPinsLoaded,
 }: EventsMapProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -338,6 +348,14 @@ export default function EventsMap({
     fetchData(mode === "full" ? map : null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterQS]);
+
+  // Imperative flyTo when the parent bumps the nonce.
+  useEffect(() => {
+    if (!flyToTarget || !mapRef.current) return;
+    const z = flyToTarget.zoom ?? 9;
+    mapRef.current.flyTo([flyToTarget.lat, flyToTarget.lng], z, { duration: 0.8 });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [flyToTarget?.nonce]);
 
   return (
     <div className="relative w-full" style={{ height }}>

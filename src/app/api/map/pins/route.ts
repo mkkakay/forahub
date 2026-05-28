@@ -22,7 +22,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const PIN_CAP = 2000;
-const TEASER_CAP = 50;
+// Default zoom assumed by the teaser map when the client doesn't supply one.
+// Matches EventsMap's mobile/desktop default of 2 (continent aggregation).
+const DEFAULT_TEASER_ZOOM = 2;
 
 type ColorMode = "sdg" | "date" | "format";
 
@@ -94,7 +96,10 @@ export async function GET(req: NextRequest) {
   const dateTo = sp.get("date_to");
   const teaser = sp.get("teaser") === "1";
   const featuredOnly = sp.get("featured") === "true";
-  const zoom = Number(sp.get("zoom") ?? "10");
+  // Teaser uses the SAME zoom-aware aggregation as the full map. It must never
+  // return thousands of individual pins — at world zoom the response is ~6
+  // continent bubbles regardless of total event count.
+  const zoom = Number(sp.get("zoom") ?? (teaser ? DEFAULT_TEASER_ZOOM : 10));
   const colorMode = (sp.get("color_by") === "date" || sp.get("color_by") === "format")
     ? (sp.get("color_by") as ColorMode)
     : ("sdg" as ColorMode);
@@ -123,21 +128,21 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  const { level, cellDeg } = teaser
-    ? { level: "pin" as const, cellDeg: 0 }
-    : levelForZoom(zoom);
+  const { level, cellDeg } = levelForZoom(zoom);
 
   // Cap server-side fetch so we never pull more than we need. Aggregation can
   // still produce small response sets even from huge underlying sets.
-  const fetchCap = teaser ? TEASER_CAP : level === "pin" ? PIN_CAP + 1 : 10_000;
+  // Aggregate-level requests need a healthy fetch ceiling so the count is
+  // accurate even with 50K+ events — the API response stays tiny regardless.
+  const fetchCap = level === "pin" ? PIN_CAP + 1 : 50_000;
   const { data, error } = await query.limit(fetchCap);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   const rows = ((data ?? []) as PinRow[]).filter(r => r.latitude != null && r.longitude != null);
   const now = new Date();
 
-  if (level === "pin" || teaser) {
-    const capped = rows.slice(0, teaser ? TEASER_CAP : PIN_CAP);
+  if (level === "pin") {
+    const capped = rows.slice(0, PIN_CAP);
     const items = capped.map(r => {
       const color = colorForPin(r, colorMode, now);
       return {
@@ -154,7 +159,7 @@ export async function GET(req: NextRequest) {
       level: "pin",
       items,
       total: rows.length,
-      truncated: !teaser && rows.length > PIN_CAP,
+      truncated: rows.length > PIN_CAP,
     });
   }
 

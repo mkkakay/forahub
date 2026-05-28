@@ -2,10 +2,13 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { MapPin, Tag, Calendar } from "lucide-react";
-import type { ShowFilter, ColorMode } from "@/components/EventsMap";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { MapPin, Tag, Calendar, Globe, AlertCircle } from "lucide-react";
+import type { ShowFilter, ColorMode, FlyToTarget } from "@/components/EventsMap";
 import { ShowFilterPills, ColorByPills } from "@/components/MapFilterPills";
+import CitySearchInput, { type ResolvedCity } from "@/components/CitySearchInput";
+import UseMyLocationButton, { type GeolocationOutcome } from "@/components/UseMyLocationButton";
 
 const EventsMap = dynamic(() => import("@/components/EventsMap"), {
   ssr: false,
@@ -22,27 +25,57 @@ const SDG_LABELS: Record<number, string> = {
   15: "Life on Land", 16: "Peace & Justice", 17: "Partnerships",
 };
 
-export interface VisibleEvent {
+interface NearestEvent {
   id: string;
   title: string;
   organization: string | null;
   start_date: string;
+  end_date: string | null;
   location: string | null;
-  sdg: number | null;
+  latitude: number;
+  longitude: number;
+  banner_image_url: string | null;
+  banner_display_mode: "contain" | "cover" | null;
+  sdg_goals: number[] | null;
+  distance_km: number;
 }
 
-interface MapPin { id: string; lat: number; lng: number; sdg: number | null; }
+interface NearestResponse {
+  events: NearestEvent[];
+  origin: { lat: number; lng: number };
+  radius_used_km: number;
+  expanded: boolean;
+}
+
+interface MapPinShape { id: string; lat: number; lng: number; sdg: number | null; }
 
 const VISIBLE_LIMIT = 20;
 
+function distancePillClass(km: number): string {
+  if (km < 50) return "bg-emerald-100 text-emerald-700";
+  if (km <= 200) return "bg-blue-100 text-blue-700";
+  return "bg-slate-100 text-slate-600";
+}
+
+function fmtDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+}
+
 export default function MapPageClient() {
+  const searchParams = useSearchParams();
+  const nearMeParam = searchParams.get("near") === "me";
+
   const [sdgs, setSdgs] = useState<Set<number>>(new Set());
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
   const [showFilter, setShowFilter] = useState<ShowFilter>("all");
   const [colorBy, setColorBy] = useState<ColorMode>("sdg");
-  const [visibleIds, setVisibleIds] = useState<string[]>([]);
-  const [visibleDetails, setVisibleDetails] = useState<VisibleEvent[]>([]);
+
+  const [origin, setOrigin] = useState<{ lat: number; lng: number; label: string | null } | null>(null);
+  const [nearest, setNearest] = useState<NearestResponse | null>(null);
+  const [nearestLoading, setNearestLoading] = useState(false);
+  const [geoMessage, setGeoMessage] = useState<string | null>(null);
+  const [flyTarget, setFlyTarget] = useState<FlyToTarget | null>(null);
 
   const filters = useMemo(() => ({
     sdg: sdgs.size > 0 ? Array.from(sdgs).sort((a, b) => a - b) : undefined,
@@ -57,30 +90,85 @@ export default function MapPageClient() {
       return next;
     });
   }
-
   function clearFilters() {
     setSdgs(new Set());
     setDateFrom("");
     setDateTo("");
   }
 
-  async function handlePinsLoaded(pins: MapPin[]) {
-    const ids = pins.slice(0, VISIBLE_LIMIT).map(p => p.id);
-    setVisibleIds(ids);
-    if (ids.length === 0) {
-      setVisibleDetails([]);
+  async function loadNearest(lat: number, lng: number, label: string | null) {
+    setNearestLoading(true);
+    setGeoMessage(null);
+    try {
+      const res = await fetch(`/api/map/nearest?lat=${lat}&lng=${lng}&limit=20`);
+      if (!res.ok) {
+        setNearest(null);
+        return;
+      }
+      const data = (await res.json()) as NearestResponse;
+      setNearest(data);
+      setOrigin({ lat, lng, label });
+      setFlyTarget({ lat, lng, zoom: 8, nonce: Date.now() });
+    } finally {
+      setNearestLoading(false);
+    }
+  }
+
+  function handleCityResolved(city: ResolvedCity) {
+    const label = city.display_name.split(",").slice(0, 2).join(", ");
+    loadNearest(city.lat, city.lng, label);
+  }
+
+  function handleGeolocation(outcome: GeolocationOutcome) {
+    if (outcome.ok) {
+      loadNearest(outcome.lat, outcome.lng, "you");
       return;
     }
-    // Fetch detail for the first N visible pins so the side list can show titles.
+    if (outcome.reason === "denied") {
+      setGeoMessage("Location access denied. Search your city above instead.");
+    } else if (outcome.reason === "timeout") {
+      setGeoMessage("Couldn't detect location in time. Try searching your city.");
+    } else if (outcome.reason === "unavailable") {
+      setGeoMessage("Couldn't detect location. Try searching your city.");
+    }
+    // 'unsupported' → button is already hidden; do nothing
+  }
+
+  // Auto-trigger geolocation when arriving via /map?near=me
+  useEffect(() => {
+    if (!nearMeParam) return;
+    // Only auto-trigger if browser supports it. If denied/timeout the
+    // standard error handling fires.
+    if (typeof navigator === "undefined" || !("geolocation" in navigator)) {
+      setGeoMessage("Your browser doesn't support geolocation. Search your city instead.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      pos => loadNearest(pos.coords.latitude, pos.coords.longitude, "you"),
+      err => {
+        if (err.code === err.PERMISSION_DENIED) setGeoMessage("Location access denied. Search your city above instead.");
+        else if (err.code === err.TIMEOUT) setGeoMessage("Couldn't detect location in time. Try searching your city.");
+        else setGeoMessage("Couldn't detect location. Try searching your city.");
+      },
+      { enableHighAccuracy: false, timeout: 10_000, maximumAge: 5 * 60_000 }
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const [visibleIds, setVisibleIds] = useState<string[]>([]);
+  const [visibleDetails, setVisibleDetails] = useState<VisibleEvent[]>([]);
+
+  async function handlePinsLoaded(pins: MapPinShape[]) {
+    const ids = pins.slice(0, VISIBLE_LIMIT).map(p => p.id);
+    setVisibleIds(ids);
+    if (ids.length === 0) { setVisibleDetails([]); return; }
     const details = await Promise.all(
       ids.map(async id => {
         try {
           const res = await fetch(`/api/map/event/${encodeURIComponent(id)}`);
           if (!res.ok) return null;
           return (await res.json()) as VisibleEvent;
-        } catch {
-          return null;
-        }
+        } catch { return null; }
       })
     );
     setVisibleDetails(details.filter((d): d is VisibleEvent => d !== null));
@@ -90,6 +178,19 @@ export default function MapPageClient() {
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 p-4 lg:p-6 max-w-7xl mx-auto">
       <div className="space-y-4">
         <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+          {/* Location bar */}
+          <div className="flex flex-col sm:flex-row gap-2 mb-4">
+            <div className="flex-1 min-w-0">
+              <CitySearchInput onResolved={handleCityResolved} />
+            </div>
+            <UseMyLocationButton onLocate={handleGeolocation} />
+          </div>
+          {geoMessage && (
+            <div className="flex items-start gap-2 text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 mb-3">
+              <AlertCircle size={13} className="mt-0.5 shrink-0 text-amber-600" />
+              <span>{geoMessage}</span>
+            </div>
+          )}
           <div className="flex items-center gap-2 text-gray-600 text-sm mb-3">
             <MapPin size={16} className="text-emerald-600" />
             <span>Showing in-person events. Pan and zoom to refine — pins update for the visible area.</span>
@@ -104,11 +205,29 @@ export default function MapPageClient() {
             initialFilters={filters}
             showFilter={showFilter}
             colorBy={colorBy}
+            flyToTarget={flyTarget ?? undefined}
             onPinsLoaded={handlePinsLoaded}
           />
         </div>
 
-        {/* Visible events list (top 20) */}
+        {/* Nearest events ranked list */}
+        <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+          {origin ? (
+            <NearestList
+              title={`Nearest events to ${origin.label ?? "you"}`}
+              loading={nearestLoading}
+              data={nearest}
+              onPick={ev => setFlyTarget({ lat: ev.latitude, lng: ev.longitude, zoom: 13, nonce: Date.now() })}
+            />
+          ) : (
+            <div className="text-sm text-slate-600 inline-flex items-center gap-2">
+              <Globe className="w-4 h-4 text-emerald-600" />
+              Search your city or use your location to find events near you.
+            </div>
+          )}
+        </div>
+
+        {/* Existing "events in current viewport" list */}
         <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
           <h2 className="text-lg font-bold text-[#0f2a4a] mb-3">
             Events in this view{" "}
@@ -124,18 +243,14 @@ export default function MapPageClient() {
                 <li key={ev.id} className="py-2">
                   <Link href={`/events/${ev.id}`} className="flex items-start justify-between gap-3 group">
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-[#0f2a4a] group-hover:text-[#4ea8de] line-clamp-1">
-                        {ev.title}
-                      </p>
+                      <p className="text-sm font-semibold text-[#0f2a4a] group-hover:text-[#4ea8de] line-clamp-1">{ev.title}</p>
                       <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">
                         {ev.organization && <span>{ev.organization}</span>}
                         {ev.organization && ev.location && <span> · </span>}
                         {ev.location && <span>{ev.location}</span>}
                       </p>
                     </div>
-                    <span className="shrink-0 text-xs text-gray-500">
-                      {new Date(ev.start_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" })}
-                    </span>
+                    <span className="shrink-0 text-xs text-gray-500">{fmtDate(ev.start_date)}</span>
                   </Link>
                 </li>
               ))}
@@ -214,5 +329,84 @@ export default function MapPageClient() {
         )}
       </aside>
     </div>
+  );
+}
+
+interface VisibleEvent {
+  id: string;
+  title: string;
+  organization: string | null;
+  start_date: string;
+  location: string | null;
+  sdg: number | null;
+}
+
+function NearestList({
+  title,
+  loading,
+  data,
+  onPick,
+}: {
+  title: string;
+  loading: boolean;
+  data: NearestResponse | null;
+  onPick: (event: NearestEvent) => void;
+}) {
+  return (
+    <>
+      <div className="mb-3">
+        <h2 className="text-lg font-bold text-[#0f2a4a]">{title}</h2>
+        {data && (
+          <p className="text-xs text-slate-500 mt-0.5">
+            {data.expanded
+              ? `Expanded search — nearest events within ${data.radius_used_km} km`
+              : `Within ${data.radius_used_km} km`}
+          </p>
+        )}
+      </div>
+      {loading && <p className="text-sm text-slate-500">Finding events near you…</p>}
+      {!loading && data && data.events.length === 0 && (
+        <p className="text-sm text-slate-600">
+          No in-person events found nearby.{" "}
+          <Link href="/events" className="text-blue-600 hover:underline font-semibold">Browse all events →</Link>
+        </p>
+      )}
+      {!loading && data && data.events.length > 0 && (
+        <ul className="divide-y divide-slate-100">
+          {data.events.map(ev => (
+            <li key={ev.id} className="py-2">
+              <button
+                type="button"
+                onClick={() => onPick(ev)}
+                className="w-full flex items-center gap-3 text-left group"
+              >
+                <div className="w-[60px] h-[60px] shrink-0 rounded-lg overflow-hidden bg-slate-100 border border-slate-200">
+                  {ev.banner_image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={ev.banner_image_url}
+                      alt=""
+                      className={ev.banner_display_mode === "contain" ? "w-full h-full object-contain bg-white" : "w-full h-full object-cover"}
+                      loading="lazy"
+                    />
+                  ) : null}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-[#0f2a4a] group-hover:text-[#4ea8de] line-clamp-1">{ev.title}</p>
+                  {ev.organization && <p className="text-xs text-slate-500 line-clamp-1">{ev.organization}</p>}
+                  <p className="text-xs text-slate-600 mt-0.5 inline-flex items-center gap-1">
+                    <Calendar className="w-3 h-3 text-blue-600" />
+                    {fmtDate(ev.start_date)}
+                  </p>
+                </div>
+                <span className={`shrink-0 text-xs font-semibold px-2 py-1 rounded-full ${distancePillClass(ev.distance_km)}`}>
+                  {ev.distance_km} km
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </>
   );
 }

@@ -2,6 +2,8 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import MapPageClient from "./MapPageClient";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Global Events Map · ForaHub",
   description: "Interactive map of upcoming in-person global development events across all 17 SDGs.",
