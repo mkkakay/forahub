@@ -69,7 +69,6 @@ const ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer">CARTO</a>';
 // Single-world bounds so the map doesn't repeat the globe horizontally.
 const WORLD_BOUNDS: L.LatLngBoundsLiteral = [[-90, -180], [90, 180]];
-const FETCH_DEBOUNCE_MS = 400;
 const FORAHUB_BLUE = "#2563eb";
 
 function pinColor(pin: MapPin): string {
@@ -252,6 +251,12 @@ export default function EventsMap({
     }
   }, [filterQS, mode, onPinsLoaded]);
 
+  // Hold fetchData in a ref so the moveend / zoomend / cluster-click handlers
+  // (registered once on mount) always invoke the current version with fresh
+  // filterQS + onPinsLoaded closure rather than the stale initial one.
+  const fetchDataRef = useRef(fetchData);
+  useEffect(() => { fetchDataRef.current = fetchData; }, [fetchData]);
+
   function drawData(payload: PinsApiResponse) {
     const layer = layerRef.current;
     const map = mapRef.current;
@@ -277,13 +282,20 @@ export default function EventsMap({
       return;
     }
 
-    // Aggregated clusters — clicking zooms in toward the cluster center.
+    // Aggregated clusters — clicking zooms in toward the cluster center and
+    // explicitly schedules a refetch so the next granularity level renders
+    // even when the moveend/zoomend chain is unreliable.
     for (const c of payload.items) {
       const marker = L.marker([c.lat, c.lng], { icon: buildClusterIcon(c, payload.level) });
       marker.on("click", () => {
         const currentZoom = map.getZoom();
         const targetZoom = payload.level === "continent" ? 4 : payload.level === "country" ? 7 : 11;
-        map.flyTo([c.lat, c.lng], Math.max(currentZoom + 2, targetZoom), { duration: 0.6 });
+        const newZoom = Math.max(currentZoom + 2, targetZoom);
+        map.flyTo([c.lat, c.lng], newZoom, { duration: 0.6 });
+        // Belt-and-suspenders: 700 ms after flyTo (just past the 600 ms
+        // animation), refetch with the new bounds + zoom directly. Avoids
+        // depending on Leaflet emitting moveend at the exact end of flyTo.
+        setTimeout(() => fetchDataRef.current(map), 700);
       });
       layer.addLayer(marker);
     }
@@ -322,17 +334,21 @@ export default function EventsMap({
     mapRef.current = map;
     layerRef.current = layer;
 
-    const onMoveEnd = () => {
+    const onViewEnd = () => {
       if (mode !== "full") return;
       if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => fetchData(map), FETCH_DEBOUNCE_MS);
+      // 250 ms debounce — snappier than 400 ms while still coalescing pan +
+      // zoom into a single refetch.
+      debounceRef.current = setTimeout(() => fetchDataRef.current(map), 250);
     };
-    map.on("moveend", onMoveEnd);
+    map.on("moveend", onViewEnd);
+    map.on("zoomend", onViewEnd);
 
-    fetchData(mode === "full" ? map : null);
+    fetchDataRef.current(mode === "full" ? map : null);
 
     return () => {
-      map.off("moveend", onMoveEnd);
+      map.off("moveend", onViewEnd);
+      map.off("zoomend", onViewEnd);
       if (debounceRef.current) clearTimeout(debounceRef.current);
       map.remove();
       mapRef.current = null;
