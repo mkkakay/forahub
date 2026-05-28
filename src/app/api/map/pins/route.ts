@@ -80,8 +80,9 @@ function gridKey(lat: number, lng: number, cellDeg: number): string {
 
 function levelForZoom(zoom: number): { level: "continent" | "country" | "city" | "pin"; cellDeg: number } {
   if (zoom <= 3) return { level: "continent", cellDeg: 0 };
-  if (zoom <= 5) return { level: "country", cellDeg: 8 };
-  if (zoom <= 9) return { level: "city", cellDeg: 1.5 };
+  // Tighter grids so distinct cities don't collapse into one bubble at moderate zoom.
+  if (zoom <= 5) return { level: "country", cellDeg: 4 };
+  if (zoom <= 9) return { level: "city", cellDeg: 1 };
   return { level: "pin", cellDeg: 0 };
 }
 
@@ -157,28 +158,26 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  // Continent aggregation
+  // Continent aggregation — bubbles anchored at the continent's geographic
+  // centroid (NOT the event-mass centroid). Event-weighted centroids made the
+  // Africa bubble sit on Kenya, which read as "everything is in Kenya".
   if (level === "continent") {
-    const buckets = new Map<Continent, { count: number; sumLat: number; sumLng: number }>();
+    const counts = new Map<Continent, number>();
     for (const r of rows) {
       const cont = getContinentFromLatLng(r.latitude!, r.longitude!);
-      const b = buckets.get(cont);
-      if (b) {
-        b.count += 1;
-        b.sumLat += r.latitude!;
-        b.sumLng += r.longitude!;
-      } else {
-        buckets.set(cont, { count: 1, sumLat: r.latitude!, sumLng: r.longitude! });
-      }
+      counts.set(cont, (counts.get(cont) ?? 0) + 1);
     }
-    const items = Array.from(buckets.entries()).map(([cont, b]) => ({
-      type: "cluster" as const,
-      key: `cont:${cont}`,
-      name: cont,
-      lat: b.count > 0 ? b.sumLat / b.count : CONTINENT_CENTROIDS[cont].centroid[0],
-      lng: b.count > 0 ? b.sumLng / b.count : CONTINENT_CENTROIDS[cont].centroid[1],
-      count: b.count,
-    }));
+    const items = Array.from(counts.entries()).map(([cont, count]) => {
+      const [lat, lng] = CONTINENT_CENTROIDS[cont].centroid;
+      return {
+        type: "cluster" as const,
+        key: `cont:${cont}`,
+        name: cont,
+        lat,
+        lng,
+        count,
+      };
+    });
     return jsonOk({ type: "aggregated", level: "continent", items, total: rows.length });
   }
 

@@ -52,10 +52,14 @@ export interface EventsMapProps {
   onPinsLoaded?: (pins: MapPin[], total: number) => void;
 }
 
-const TILE_URL = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
+// Label-free CartoDB Positron — our own cluster labels (Africa · 25, etc.)
+// sit on top and provide the geographic context.
+const TILE_URL = "https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png";
 const TILE_SUBDOMAINS = ["a", "b", "c", "d"];
 const ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer">CARTO</a>';
+// Single-world bounds so the map doesn't repeat the globe horizontally.
+const WORLD_BOUNDS: L.LatLngBoundsLiteral = [[-90, -180], [90, 180]];
 const FETCH_DEBOUNCE_MS = 400;
 const FORAHUB_BLUE = "#2563eb";
 
@@ -280,22 +284,28 @@ export default function EventsMap({
     const mobile = window.matchMedia("(max-width: 640px)").matches;
 
     const map = L.map(containerRef.current, {
-      worldCopyJump: true,
+      worldCopyJump: false,
       attributionControl: true,
       zoomControl: !mobile,
       scrollWheelZoom: true,
+      minZoom: 2,
+      maxBounds: WORLD_BOUNDS,
+      maxBoundsViscosity: 1.0,
     });
 
     if (initialBounds) {
       map.fitBounds(initialBounds);
     } else {
-      map.setView([20, 0], mobile ? 1 : 2);
+      map.setView([20, 0], mobile ? 2 : 2);
     }
 
     L.tileLayer(TILE_URL, {
       attribution: ATTRIBUTION,
       subdomains: TILE_SUBDOMAINS,
       maxZoom: 19,
+      minZoom: 2,
+      noWrap: true,
+      bounds: WORLD_BOUNDS,
     }).addTo(map);
 
     const layer = L.layerGroup().addTo(map);
