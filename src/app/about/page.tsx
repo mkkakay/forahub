@@ -1,22 +1,25 @@
 import { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Link from "next/link";
+import PageHeader from "@/components/PageHeader";
+import { getPageBanner } from "@/lib/pageBanners";
 
 export const metadata: Metadata = {
   title: "About ForaHub",
   description: "ForaHub is the premier platform for global development professionals to discover conferences and events.",
 };
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const banner = await getPageBanner("about").catch(() => null);
   return (
     <div className="min-h-screen">
       <Navbar />
-      <div className="bg-[#0f2a4a] px-4 sm:px-6 lg:px-8 py-16">
-        <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-4xl font-extrabold text-white">About ForaHub</h1>
-          <p className="text-blue-200 text-lg mt-4">Built for the global development community.</p>
-        </div>
-      </div>
+      <PageHeader
+        pageKey="about"
+        title="About ForaHub"
+        subtitle="Built for the global development community."
+        banner={banner}
+      />
 
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10">
         <section>

@@ -1,18 +1,20 @@
 import Navbar from "@/components/Navbar";
 import SavedEventsClient from "./SavedEventsClient";
+import PageHeader from "@/components/PageHeader";
+import { getPageBanner } from "@/lib/pageBanners";
 
-export default function SavedPage() {
+export default async function SavedPage() {
+  const banner = await getPageBanner("saved").catch(() => null);
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
       <Navbar />
 
-      {/* Dark navy header */}
-      <div className="bg-[#0f2a4a] py-10 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto">
-          <h1 className="text-3xl font-bold text-white mb-2">Saved Events</h1>
-          <p className="text-blue-200 text-base">Your bookmarks, collections, and notes</p>
-        </div>
-      </div>
+      <PageHeader
+        pageKey="saved"
+        title="Saved Events"
+        subtitle="Your bookmarks, collections, and notes"
+        banner={banner}
+      />
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <SavedEventsClient />

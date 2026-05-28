@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { headers } from "next/headers";
 import { supabase } from "@/lib/supabase/client";
 import type { Database } from "@/lib/supabase/types";
@@ -7,6 +6,8 @@ import Navbar from "@/components/Navbar";
 import { getLocationFromIp, type IpLocation } from "@/lib/geo/ipLocation";
 import { backfillBannersAsync } from "@/lib/events/fetchEventBanner";
 import { batchGetLogos } from "@/lib/organizations/getLogoUrl";
+import PageHeader from "@/components/PageHeader";
+import { getPageBanner } from "@/lib/pageBanners";
 
 type EventRow = Database["public"]["Tables"]["events"]["Row"];
 
@@ -114,25 +115,19 @@ export default async function EventsPage({
   const orgLogos = await batchGetLogos(orgNames).catch(() => ({} as Record<string, string>));
 
   const searchQuery = searchParams.q?.trim() ?? "";
+  const banner = await getPageBanner("events").catch(() => null);
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
       <Navbar />
 
-      {/* Page header */}
-      <div className="bg-[#0f2a4a] px-4 sm:px-6 lg:px-8 py-10">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center gap-2 text-blue-300 text-sm mb-3">
-            <Link href="/" className="hover:text-white transition-colors">Home</Link>
-            <span>/</span>
-            <span className="text-white">Events</span>
-          </div>
-          <h1 className="text-3xl font-extrabold text-white">Events</h1>
-          <p className="mt-2 text-blue-200 text-sm">
-            {events.length.toLocaleString()} events across all SDG goals
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        pageKey="events"
+        title="Events"
+        subtitle={`${events.length.toLocaleString()} events across all SDG goals`}
+        breadcrumb={[{ label: "Home", href: "/" }, { label: "Events" }]}
+        banner={banner}
+      />
 
       <EventsClient
         events={events}
