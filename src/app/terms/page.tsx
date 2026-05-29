@@ -1,12 +1,15 @@
 import { Metadata } from "next";
 import Navbar from "@/components/Navbar";
+import PageHeader from "@/components/PageHeader";
+import { getPageBanner } from "@/lib/pageBanners";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
   description: "ForaHub Terms of Service",
 };
 
-export default function TermsPage() {
+export default async function TermsPage() {
+  const banner = await getPageBanner("terms").catch(() => null);
   const sections = [
     {
       title: "1. Acceptance of Terms",
@@ -53,12 +56,12 @@ export default function TermsPage() {
   return (
     <div className="min-h-screen">
       <Navbar />
-      <div className="bg-[#0f2a4a] px-4 sm:px-6 lg:px-8 py-12">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-3xl font-extrabold text-white">Terms of Service</h1>
-          <p className="text-blue-200 text-sm mt-2">Last updated: January 2026</p>
-        </div>
-      </div>
+      <PageHeader
+        pageKey="terms"
+        title="Terms of Service"
+        subtitle="Last updated: January 2026"
+        banner={banner}
+      />
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
         {sections.map(({ title, content }) => (
           <section key={title}>

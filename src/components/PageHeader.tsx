@@ -24,10 +24,9 @@ const OVERLAY_GRADIENT: Record<OverlayLevel, string> = {
 };
 
 const HEIGHT_CLASS: Record<"standard" | "slim", string> = {
-  // Mobile / desktop heights. Tailwind doesn't have a direct h-[140px]/h-[220px]
-  // arbitrary-value class without JIT — these classes ship through the JIT.
-  standard: "h-[140px] md:h-[220px]",
-  slim: "h-[90px] md:h-[120px]",
+  // Mobile / desktop. Generous enough to read confidently over a busy photo.
+  standard: "h-[180px] md:h-[260px]",
+  slim: "h-[100px] md:h-[140px]",
 };
 
 export default function PageHeader({
@@ -39,7 +38,10 @@ export default function PageHeader({
 }: PageHeaderProps) {
   const useImage = !!(banner && banner.is_active && banner.image_url);
   const overlay = OVERLAY_GRADIENT[banner?.overlay_level ?? "medium"];
-  const heightCls = HEIGHT_CLASS[variant];
+  // The row's variant overrides the prop default so admin can flip
+  // standard/slim per-page without touching code.
+  const effectiveVariant = banner?.variant ?? variant;
+  const heightCls = HEIGHT_CLASS[effectiveVariant];
 
   return (
     <header
@@ -79,11 +81,11 @@ export default function PageHeader({
             ))}
           </div>
         )}
-        <h1 className={`${variant === "slim" ? "text-xl md:text-3xl" : "text-2xl md:text-4xl"} font-bold text-white tracking-tight leading-tight line-clamp-2`}>
+        <h1 className={`${effectiveVariant === "slim" ? "text-2xl md:text-3xl" : "text-2xl md:text-4xl"} font-bold text-white tracking-tight leading-tight line-clamp-2`}>
           {title}
         </h1>
         {subtitle && (
-          <p className={`${variant === "slim" ? "text-xs md:text-sm mt-1" : "text-sm md:text-base mt-2"} text-white/80 line-clamp-2`}>
+          <p className={`${effectiveVariant === "slim" ? "text-xs md:text-sm mt-1" : "text-sm md:text-base mt-2"} text-white/80 line-clamp-2`}>
             {subtitle}
           </p>
         )}

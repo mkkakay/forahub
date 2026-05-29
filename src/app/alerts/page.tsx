@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import { Bell, Plus, Trash2, Lock } from "lucide-react";
 import Link from "next/link";
+import ClientPageHeader from "@/components/ClientPageHeader";
 
 interface Alert {
   id: string;
@@ -87,15 +88,11 @@ export default function AlertsPage() {
   return (
     <div className="min-h-screen">
       <Navbar />
-      <div className="bg-[#0f2a4a] px-4 sm:px-6 lg:px-8 py-10">
-        <div className="max-w-3xl mx-auto">
-          <div className="flex items-center gap-3 mb-2">
-            <Bell size={24} className="text-[#4ea8de]" />
-            <h1 className="text-3xl font-extrabold text-white">Keyword Alerts</h1>
-          </div>
-          <p className="text-blue-200 text-sm">Get notified when new matching events are added.</p>
-        </div>
-      </div>
+      <ClientPageHeader
+        pageKey="alerts"
+        title="Keyword Alerts"
+        subtitle="Get notified when new matching events are added."
+      />
 
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {!loading && (

@@ -6,6 +6,7 @@ import { useSubscription } from "@/context/SubscriptionContext";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import { Save, AlertTriangle, Copy, Check } from "lucide-react";
+import ClientPageHeader from "@/components/ClientPageHeader";
 import Link from "next/link";
 
 const ROLES = ["Researcher", "Practitioner", "Policy Advisor", "Programme Officer", "Consultant", "Student", "Donor", "Other"];
@@ -89,12 +90,11 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen">
       <Navbar />
-      <div className="bg-[#0f2a4a] px-4 sm:px-6 lg:px-8 py-10">
-        <div className="max-w-2xl mx-auto">
-          <h1 className="text-3xl font-extrabold text-white">My Profile</h1>
-          <p className="text-blue-200 text-sm mt-1">{userEmail}</p>
-        </div>
-      </div>
+      <ClientPageHeader
+        pageKey="profile"
+        title="My Profile"
+        subtitle={userEmail ?? undefined}
+      />
 
       <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         <form onSubmit={saveProfile} className="bg-white dark:bg-[#1e293b] rounded-xl border border-gray-200 dark:border-[#334155] p-6 space-y-4">

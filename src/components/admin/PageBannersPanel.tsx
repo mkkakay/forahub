@@ -12,15 +12,34 @@ interface PageBannerRow {
   image_url: string | null;
   overlay_level: "light" | "medium" | "dark";
   is_active: boolean;
+  variant: "standard" | "slim";
   updated_at: string;
 }
 
-const PAGE_LABELS: Record<string, string> = {
-  events: "Events",
-  map: "Map",
-  saved: "Saved Events",
-  pricing: "Pricing",
-  about: "About",
+const PAGE_LABELS: Record<string, { name: string; url: string }> = {
+  about: { name: "About", url: "/about" },
+  abstracts: { name: "Abstracts", url: "/abstracts" },
+  alerts: { name: "Alerts", url: "/alerts" },
+  assistant: { name: "AI Assistant", url: "/assistant" },
+  claim: { name: "Claim Org", url: "/claim" },
+  contact: { name: "Contact", url: "/contact" },
+  dashboard: { name: "Dashboard", url: "/dashboard" },
+  "data-sources": { name: "Data Sources", url: "/data-sources" },
+  events: { name: "Events", url: "/events" },
+  help: { name: "Help Center", url: "/help" },
+  map: { name: "Global Map", url: "/map" },
+  notifications: { name: "Notifications", url: "/notifications" },
+  offline: { name: "Offline", url: "/offline" },
+  "payment-cancel": { name: "Payment — Cancelled", url: "/payment/cancel" },
+  "payment-success": { name: "Payment — Success", url: "/payment/success" },
+  pricing: { name: "Pricing", url: "/pricing" },
+  privacy: { name: "Privacy Policy", url: "/privacy" },
+  profile: { name: "Profile", url: "/profile" },
+  saved: { name: "Saved Events", url: "/saved" },
+  submit: { name: "Submit Event", url: "/submit" },
+  "submit-bulk": { name: "Submit — Bulk", url: "/submit/bulk" },
+  "submit-single": { name: "Submit — Single", url: "/submit/single" },
+  terms: { name: "Terms of Service", url: "/terms" },
 };
 
 export default function PageBannersPanel({ adminSecret }: { adminSecret: string }) {
@@ -178,9 +197,12 @@ export default function PageBannersPanel({ adminSecret }: { adminSecret: string 
                     {/* Settings */}
                     <div className="space-y-2 min-w-0">
                       <div>
-                        <p className="text-white text-sm font-semibold">{PAGE_LABELS[row.page_key] ?? row.page_key}</p>
-                        <p className="text-blue-500 text-[10px] uppercase tracking-wider">
-                          /{row.page_key === "events" ? "events" : row.page_key === "map" ? "map" : row.page_key}
+                        <p className="text-white text-sm font-semibold">
+                          {(PAGE_LABELS[row.page_key]?.name) ?? row.page_key}
+                          <span className="text-blue-500 text-[10px] font-normal ml-2">{row.page_key}</span>
+                        </p>
+                        <p className="text-blue-400 text-[11px] font-mono mt-0.5">
+                          {PAGE_LABELS[row.page_key]?.url ?? `/${row.page_key}`}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
@@ -200,23 +222,36 @@ export default function PageBannersPanel({ adminSecret }: { adminSecret: string 
                           Set
                         </button>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400">Overlay</span>
-                        <div className="inline-flex rounded border border-blue-900/40 overflow-hidden">
-                          {(["light", "medium", "dark"] as const).map(level => (
-                            <button
-                              key={level}
-                              type="button"
-                              onClick={() => patch(row.page_key, { overlay_level: level })}
-                              className={`text-[11px] font-semibold px-3 py-1 transition-colors ${
-                                row.overlay_level === level
-                                  ? "bg-[#4ea8de] text-white"
-                                  : "bg-[#0a1a2e] text-blue-300 hover:bg-[#0d2240]"
-                              } ${level !== "light" ? "border-l border-blue-900/40" : ""}`}
-                            >
-                              {level[0].toUpperCase() + level.slice(1)}
-                            </button>
-                          ))}
+                      <div className="flex flex-wrap items-center gap-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400">Overlay</span>
+                          <div className="inline-flex rounded border border-blue-900/40 overflow-hidden">
+                            {(["light", "medium", "dark"] as const).map(level => (
+                              <button
+                                key={level}
+                                type="button"
+                                onClick={() => patch(row.page_key, { overlay_level: level })}
+                                className={`text-[11px] font-semibold px-3 py-1 transition-colors ${
+                                  row.overlay_level === level
+                                    ? "bg-[#4ea8de] text-white"
+                                    : "bg-[#0a1a2e] text-blue-300 hover:bg-[#0d2240]"
+                                } ${level !== "light" ? "border-l border-blue-900/40" : ""}`}
+                              >
+                                {level[0].toUpperCase() + level.slice(1)}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400">Size</span>
+                          <select
+                            value={row.variant}
+                            onChange={e => patch(row.page_key, { variant: e.target.value as "standard" | "slim" })}
+                            className="bg-[#0a1a2e] border border-blue-900/40 text-white text-[11px] font-semibold rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]/40"
+                          >
+                            <option value="standard">Standard</option>
+                            <option value="slim">Slim</option>
+                          </select>
                         </div>
                       </div>
                       <label className="flex items-center gap-2 cursor-pointer select-none">

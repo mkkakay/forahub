@@ -2,6 +2,8 @@ import { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
+import PageHeader from "@/components/PageHeader";
+import { getPageBanner } from "@/lib/pageBanners";
 
 export const metadata: Metadata = {
   title: "Help Center",
@@ -21,16 +23,17 @@ const FAQS = [
   { q: "How do I delete my account?", a: "Go to Profile settings and scroll to the 'Danger Zone' section. Click 'Delete my account' and confirm. All your data will be permanently deleted within 30 days." },
 ];
 
-export default function HelpPage() {
+export default async function HelpPage() {
+  const banner = await getPageBanner("help").catch(() => null);
   return (
     <div className="min-h-screen">
       <Navbar />
-      <div className="bg-[#0f2a4a] px-4 sm:px-6 lg:px-8 py-12">
-        <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-3xl font-extrabold text-white">Help Center</h1>
-          <p className="text-blue-200 text-sm mt-2">Find answers to common questions.</p>
-        </div>
-      </div>
+      <PageHeader
+        pageKey="help"
+        title="Help Center"
+        subtitle="Find answers to common questions."
+        banner={banner}
+      />
 
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <h2 className="text-xl font-bold text-[#0f2a4a] dark:text-white mb-6">Frequently Asked Questions</h2>

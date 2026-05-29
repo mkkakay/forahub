@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import Link from "next/link";
 import { Calendar, Globe, Star, Bookmark, Trophy, ArrowRight, Sparkles, Target, Award, Palette } from "lucide-react";
+import ClientPageHeader from "@/components/ClientPageHeader";
 
 const SDG_COLORS: Record<number, string> = {
   1:"#E5243B",2:"#DDA63A",3:"#4C9F38",4:"#C5192D",5:"#FF3A21",
@@ -109,12 +110,11 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen">
       <Navbar />
-      <div className="bg-[#0f2a4a] px-4 sm:px-6 lg:px-8 py-10">
-        <div className="max-w-5xl mx-auto">
-          <h1 className="text-3xl font-extrabold text-white">My Dashboard</h1>
-          <p className="text-blue-200 text-sm mt-1">Your professional development at a glance</p>
-        </div>
-      </div>
+      <ClientPageHeader
+        pageKey="dashboard"
+        title="My Dashboard"
+        subtitle="Your professional development at a glance"
+      />
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* Stats */}

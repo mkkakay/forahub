@@ -1,21 +1,24 @@
 import { Metadata } from "next";
 import Navbar from "@/components/Navbar";
+import PageHeader from "@/components/PageHeader";
+import { getPageBanner } from "@/lib/pageBanners";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description: "ForaHub Privacy Policy — GDPR & CCPA compliant",
 };
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  const banner = await getPageBanner("privacy").catch(() => null);
   return (
     <div className="min-h-screen">
       <Navbar />
-      <div className="bg-[#0f2a4a] px-4 sm:px-6 lg:px-8 py-12">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-3xl font-extrabold text-white">Privacy Policy</h1>
-          <p className="text-blue-200 text-sm mt-2">Last updated: January 2026 · GDPR & CCPA compliant</p>
-        </div>
-      </div>
+      <PageHeader
+        pageKey="privacy"
+        title="Privacy Policy"
+        subtitle="Last updated: January 2026 · GDPR & CCPA compliant"
+        banner={banner}
+      />
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
         <section>
           <h2 className="text-lg font-bold text-[#0f2a4a] dark:text-white mb-2">1. Information We Collect</h2>

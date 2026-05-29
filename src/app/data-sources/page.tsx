@@ -1,13 +1,16 @@
 import { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Link from "next/link";
+import PageHeader from "@/components/PageHeader";
+import { getPageBanner } from "@/lib/pageBanners";
 
 export const metadata: Metadata = {
   title: "Data Sources",
   description: "How ForaHub collects and sources event data.",
 };
 
-export default function DataSourcesPage() {
+export default async function DataSourcesPage() {
+  const banner = await getPageBanner("data-sources").catch(() => null);
   const categories = [
     { name: "UN Agencies & Bodies", examples: "WHO, UNICEF, UNDP, UNEP, UNESCO, FAO, WFP, ILO, UNHCR" },
     { name: "International Financial Institutions", examples: "World Bank, IMF, African Development Bank, Asian Development Bank, IADB" },
@@ -23,12 +26,12 @@ export default function DataSourcesPage() {
   return (
     <div className="min-h-screen">
       <Navbar />
-      <div className="bg-[#0f2a4a] px-4 sm:px-6 lg:px-8 py-12">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-3xl font-extrabold text-white">Data Sources</h1>
-          <p className="text-blue-200 text-sm mt-2">How we collect and attribute event data</p>
-        </div>
-      </div>
+      <PageHeader
+        pageKey="data-sources"
+        title="Data Sources"
+        subtitle="How we collect and attribute event data"
+        banner={banner}
+      />
 
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
         <section>

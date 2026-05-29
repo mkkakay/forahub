@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import { Send, Check } from "lucide-react";
+import ClientPageHeader from "@/components/ClientPageHeader";
 
 const SUBJECTS = ["General Inquiry", "Report Event Error", "Submit Organization", "Press", "Partnership", "Other"];
 
@@ -33,12 +34,11 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen">
       <Navbar />
-      <div className="bg-[#0f2a4a] px-4 sm:px-6 lg:px-8 py-16">
-        <div className="max-w-2xl mx-auto text-center">
-          <h1 className="text-4xl font-extrabold text-white">Contact Us</h1>
-          <p className="text-blue-200 text-lg mt-3">We&apos;re here to help and listen.</p>
-        </div>
-      </div>
+      <ClientPageHeader
+        pageKey="contact"
+        title="Contact Us"
+        subtitle="We're here to help and listen."
+      />
 
       <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {sent ? (

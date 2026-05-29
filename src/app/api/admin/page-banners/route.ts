@@ -21,15 +21,19 @@ export async function GET(req: NextRequest) {
   if (!checkAuth(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { data, error } = await adminSupabase
     .from("page_banners")
-    .select("id, page_key, image_url, overlay_level, is_active, updated_at")
+    .select("id, page_key, image_url, overlay_level, is_active, variant, updated_at")
     .order("page_key", { ascending: true });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ data: data ?? [] });
+  // Admin panel should ALWAYS see the latest values — no CDN/edge cache.
+  return new NextResponse(JSON.stringify({ data: data ?? [] }), {
+    status: 200,
+    headers: { "content-type": "application/json", "cache-control": "no-store" },
+  });
 }
 
 export async function PATCH(req: NextRequest) {
   if (!checkAuth(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  let body: { page_key?: string; image_url?: string | null; overlay_level?: string; is_active?: boolean };
+  let body: { page_key?: string; image_url?: string | null; overlay_level?: string; is_active?: boolean; variant?: string };
   try { body = await req.json(); } catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
 
   const pageKey = (body.page_key ?? "").trim();
@@ -48,6 +52,12 @@ export async function PATCH(req: NextRequest) {
     }
     patch.overlay_level = body.overlay_level;
   }
+  if ("variant" in body && typeof body.variant === "string") {
+    if (body.variant !== "standard" && body.variant !== "slim") {
+      return NextResponse.json({ error: "variant must be standard|slim" }, { status: 400 });
+    }
+    patch.variant = body.variant;
+  }
   if ("is_active" in body && typeof body.is_active === "boolean") {
     patch.is_active = body.is_active;
   } else if (imageUrlChanging) {
@@ -65,7 +75,7 @@ export async function PATCH(req: NextRequest) {
     .from("page_banners")
     .update(patch)
     .eq("page_key", pageKey)
-    .select("id, page_key, image_url, overlay_level, is_active, updated_at")
+    .select("id, page_key, image_url, overlay_level, is_active, variant, updated_at")
     .maybeSingle();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   if (!data) return NextResponse.json({ error: "page_key not found" }, { status: 404 });
