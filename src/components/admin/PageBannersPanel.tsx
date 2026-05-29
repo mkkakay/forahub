@@ -102,7 +102,9 @@ export default function PageBannersPanel({ adminSecret }: { adminSecret: string 
       const res = await fetch("/api/admin/page-banners/upload", { method: "POST", headers, body: fd });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
-      setRows(rs => rs.map(r => (r.page_key === key ? { ...r, image_url: json.image_url as string } : r)));
+      // Server auto-enables is_active when an image is uploaded — mirror
+      // that in local state so the toggle reflects the new "on" state.
+      setRows(rs => rs.map(r => (r.page_key === key ? { ...r, image_url: json.image_url as string, is_active: true } : r)));
       flash(key);
     } catch (err) {
       setError(String(err instanceof Error ? err.message : err));

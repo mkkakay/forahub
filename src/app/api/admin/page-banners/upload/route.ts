@@ -68,9 +68,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: err instanceof Error ? err.message : String(err) }, { status: 500 });
   }
 
+  // Auto-enable on upload — same one-step UX as the PATCH route.
   const { error: updateError } = await adminSupabase
     .from("page_banners")
-    .update({ image_url: publicUrl, updated_at: new Date().toISOString() })
+    .update({
+      image_url: publicUrl,
+      is_active: true,
+      updated_at: new Date().toISOString(),
+    })
     .eq("page_key", pageKey);
   if (updateError) {
     await removeFromStorage(BUCKET, storagePath);

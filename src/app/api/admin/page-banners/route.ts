@@ -36,9 +36,11 @@ export async function PATCH(req: NextRequest) {
   if (!pageKey) return NextResponse.json({ error: "page_key required" }, { status: 400 });
 
   const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  let imageUrlChanging: string | null | undefined;
   if ("image_url" in body) {
     const url = typeof body.image_url === "string" ? body.image_url.trim() : null;
-    patch.image_url = url && url.length > 0 ? url : null;
+    imageUrlChanging = url && url.length > 0 ? url : null;
+    patch.image_url = imageUrlChanging;
   }
   if ("overlay_level" in body && typeof body.overlay_level === "string") {
     if (!VALID_LEVELS.has(body.overlay_level)) {
@@ -48,6 +50,15 @@ export async function PATCH(req: NextRequest) {
   }
   if ("is_active" in body && typeof body.is_active === "boolean") {
     patch.is_active = body.is_active;
+  } else if (imageUrlChanging) {
+    // Auto-enable when a fresh image URL is being set and the caller didn't
+    // explicitly opt out. Saves the admin from a two-step "paste URL → also
+    // flip the toggle" interaction that was being missed in practice.
+    patch.is_active = true;
+  } else if (imageUrlChanging === null && !("is_active" in body)) {
+    // Clearing the image — implicitly deactivate so we don't render a broken
+    // image attempt.
+    patch.is_active = false;
   }
 
   const { data, error } = await adminSupabase
