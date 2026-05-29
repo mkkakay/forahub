@@ -5,6 +5,7 @@ import { MapPin, Calendar, Building2, ExternalLink, ArrowLeft, Share2, Clock } f
 import Navbar from "@/components/Navbar";
 import EventDetailActions from "./EventDetailActions";
 import type { Database } from "@/lib/supabase/types";
+import { getCategory } from "@/lib/categories";
 
 type EventRow = Database["public"]["Tables"]["events"]["Row"];
 
@@ -110,6 +111,21 @@ export default async function EventDetailPage({ params }: { params: { id: string
             <div className="flex-1 min-w-0">
               {/* Tags */}
               <div className="flex flex-wrap items-center gap-2 mb-3">
+                {(() => {
+                  const cat = getCategory(typedEvent.category);
+                  if (!cat) return null;
+                  const Icon = cat.icon;
+                  return (
+                    <span
+                      className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full text-white"
+                      style={{ backgroundColor: cat.color }}
+                      title={cat.description}
+                    >
+                      <Icon size={12} />
+                      {cat.label}
+                    </span>
+                  );
+                })()}
                 {primarySdg && (
                   <span
                     className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full text-white"

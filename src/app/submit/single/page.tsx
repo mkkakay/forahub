@@ -1403,61 +1403,8 @@ export default function SubmitPage() {
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className={labelClass}>
-                Hosting organization <span className="text-red-500">*</span>
-                {aiFilled.organization && aiBadge}
-              </label>
-              <OrgCombobox
-                value={form.organization}
-                onChange={v => { setForm(f => ({ ...f, organization: v })); setAiFilled(a => ({ ...a, organization: false })); }}
-                placeholder="Start typing your organization..."
-              />
-              <p className="text-xs text-gray-500 mt-1">Type at least 2 characters to see suggestions.</p>
-            </div>
-            <div>
-              <label className={labelClass}>Primary SDG (optional){aiFilled.primary_sdg && aiBadge}</label>
-              <select
-                value={form.primary_sdg ?? ""}
-                onChange={e => { setForm(f => ({ ...f, primary_sdg: e.target.value ? Number(e.target.value) : null })); setAiFilled(a => ({ ...a, primary_sdg: false })); setSdgSuggestion(null); }}
-                className={inputClass}
-              >
-                <option value="">Not sure / not applicable</option>
-                {Array.from({ length: 17 }, (_, i) => i + 1).map(n => (
-                  <option key={n} value={n}>SDG {n}: {SDG_LABELS[n]}</option>
-                ))}
-              </select>
-              {sdgSuggestion && (
-                <div className="mt-2 flex items-center gap-2 text-xs">
-                  <span className="text-gray-600 inline-flex items-center gap-1">
-                    <Sparkles className="w-3 h-3 text-purple-600" />
-                    AI suggests: <span className="font-semibold">SDG {sdgSuggestion.sdg} — {sdgSuggestion.label}</span>
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setForm(f => ({ ...f, primary_sdg: sdgSuggestion.sdg }));
-                      setAiFilled(a => ({ ...a, primary_sdg: true }));
-                      setSdgSuggestion(null);
-                    }}
-                    className="bg-amber-100 hover:bg-amber-200 text-amber-900 font-semibold px-2 py-0.5 rounded text-[11px] border border-amber-300/60"
-                  >
-                    Use
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSdgSuggestion(null)}
-                    className="text-gray-400 hover:text-gray-600 text-[11px]"
-                  >
-                    Dismiss
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Category — humanitarian / development / nexus / policy / research */}
+          {/* Category — placed BEFORE SDG so submitters frame their event
+              against the humanitarian-development field first. */}
           <div>
             <label className={labelClass}>
               Category (optional)
@@ -1519,6 +1466,60 @@ export default function SubmitPage() {
                 </button>
               </div>
             )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className={labelClass}>
+                Hosting organization <span className="text-red-500">*</span>
+                {aiFilled.organization && aiBadge}
+              </label>
+              <OrgCombobox
+                value={form.organization}
+                onChange={v => { setForm(f => ({ ...f, organization: v })); setAiFilled(a => ({ ...a, organization: false })); }}
+                placeholder="Start typing your organization..."
+              />
+              <p className="text-xs text-gray-500 mt-1">Type at least 2 characters to see suggestions.</p>
+            </div>
+            <div>
+              <label className={labelClass}>Primary SDG (optional){aiFilled.primary_sdg && aiBadge}</label>
+              <select
+                value={form.primary_sdg ?? ""}
+                onChange={e => { setForm(f => ({ ...f, primary_sdg: e.target.value ? Number(e.target.value) : null })); setAiFilled(a => ({ ...a, primary_sdg: false })); setSdgSuggestion(null); }}
+                className={inputClass}
+              >
+                <option value="">Not sure / not applicable</option>
+                {Array.from({ length: 17 }, (_, i) => i + 1).map(n => (
+                  <option key={n} value={n}>SDG {n}: {SDG_LABELS[n]}</option>
+                ))}
+              </select>
+              {sdgSuggestion && (
+                <div className="mt-2 flex items-center gap-2 text-xs">
+                  <span className="text-gray-600 inline-flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-purple-600" />
+                    AI suggests: <span className="font-semibold">SDG {sdgSuggestion.sdg} — {sdgSuggestion.label}</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForm(f => ({ ...f, primary_sdg: sdgSuggestion.sdg }));
+                      setAiFilled(a => ({ ...a, primary_sdg: true }));
+                      setSdgSuggestion(null);
+                    }}
+                    className="bg-amber-100 hover:bg-amber-200 text-amber-900 font-semibold px-2 py-0.5 rounded text-[11px] border border-amber-300/60"
+                  >
+                    Use
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSdgSuggestion(null)}
+                    className="text-gray-400 hover:text-gray-600 text-[11px]"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           <div>

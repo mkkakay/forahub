@@ -417,12 +417,6 @@ export default function EventsClient({
                   <Clock size={10} /> Past
                 </span>
               )}
-              {sdg && (
-                <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${sdg.color}`}>
-                  <Tag size={11} />
-                  SDG {primarySdg}
-                </span>
-              )}
               {(() => {
                 const cat = getCategory(event.category);
                 if (!cat) return null;
@@ -438,6 +432,12 @@ export default function EventsClient({
                   </span>
                 );
               })()}
+              {sdg && (
+                <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${sdg.color}`}>
+                  <Tag size={11} />
+                  SDG {primarySdg}
+                </span>
+              )}
               {countdown && (
                 <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${countdown.urgent ? "bg-red-50 text-red-700 border border-red-100" : "bg-amber-50 text-amber-700 border border-amber-100"}`}>
                   {countdown.label}
@@ -574,11 +574,6 @@ export default function EventsClient({
         </div>
         <div className="p-5 flex flex-col gap-3">
           <div className="flex items-center gap-2 flex-wrap">
-            {sdg && (
-              <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${sdg.color}`}>
-                SDG {primarySdg}
-              </span>
-            )}
             {(() => {
               const cat = getCategory(event.category);
               if (!cat) return null;
@@ -594,6 +589,11 @@ export default function EventsClient({
                 </span>
               );
             })()}
+            {sdg && (
+              <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${sdg.color}`}>
+                SDG {primarySdg}
+              </span>
+            )}
             <span className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold">
               {FORMAT_LABELS[event.format]}
             </span>
@@ -705,6 +705,23 @@ export default function EventsClient({
             <div className="flex flex-wrap items-center gap-2">
               <Filter size={14} className="text-slate-400 shrink-0 hidden md:block" />
 
+              {/* Category — humanitarian / development / nexus / policy / research.
+                  Leads the row to signal ForaHub serves the whole humanitarian-
+                  development field, not just SDG-2030 framing. */}
+              <select
+                value={categoryFilter ?? ""}
+                onChange={e => setCategoryFilter(isCategoryKey(e.target.value) ? e.target.value : null)}
+                className={`text-sm h-9 px-3 rounded-lg bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#4ea8de] transition-colors border ${
+                  categoryFilter !== null ? "bg-blue-50/50" : "border-slate-200"
+                }`}
+                style={categoryFilter !== null ? { borderColor: getCategory(categoryFilter)?.color ?? "#4ea8de" } : undefined}
+              >
+                <option value="">Category: All</option>
+                {EVENT_CATEGORIES.map(cat => (
+                  <option key={cat.key} value={cat.key}>{cat.label}</option>
+                ))}
+              </select>
+
               {/* SDG */}
               <select
                 value={sdgFilter ?? ""}
@@ -758,21 +775,6 @@ export default function EventsClient({
                 <option value="">Region: All</option>
                 {ALL_REGIONS.map(r => (
                   <option key={r} value={r}>{r}</option>
-                ))}
-              </select>
-
-              {/* Category — humanitarian / development / nexus / policy / research */}
-              <select
-                value={categoryFilter ?? ""}
-                onChange={e => setCategoryFilter(isCategoryKey(e.target.value) ? e.target.value : null)}
-                className={`text-sm h-9 px-3 rounded-lg bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#4ea8de] transition-colors border ${
-                  categoryFilter !== null ? "bg-blue-50/50" : "border-slate-200"
-                }`}
-                style={categoryFilter !== null ? { borderColor: getCategory(categoryFilter)?.color ?? "#4ea8de" } : undefined}
-              >
-                <option value="">Category: All</option>
-                {EVENT_CATEGORIES.map(cat => (
-                  <option key={cat.key} value={cat.key}>{cat.label}</option>
                 ))}
               </select>
 
@@ -992,12 +994,6 @@ export default function EventsClient({
                           <Clock size={10} /> Past
                         </span>
                       )}
-                      {sdg && (
-                        <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${sdg.color}`}>
-                          <Tag size={11} />
-                          SDG {primarySdg}
-                        </span>
-                      )}
                       {(() => {
                         const cat = getCategory(event.category);
                         if (!cat) return null;
@@ -1013,6 +1009,12 @@ export default function EventsClient({
                           </span>
                         );
                       })()}
+                      {sdg && (
+                        <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${sdg.color}`}>
+                          <Tag size={11} />
+                          SDG {primarySdg}
+                        </span>
+                      )}
                       {countdown && (
                         <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${countdown.urgent ? "bg-red-50 text-red-700 border border-red-100" : "bg-amber-50 text-amber-700 border border-amber-100"}`}>
                           {countdown.label}
