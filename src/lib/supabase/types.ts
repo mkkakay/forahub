@@ -75,6 +75,12 @@ export interface EventRow {
   submitter_email: string | null
   submission_source: 'flyer_ai' | 'url_ai' | 'manual' | null
   submitted_at: string | null
+  category: string | null
+  category_secondary: string[] | null
+  category_confidence: number | null
+  category_source: 'ai' | 'keyword' | 'admin' | 'submitter' | 'sdg_inferred' | null
+  category_locked: boolean | null
+  category_classified_at: string | null
 }
 
 export interface EventDeadlineRow {

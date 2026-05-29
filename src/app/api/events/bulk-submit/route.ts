@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { waitUntil } from "@vercel/functions";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { geocodeLocation } from "@/lib/geo/geocode";
+import { classifyEventSync } from "@/lib/categories/classify";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -112,6 +113,13 @@ export async function POST(req: NextRequest) {
         ? [Math.floor(evt.primary_sdg)]
         : [];
 
+    const classified = classifyEventSync({
+      title,
+      organization,
+      description: description || null,
+      sdg_goals: sdg,
+    });
+
     validRows.push({
       title,
       description: description || `Imported event: ${title}`,
@@ -133,6 +141,11 @@ export async function POST(req: NextRequest) {
       submitter_email: submitterEmail,
       submitted_at: submittedAt,
       is_featured: false,
+      category: classified?.category ?? null,
+      category_secondary: classified && classified.secondary.length > 0 ? classified.secondary : null,
+      category_confidence: classified?.confidence ?? null,
+      category_source: classified?.source ?? null,
+      category_classified_at: classified ? new Date().toISOString() : null,
     });
   });
 

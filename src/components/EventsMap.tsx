@@ -52,6 +52,7 @@ export interface EventsMapProps {
   initialBounds?: LatLngBoundsExpression;
   initialFilters?: {
     sdg?: number[];
+    category?: string[];
     dateFrom?: string | null;
     dateTo?: string | null;
   };
@@ -206,6 +207,9 @@ export default function EventsMap({
     const params = new URLSearchParams();
     if (initialFilters?.sdg && initialFilters.sdg.length > 0) {
       params.set("sdg", initialFilters.sdg.join(","));
+    }
+    if (initialFilters?.category && initialFilters.category.length > 0) {
+      params.set("category", initialFilters.category.join(","));
     }
     if (initialFilters?.dateFrom) params.set("date_from", initialFilters.dateFrom);
     if (initialFilters?.dateTo) params.set("date_to", initialFilters.dateTo);

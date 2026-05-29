@@ -4,6 +4,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import ICAL from 'ical.js';
 import { adminSupabase } from '@/lib/supabase/admin';
+import { classifyEventSync } from '@/lib/categories/classify';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 120;
@@ -256,6 +257,13 @@ export async function POST(req: NextRequest) {
           const searchText = `${title} ${description ?? ''} ${locationRaw ?? ''}`;
           const sdgGoals = inferSdgGoals(searchText);
 
+          const classified = classifyEventSync({
+            title,
+            organization,
+            description,
+            sdg_goals: sdgGoals,
+          });
+
           const { error } = await adminSupabase.from('events').insert({
             title,
             description,
@@ -280,6 +288,11 @@ export async function POST(req: NextRequest) {
             source_id: feed.id,
             source_url: feed.url,
             speakers: null,
+            category: classified?.category ?? null,
+            category_secondary: classified && classified.secondary.length > 0 ? classified.secondary : null,
+            category_confidence: classified?.confidence ?? null,
+            category_source: classified?.source ?? null,
+            category_classified_at: classified ? new Date().toISOString() : null,
           });
 
           if (error) {

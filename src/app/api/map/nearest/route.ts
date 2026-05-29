@@ -11,6 +11,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
+import { parseCategoryList, type CategoryKey } from "@/lib/categories";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -46,8 +47,9 @@ interface NearestResponse {
 
 const cache = new Map<string, { at: number; value: NearestResponse }>();
 
-function cacheKey(lat: number, lng: number, limit: number, radius: number): string {
-  return `${lat.toFixed(1)}|${lng.toFixed(1)}|${limit}|${radius}`;
+function cacheKey(lat: number, lng: number, limit: number, radius: number, category: CategoryKey[] | null): string {
+  const catKey = category ? category.slice().sort().join(",") : "*";
+  return `${lat.toFixed(1)}|${lng.toFixed(1)}|${limit}|${radius}|${catKey}`;
 }
 
 interface CandidateRow {
@@ -80,7 +82,8 @@ async function searchWithinRadius(
   lng: number,
   radiusKm: number,
   limit: number,
-  nowIso: string
+  nowIso: string,
+  category: CategoryKey[] | null,
 ): Promise<NearestEvent[]> {
   // BBox prefilter: lat span is constant (1° ≈ 111 km), lng span depends on
   // latitude. At 60° N the lng degree is ~55 km, so we widen by 1/cos(lat).
@@ -88,7 +91,7 @@ async function searchWithinRadius(
   const cosLat = Math.max(0.0001, Math.cos((lat * Math.PI) / 180));
   const lngSpan = radiusKm / (111.0 * cosLat);
 
-  const { data, error } = await adminSupabase
+  let query = adminSupabase
     .from("events")
     .select(
       "id, title, organization, start_date, end_date, location, latitude, longitude, banner_image_url, banner_display_mode, sdg_goals, format"
@@ -101,6 +104,16 @@ async function searchWithinRadius(
     .gte("start_date", nowIso)
     .order("start_date", { ascending: true })
     .limit(500);
+
+  if (category) {
+    const orParts = [
+      `category.in.(${category.join(",")})`,
+      ...category.map(c => `category_secondary.cs.{${c}}`),
+    ];
+    query = query.or(orParts.join(","));
+  }
+
+  const { data, error } = await query;
 
   if (error || !data) return [];
 
@@ -124,25 +137,26 @@ export async function GET(req: NextRequest) {
   const lng = Number(sp.get("lng"));
   const limit = Math.max(1, Math.min(50, Number(sp.get("limit") ?? DEFAULT_LIMIT)));
   const radiusKmRaw = Math.max(10, Math.min(5000, Number(sp.get("radius_km") ?? DEFAULT_RADIUS_KM)));
+  const category = parseCategoryList(sp.get("category"));
 
   if (!Number.isFinite(lat) || !Number.isFinite(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
     return NextResponse.json({ error: "invalid lat/lng" }, { status: 400 });
   }
 
-  const key = cacheKey(lat, lng, limit, radiusKmRaw);
+  const key = cacheKey(lat, lng, limit, radiusKmRaw, category);
   const cached = cache.get(key);
   if (cached && Date.now() - cached.at < CACHE_TTL_MS) {
     return jsonOk(cached.value);
   }
 
   const nowIso = new Date().toISOString();
-  let events = await searchWithinRadius(lat, lng, radiusKmRaw, limit, nowIso);
+  let events = await searchWithinRadius(lat, lng, radiusKmRaw, limit, nowIso, category);
   let radiusUsed = radiusKmRaw;
   let expanded = false;
   if (events.length < MIN_RESULTS_BEFORE_EXPANSION) {
     const expandedRadius = Math.min(radiusKmRaw * RADIUS_EXPANSION, 5000);
     if (expandedRadius > radiusKmRaw) {
-      const more = await searchWithinRadius(lat, lng, expandedRadius, limit, nowIso);
+      const more = await searchWithinRadius(lat, lng, expandedRadius, limit, nowIso, category);
       if (more.length > events.length) {
         events = more;
         radiusUsed = expandedRadius;

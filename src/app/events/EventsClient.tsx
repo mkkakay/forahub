@@ -11,6 +11,7 @@ import { getEventAssets } from "@/lib/assets/eventAssetService";
 import type { Database } from "@/lib/supabase/types";
 import { matchesSearch } from "@/lib/search";
 import { supabase } from "@/lib/supabase/client";
+import { EVENT_CATEGORIES, getCategory, isCategoryKey, type CategoryKey } from "@/lib/categories";
 import { useSubscription } from "@/context/SubscriptionContext";
 import BookmarkButton from "@/components/BookmarkButton";
 import CalendarExportMenu from "@/components/CalendarExportMenu";
@@ -180,6 +181,7 @@ export default function EventsClient({
   const [formatFilter, setFormatFilter] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const [regionFilter, setRegionFilter] = useState<string | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<CategoryKey | null>(null);
   const [timeView, setTimeView] = useState<TimeView>("upcoming");
   const [quickFilters, setQuickFilters] = useState<Set<QuickFilter>>(new Set());
   const [userId, setUserId] = useState<string | null>(null);
@@ -225,11 +227,23 @@ export default function EventsClient({
       if (formatFilter !== null && e.format !== formatFilter) return false;
       if (typeFilter !== null && e.event_type !== typeFilter) return false;
       if (regionFilter !== null && deriveRegion(e.location) !== regionFilter) return false;
+      if (categoryFilter !== null) {
+        // NULL-category events stay visible during the backfill period — once
+        // bulk classification finishes there won't be any. After that this
+        // branch becomes a no-op.
+        const primary = e.category;
+        const secondary = e.category_secondary ?? [];
+        const matches =
+          primary === null ||
+          primary === categoryFilter ||
+          secondary.includes(categoryFilter);
+        if (!matches) return false;
+      }
       if (quickFilters.has("free") && e.cost_type !== "free") return false;
       if (quickFilters.has("online") && e.format !== "virtual") return false;
       return true;
     });
-  }, [baseEvents, search, sdgFilter, formatFilter, typeFilter, regionFilter, quickFilters]);
+  }, [baseEvents, search, sdgFilter, formatFilter, typeFilter, regionFilter, categoryFilter, quickFilters]);
 
   const hasFilters =
     activeSearch.length >= 2 ||
@@ -237,6 +251,7 @@ export default function EventsClient({
     formatFilter !== null ||
     typeFilter !== null ||
     regionFilter !== null ||
+    categoryFilter !== null ||
     quickFilters.size > 0;
 
   function clearAll() {
@@ -245,6 +260,7 @@ export default function EventsClient({
     setFormatFilter(null);
     setTypeFilter(null);
     setRegionFilter(null);
+    setCategoryFilter(null);
     setQuickFilters(new Set());
   }
 
@@ -407,6 +423,21 @@ export default function EventsClient({
                   SDG {primarySdg}
                 </span>
               )}
+              {(() => {
+                const cat = getCategory(event.category);
+                if (!cat) return null;
+                const Icon = cat.icon;
+                return (
+                  <span
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full text-white"
+                    style={{ backgroundColor: cat.color }}
+                    title={cat.description}
+                  >
+                    <Icon size={11} />
+                    {cat.label}
+                  </span>
+                );
+              })()}
               {countdown && (
                 <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${countdown.urgent ? "bg-red-50 text-red-700 border border-red-100" : "bg-amber-50 text-amber-700 border border-amber-100"}`}>
                   {countdown.label}
@@ -548,6 +579,21 @@ export default function EventsClient({
                 SDG {primarySdg}
               </span>
             )}
+            {(() => {
+              const cat = getCategory(event.category);
+              if (!cat) return null;
+              const Icon = cat.icon;
+              return (
+                <span
+                  className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full text-white"
+                  style={{ backgroundColor: cat.color }}
+                  title={cat.description}
+                >
+                  <Icon size={9} />
+                  {cat.label}
+                </span>
+              );
+            })()}
             <span className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold">
               {FORMAT_LABELS[event.format]}
             </span>
@@ -712,6 +758,21 @@ export default function EventsClient({
                 <option value="">Region: All</option>
                 {ALL_REGIONS.map(r => (
                   <option key={r} value={r}>{r}</option>
+                ))}
+              </select>
+
+              {/* Category — humanitarian / development / nexus / policy / research */}
+              <select
+                value={categoryFilter ?? ""}
+                onChange={e => setCategoryFilter(isCategoryKey(e.target.value) ? e.target.value : null)}
+                className={`text-sm h-9 px-3 rounded-lg bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#4ea8de] transition-colors border ${
+                  categoryFilter !== null ? "bg-blue-50/50" : "border-slate-200"
+                }`}
+                style={categoryFilter !== null ? { borderColor: getCategory(categoryFilter)?.color ?? "#4ea8de" } : undefined}
+              >
+                <option value="">Category: All</option>
+                {EVENT_CATEGORIES.map(cat => (
+                  <option key={cat.key} value={cat.key}>{cat.label}</option>
                 ))}
               </select>
 
@@ -937,6 +998,21 @@ export default function EventsClient({
                           SDG {primarySdg}
                         </span>
                       )}
+                      {(() => {
+                        const cat = getCategory(event.category);
+                        if (!cat) return null;
+                        const Icon = cat.icon;
+                        return (
+                          <span
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full text-white"
+                            style={{ backgroundColor: cat.color }}
+                            title={cat.description}
+                          >
+                            <Icon size={11} />
+                            {cat.label}
+                          </span>
+                        );
+                      })()}
                       {countdown && (
                         <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${countdown.urgent ? "bg-red-50 text-red-700 border border-red-100" : "bg-amber-50 text-amber-700 border border-amber-100"}`}>
                           {countdown.label}

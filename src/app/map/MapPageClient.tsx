@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation";
 import { MapPin, Tag, Calendar, Globe, AlertCircle } from "lucide-react";
 import type { ShowFilter, ColorMode, FlyToTarget } from "@/components/EventsMap";
 import { ShowFilterPills, ColorByPills } from "@/components/MapFilterPills";
+import { EVENT_CATEGORIES, type CategoryKey } from "@/lib/categories";
 import CitySearchInput, { type ResolvedCity } from "@/components/CitySearchInput";
 import UseMyLocationButton, { type GeolocationOutcome } from "@/components/UseMyLocationButton";
 
@@ -66,6 +67,7 @@ export default function MapPageClient() {
   const nearMeParam = searchParams.get("near") === "me";
 
   const [sdgs, setSdgs] = useState<Set<number>>(new Set());
+  const [categories, setCategories] = useState<Set<CategoryKey>>(new Set());
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
   const [showFilter, setShowFilter] = useState<ShowFilter>("all");
@@ -79,9 +81,10 @@ export default function MapPageClient() {
 
   const filters = useMemo(() => ({
     sdg: sdgs.size > 0 ? Array.from(sdgs).sort((a, b) => a - b) : undefined,
+    category: categories.size > 0 ? Array.from(categories) : undefined,
     dateFrom: dateFrom || null,
     dateTo: dateTo || null,
-  }), [sdgs, dateFrom, dateTo]);
+  }), [sdgs, categories, dateFrom, dateTo]);
 
   function toggleSdg(n: number) {
     setSdgs(prev => {
@@ -90,8 +93,16 @@ export default function MapPageClient() {
       return next;
     });
   }
+  function toggleCategory(key: CategoryKey) {
+    setCategories(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  }
   function clearFilters() {
     setSdgs(new Set());
+    setCategories(new Set());
     setDateFrom("");
     setDateTo("");
   }
@@ -100,7 +111,8 @@ export default function MapPageClient() {
     setNearestLoading(true);
     setGeoMessage(null);
     try {
-      const res = await fetch(`/api/map/nearest?lat=${lat}&lng=${lng}&limit=20`);
+      const catQs = categories.size > 0 ? `&category=${Array.from(categories).join(",")}` : "";
+      const res = await fetch(`/api/map/nearest?lat=${lat}&lng=${lng}&limit=20${catQs}`);
       if (!res.ok) {
         setNearest(null);
         return;
@@ -262,6 +274,35 @@ export default function MapPageClient() {
       {/* Sidebar */}
       <aside className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm space-y-5 lg:sticky lg:top-20 lg:self-start">
         <div>
+          <h2 className="text-sm font-bold text-[#0f2a4a] uppercase tracking-wider mb-3">
+            Category
+          </h2>
+          <div className="flex flex-wrap gap-1.5">
+            {EVENT_CATEGORIES.map(cat => {
+              const Icon = cat.icon;
+              const active = categories.has(cat.key);
+              return (
+                <button
+                  key={cat.key}
+                  type="button"
+                  onClick={() => toggleCategory(cat.key)}
+                  title={cat.description}
+                  className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-1 rounded border transition-colors ${
+                    active
+                      ? "text-white border-transparent"
+                      : "bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300"
+                  }`}
+                  style={active ? { backgroundColor: cat.color } : undefined}
+                >
+                  <Icon size={11} style={!active ? { color: cat.color } : undefined} />
+                  {cat.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div>
           <h2 className="text-sm font-bold text-[#0f2a4a] uppercase tracking-wider mb-3 inline-flex items-center gap-1.5">
             <Tag size={14} className="text-violet-600" /> SDGs
           </h2>
@@ -318,7 +359,7 @@ export default function MapPageClient() {
           <p className="text-[11px] text-gray-400 mt-0.5">Online events don&apos;t have a location and aren&apos;t shown on the map.</p>
         </div>
 
-        {(sdgs.size > 0 || dateFrom || dateTo) && (
+        {(sdgs.size > 0 || categories.size > 0 || dateFrom || dateTo) && (
           <button
             type="button"
             onClick={clearFilters}

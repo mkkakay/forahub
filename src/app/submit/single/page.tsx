@@ -14,6 +14,7 @@ import { parseApiResponse } from "@/lib/admin/fetchJson";
 import LocationCombobox from "../_components/LocationCombobox";
 import OrgCombobox from "../_components/OrgCombobox";
 import OrgChipInput from "../_components/OrgChipInput";
+import { EVENT_CATEGORIES, type CategoryKey } from "@/lib/categories";
 import { timezoneForCountry, languageForCountry } from "@/lib/location/countryTimezone";
 import type { LocationResult } from "@/lib/location/nominatim";
 
@@ -34,6 +35,7 @@ interface FormState {
   online_url: string;
   registration_url: string;
   primary_sdg: number | null;
+  category: string | null;
   banner_image_url: string;
   uploaded_flyer_url: string;
   cost_type: CostType;
@@ -155,6 +157,7 @@ function emptyForm(): FormState {
     online_url: "",
     registration_url: "",
     primary_sdg: null,
+    category: null,
     banner_image_url: "",
     uploaded_flyer_url: "",
     cost_type: "free",
@@ -446,6 +449,10 @@ export default function SubmitPage() {
   const [sdgSuggestion, setSdgSuggestion] = useState<{ sdg: number; label: string } | null>(null);
   const sdgTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Category suggestion — runs after the form has enough signal.
+  const [categorySuggestion, setCategorySuggestion] = useState<{ category: CategoryKey; confidence: number } | null>(null);
+  const categoryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Duplicate detection — soft warning modal before final submit.
   const [duplicates, setDuplicates] = useState<Array<{ id: string; title: string; start_date: string; organization: string | null; similarity_score: number; event_url: string }>>([]);
   const [duplicateModalOpen, setDuplicateModalOpen] = useState(false);
@@ -626,6 +633,46 @@ export default function SubmitPage() {
       if (sdgTimerRef.current) clearTimeout(sdgTimerRef.current);
     };
   }, [tab, form.title, form.description, form.primary_sdg]);
+
+  // ── Debounced category suggestion ───────────────────────────────────
+  // Runs once the form has a title + some signal. Skipped if the submitter
+  // already picked a category. Hits /api/events/categorize which runs the
+  // same keyword + SDG + (cheap) AI classifier as the bulk admin endpoint.
+  useEffect(() => {
+    if (form.category) {
+      setCategorySuggestion(null);
+      return;
+    }
+    if (form.title.trim().length < 6) {
+      setCategorySuggestion(null);
+      return;
+    }
+    if (categoryTimerRef.current) clearTimeout(categoryTimerRef.current);
+    categoryTimerRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch("/api/events/categorize", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: form.title,
+            organization: form.organization || null,
+            description: form.description || null,
+            primary_sdg: form.primary_sdg,
+          }),
+        });
+        if (!res.ok) return;
+        const json = (await res.json()) as { category: CategoryKey | null; confidence?: number };
+        if (json.category) {
+          setCategorySuggestion({ category: json.category, confidence: json.confidence ?? 0.7 });
+        }
+      } catch {
+        // non-essential — silent failure is fine
+      }
+    }, 1500);
+    return () => {
+      if (categoryTimerRef.current) clearTimeout(categoryTimerRef.current);
+    };
+  }, [form.title, form.organization, form.description, form.primary_sdg, form.category]);
 
   // ── Load past events for logged-in users ────────────────────────────
   useEffect(() => {
@@ -1000,6 +1047,7 @@ export default function SubmitPage() {
         online_url: form.online_url.trim() || null,
         registration_url: form.registration_url.trim() || null,
         primary_sdg: form.primary_sdg,
+        category: form.category,
         banner_image_url: form.banner_image_url.trim() || null,
         uploaded_flyer_url: form.uploaded_flyer_url.trim() || null,
         cost_type: form.cost_type,
@@ -1407,6 +1455,70 @@ export default function SubmitPage() {
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Category — humanitarian / development / nexus / policy / research */}
+          <div>
+            <label className={labelClass}>
+              Category (optional)
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {EVENT_CATEGORIES.map(cat => {
+                const Icon = cat.icon;
+                const active = form.category === cat.key;
+                return (
+                  <button
+                    type="button"
+                    key={cat.key}
+                    onClick={() => {
+                      setForm(f => ({ ...f, category: active ? null : cat.key }));
+                      setCategorySuggestion(null);
+                    }}
+                    className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${
+                      active
+                        ? "border-transparent text-white"
+                        : "border-slate-300 text-slate-700 bg-white hover:bg-slate-50"
+                    }`}
+                    style={active ? { backgroundColor: cat.color } : undefined}
+                    title={cat.description}
+                  >
+                    <Icon size={12} style={!active ? { color: cat.color } : undefined} />
+                    {cat.label}
+                  </button>
+                );
+              })}
+            </div>
+            {categorySuggestion && !form.category && (
+              <div className="mt-2 flex items-center gap-2 text-xs">
+                <span className="text-gray-600 inline-flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 text-purple-600" />
+                  AI suggests:{" "}
+                  <span className="font-semibold">
+                    {EVENT_CATEGORIES.find(c => c.key === categorySuggestion.category)?.label}
+                  </span>
+                  <span className="text-gray-400">
+                    ({Math.round(categorySuggestion.confidence * 100)}% confident)
+                  </span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setForm(f => ({ ...f, category: categorySuggestion.category }));
+                    setCategorySuggestion(null);
+                  }}
+                  className="bg-amber-100 hover:bg-amber-200 text-amber-900 font-semibold px-2 py-0.5 rounded text-[11px] border border-amber-300/60"
+                >
+                  Use
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCategorySuggestion(null)}
+                  className="text-gray-400 hover:text-gray-600 text-[11px]"
+                >
+                  Dismiss
+                </button>
+              </div>
+            )}
           </div>
 
           <div>

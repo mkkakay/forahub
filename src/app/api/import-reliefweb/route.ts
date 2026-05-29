@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { adminSupabase } from '@/lib/supabase/admin';
+import { classifyEventSync } from '@/lib/categories/classify';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -202,7 +203,25 @@ export async function POST(req: NextRequest) {
         language: 'en',
         source_id: 'reliefweb_api',
         source_url: RELIEFWEB_ENDPOINT,
+        category: null as string | null,
+        category_secondary: null as string[] | null,
+        category_confidence: null as number | null,
+        category_source: null as string | null,
+        category_classified_at: null as string | null,
       };
+      const classified = classifyEventSync({
+        title,
+        organization: organizationName,
+        description,
+        sdg_goals: sdgGoals,
+      });
+      if (classified) {
+        row.category = classified.category;
+        row.category_secondary = classified.secondary.length > 0 ? classified.secondary : null;
+        row.category_confidence = classified.confidence;
+        row.category_source = classified.source;
+        row.category_classified_at = new Date().toISOString();
+      }
 
       if (existing) {
         const { error } = await adminSupabase

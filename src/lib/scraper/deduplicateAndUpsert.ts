@@ -1,5 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { ExtractedEvent, UpsertResult } from './types';
+import { classifyEventSync } from '@/lib/categories/classify';
 
 // Using a permissive Supabase client type to avoid complex generic constraints
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -117,6 +118,15 @@ export async function deduplicateAndUpsert(
     const location = [event.location_venue, event.location_city, event.location_country]
       .filter(Boolean).join(', ') || null;
 
+    // Synchronous keyword + SDG classification at ingest. AI fills in the rest
+    // later via the bulk endpoint — we don't burn API tokens per scrape.
+    const classified = classifyEventSync({
+      title: event.title,
+      organization: event.organization,
+      description: event.description ?? null,
+      sdg_goals: event.sdg_goals,
+    });
+
     const row = {
       title: event.title,
       description: event.description ?? null,
@@ -149,6 +159,11 @@ export async function deduplicateAndUpsert(
       language: event.language,
       title_original: event.title_original ?? null,
       description_original: event.description_original ?? null,
+      category: classified?.category ?? null,
+      category_secondary: classified && classified.secondary.length > 0 ? classified.secondary : null,
+      category_confidence: classified?.confidence ?? null,
+      category_source: classified?.source ?? null,
+      category_classified_at: classified ? new Date().toISOString() : null,
     };
 
     if (dupe) {

@@ -12,6 +12,7 @@ import EventsBannerPanel from './EventsBannerPanel'
 import PendingSubmissionsPanel from './PendingSubmissionsPanel'
 import GeocodePanel from '@/components/admin/GeocodePanel'
 import PageBannersPanel from '@/components/admin/PageBannersPanel'
+import CategorizationPanel from '@/components/admin/CategorizationPanel'
 import DirectoryPanel from './DirectoryPanel'
 
 export const dynamic = 'force-dynamic'
@@ -262,6 +263,11 @@ export default async function AdminDashboard() {
       {/* Geocoding section */}
       <div className="mt-6">
         <GeocodePanel adminSecret={process.env.ADMIN_SECRET ?? ''} />
+      </div>
+
+      {/* Event Categorization section */}
+      <div className="mt-6">
+        <CategorizationPanel adminSecret={process.env.ADMIN_SECRET ?? ''} />
       </div>
 
       {/* Page Banners section */}

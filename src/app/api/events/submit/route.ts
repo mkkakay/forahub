@@ -3,6 +3,8 @@ import { waitUntil } from "@vercel/functions";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { slugify } from "@/lib/organizations";
 import { geocodeLocation } from "@/lib/geo/geocode";
+import { classifyEventSync } from "@/lib/categories/classify";
+import { isCategoryKey, type CategoryKey, type CategorySource } from "@/lib/categories";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -33,6 +35,9 @@ interface SubmitBody {
   co_organizers?: string | null;
   speakers?: string | null; // textarea — serialized to text[] on insert
   event_languages?: string[] | null;
+  // Category — submitter can confirm/override the suggestion from /api/events/categorize.
+  category?: string | null;
+  category_secondary?: string[] | null;
   source?: Source;
   // Anonymous-only:
   submitter_email?: string;
@@ -163,6 +168,38 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "registration_deadline is not a valid date" }, { status: 400 });
   }
 
+  // Category: submitter-set values lock the row so the AI bulk pass leaves
+  // them alone. Falls back to the keyword + SDG classifier when not provided.
+  let category: CategoryKey | null = null;
+  let categorySecondary: CategoryKey[] = [];
+  let categoryConfidence: number | null = null;
+  let categorySource: CategorySource | null = null;
+  let categoryLocked = false;
+  if (isCategoryKey(body.category)) {
+    category = body.category;
+    categorySecondary = Array.isArray(body.category_secondary)
+      ? (body.category_secondary.filter(isCategoryKey) as CategoryKey[])
+          .filter(k => k !== category)
+          .slice(0, 2)
+      : [];
+    categoryConfidence = 1.0;
+    categorySource = "submitter";
+    categoryLocked = true;
+  } else {
+    const auto = classifyEventSync({
+      title,
+      organization,
+      description,
+      sdg_goals: sdgGoals,
+    });
+    if (auto) {
+      category = auto.category;
+      categorySecondary = auto.secondary;
+      categoryConfidence = auto.confidence;
+      categorySource = auto.source;
+    }
+  }
+
   // ── Insert ────────────────────────────────────────────────────────
   const insertRow: Record<string, unknown> = {
     title,
@@ -201,6 +238,12 @@ export async function POST(req: NextRequest) {
     submitter_email: submitterEmail,
     submitted_at: new Date().toISOString(),
     is_featured: false,
+    category,
+    category_secondary: categorySecondary.length > 0 ? categorySecondary : null,
+    category_confidence: categoryConfidence,
+    category_source: categorySource,
+    category_locked: categoryLocked,
+    category_classified_at: category ? new Date().toISOString() : null,
   };
 
   const { data, error } = await adminSupabase

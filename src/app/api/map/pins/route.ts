@@ -17,6 +17,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { getContinentFromLatLng, CONTINENT_CENTROIDS, type Continent } from "@/lib/geo/continents";
+import { parseCategoryList } from "@/lib/categories";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -92,6 +93,7 @@ export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams;
   const bbox = parseBbox(sp.get("bbox"));
   const sdg = parseSdgList(sp.get("sdg"));
+  const category = parseCategoryList(sp.get("category"));
   const dateFrom = sp.get("date_from");
   const dateTo = sp.get("date_to");
   const teaser = sp.get("teaser") === "1";
@@ -118,6 +120,15 @@ export async function GET(req: NextRequest) {
   if (dateTo) query = query.lte("start_date", dateTo);
   if (sdg) query = query.overlaps("sdg_goals", sdg);
   if (featuredOnly) query = query.eq("is_featured", true);
+  if (category) {
+    // Primary OR secondary match. Postgrest .or() needs a single string with
+    // comma-separated conditions. `cs` is array-contains.
+    const orParts = [
+      `category.in.(${category.join(",")})`,
+      ...category.map(c => `category_secondary.cs.{${c}}`),
+    ];
+    query = query.or(orParts.join(","));
+  }
 
   if (bbox && !teaser) {
     query = query.gte("latitude", bbox.s).lte("latitude", bbox.n);
