@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
-  MapPin, Calendar, Building2, Tag, Filter, X, Search, Clock, CalendarDays, List, Sparkles, Star,
+  MapPin, Calendar, Building2, Tag, Filter, X, Search, Clock, CalendarDays, List, Sparkles, Star, Check,
   Heart, Wheat, HeartPulse, GraduationCap, Users, Droplets, Zap, TrendingUp, Settings, Scale,
   Recycle, CloudSun, Fish, Trees, Shield, Handshake, type LucideIcon,
 } from "lucide-react";
@@ -121,7 +121,7 @@ function getCountdown(event: EventRow, today: string): { label: string; urgent: 
 
 const ALL_REGIONS = ["Africa", "Americas", "Asia-Pacific", "Europe", "Middle East", "Online", "Other"];
 
-type QuickFilter = "free" | "online" | "featured";
+type QuickFilter = "free" | "online";
 
 export default function EventsClient({
   events,
@@ -227,7 +227,6 @@ export default function EventsClient({
       if (regionFilter !== null && deriveRegion(e.location) !== regionFilter) return false;
       if (quickFilters.has("free") && e.cost_type !== "free") return false;
       if (quickFilters.has("online") && e.format !== "virtual") return false;
-      if (quickFilters.has("featured") && !e.is_featured) return false;
       return true;
     });
   }, [baseEvents, search, sdgFilter, formatFilter, typeFilter, regionFilter, quickFilters]);
@@ -301,7 +300,6 @@ export default function EventsClient({
   const QUICK_FILTER_OPTIONS: { id: QuickFilter; label: string }[] = [
     { id: "free", label: "Free" },
     { id: "online", label: "Online" },
-    { id: "featured", label: "Featured" },
   ];
 
   const TIME_PILL_LABELS: Record<string, string> = {
@@ -585,189 +583,202 @@ export default function EventsClient({
 
   return (
     <div>
-      {/* Filters bar */}
+      {/* Filter zone — cohesive 3-row panel.
+          Row 1: primary actions (search + time scope + view mode)
+          Row 2: content filters (4 dropdowns + 2 toggles + clear-all)
+          Row 3: jump-to-bucket nav + result count */}
       <div className="bg-white border-b border-gray-200 sticky top-16 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap gap-3 items-center">
-          <Filter size={16} className="text-gray-400 shrink-0" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="bg-slate-50 rounded-xl p-3 md:p-4 space-y-3">
 
-          {/* Time view toggle — list mode only (calendar navigates by month) */}
-          {viewMode === "list" && (
-            <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
-              {TIME_VIEW_OPTIONS.map(opt => (
-                <button
-                  key={opt.value}
-                  onClick={() => setTimeView(opt.value)}
-                  className={`text-sm font-medium px-3 py-1 rounded-md transition-colors ${
-                    timeView === opt.value
-                      ? "bg-white text-[#0f2a4a] shadow-sm"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
+            {/* ── Row 1 — Primary actions ──────────────────────────────── */}
+            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3">
+              {/* Search */}
+              <div className="flex-1 min-w-0 flex items-center bg-white border border-slate-200 rounded-lg h-11 px-3 gap-2 focus-within:ring-2 focus-within:ring-[#4ea8de] focus-within:border-[#4ea8de] transition-colors">
+                <Search size={16} className="text-slate-400 shrink-0" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  placeholder="Search events, organizations, topics…"
+                  className="flex-1 min-w-0 text-base md:text-sm text-slate-800 placeholder-slate-400 bg-transparent focus:outline-none"
+                />
+                {search && (
+                  <button onClick={() => setSearch("")} className="text-slate-400 hover:text-slate-700 transition-colors shrink-0" aria-label="Clear search">
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                {/* Time scope toggle — list mode only */}
+                {viewMode === "list" && (
+                  <div className="flex items-center bg-white border border-slate-200 rounded-lg h-11 p-1">
+                    {TIME_VIEW_OPTIONS.map(opt => (
+                      <button
+                        key={opt.value}
+                        onClick={() => setTimeView(opt.value)}
+                        aria-pressed={timeView === opt.value}
+                        className={`text-sm font-medium px-3.5 h-full rounded-md transition-colors ${
+                          timeView === opt.value
+                            ? "bg-[#0f2a4a] text-white"
+                            : "text-slate-600 hover:text-slate-900"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* View mode: List / Calendar */}
+                <div className="flex items-center bg-white border border-slate-200 rounded-lg h-11 p-1">
+                  <button
+                    onClick={() => setViewMode("list")}
+                    aria-pressed={viewMode === "list"}
+                    className={`flex items-center gap-1.5 text-sm font-medium px-3 h-full rounded-md transition-colors ${
+                      viewMode === "list" ? "bg-[#0f2a4a] text-white" : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    <List size={14} /> List
+                  </button>
+                  <button
+                    onClick={() => setViewMode("calendar")}
+                    aria-pressed={viewMode === "calendar"}
+                    className={`flex items-center gap-1.5 text-sm font-medium px-3 h-full rounded-md transition-colors ${
+                      viewMode === "calendar" ? "bg-[#0f2a4a] text-white" : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    <CalendarDays size={14} /> Calendar
+                  </button>
+                </div>
+              </div>
             </div>
-          )}
 
-          {/* View mode toggle: List / Calendar */}
-          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
-            <button
-              onClick={() => setViewMode("list")}
-              aria-pressed={viewMode === "list"}
-              className={`flex items-center gap-1.5 text-sm font-medium px-3 py-1 rounded-md transition-colors ${
-                viewMode === "list"
-                  ? "bg-white text-[#0f2a4a] shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              <List size={14} /> List
-            </button>
-            <button
-              onClick={() => setViewMode("calendar")}
-              aria-pressed={viewMode === "calendar"}
-              className={`flex items-center gap-1.5 text-sm font-medium px-3 py-1 rounded-md transition-colors ${
-                viewMode === "calendar"
-                  ? "bg-white text-[#0f2a4a] shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              <CalendarDays size={14} /> Calendar
-            </button>
+            {/* ── Row 2 — Content filters ──────────────────────────────── */}
+            <div className="flex flex-wrap items-center gap-2">
+              <Filter size={14} className="text-slate-400 shrink-0 hidden md:block" />
+
+              {/* SDG */}
+              <select
+                value={sdgFilter ?? ""}
+                onChange={e => setSdgFilter(e.target.value ? Number(e.target.value) : null)}
+                className={`text-sm h-9 px-3 rounded-lg bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#4ea8de] transition-colors border ${
+                  sdgFilter !== null ? "border-[#4ea8de] bg-blue-50/50" : "border-slate-200"
+                }`}
+              >
+                <option value="">SDG: All</option>
+                {Array.from({ length: 17 }, (_, i) => i + 1).map(n => (
+                  <option key={n} value={n}>SDG {n} — {SDG_META[n].label}</option>
+                ))}
+              </select>
+
+              {/* Format */}
+              <select
+                value={formatFilter ?? ""}
+                onChange={e => setFormatFilter(e.target.value || null)}
+                className={`text-sm h-9 px-3 rounded-lg bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#4ea8de] transition-colors border ${
+                  formatFilter !== null ? "border-[#4ea8de] bg-blue-50/50" : "border-slate-200"
+                }`}
+              >
+                <option value="">Format: All</option>
+                {Object.entries(FORMAT_LABELS).map(([v, l]) => (
+                  <option key={v} value={v}>{l}</option>
+                ))}
+              </select>
+
+              {/* Type */}
+              <select
+                value={typeFilter ?? ""}
+                onChange={e => setTypeFilter(e.target.value || null)}
+                className={`text-sm h-9 px-3 rounded-lg bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#4ea8de] transition-colors border ${
+                  typeFilter !== null ? "border-[#4ea8de] bg-blue-50/50" : "border-slate-200"
+                }`}
+              >
+                <option value="">Type: All</option>
+                {Object.entries(EVENT_TYPE_LABELS).map(([v, l]) => (
+                  <option key={v} value={v}>{l}</option>
+                ))}
+              </select>
+
+              {/* Region */}
+              <select
+                value={regionFilter ?? ""}
+                onChange={e => setRegionFilter(e.target.value || null)}
+                className={`text-sm h-9 px-3 rounded-lg bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#4ea8de] transition-colors border ${
+                  regionFilter !== null ? "border-[#4ea8de] bg-blue-50/50" : "border-slate-200"
+                }`}
+              >
+                <option value="">Region: All</option>
+                {ALL_REGIONS.map(r => (
+                  <option key={r} value={r}>{r}</option>
+                ))}
+              </select>
+
+              {/* Toggle checkboxes — Free / Online */}
+              {QUICK_FILTER_OPTIONS.map(q => {
+                const active = quickFilters.has(q.id);
+                return (
+                  <button
+                    key={q.id}
+                    type="button"
+                    onClick={() => toggleQuick(q.id)}
+                    aria-pressed={active}
+                    className={`inline-flex items-center gap-1.5 text-sm font-medium h-9 px-3 rounded-lg border transition-colors ${
+                      active
+                        ? "bg-[#4ea8de]/10 border-[#4ea8de] text-[#0f2a4a]"
+                        : "bg-white border-slate-200 text-slate-700 hover:border-slate-300"
+                    }`}
+                  >
+                    <span className={`inline-flex items-center justify-center w-4 h-4 rounded border ${
+                      active ? "bg-[#4ea8de] border-[#4ea8de]" : "border-slate-300 bg-white"
+                    }`}>
+                      {active && <Check size={11} className="text-white" strokeWidth={3} />}
+                    </span>
+                    {q.label}
+                  </button>
+                );
+              })}
+
+              {hasFilters && (
+                <button
+                  onClick={clearAll}
+                  className="ml-auto inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                >
+                  <X size={14} /> Clear all filters
+                </button>
+              )}
+            </div>
+
+            {/* ── Row 3 — Jump-to-bucket nav + count ───────────────────── */}
+            <div className="flex flex-wrap items-center gap-2">
+              {showSectionedView && buckets.some(b => b.events.length > 0) ? (
+                <>
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide mr-1">Jump to:</span>
+                  <div className="flex items-center gap-1.5 flex-wrap md:flex-nowrap overflow-x-auto md:overflow-visible">
+                    {buckets
+                      .filter(b => b.events.length > 0)
+                      .map(b => (
+                        <button
+                          key={b.id}
+                          type="button"
+                          onClick={() => jumpToBucket(b.id)}
+                          className="inline-flex items-center gap-1 text-xs font-medium h-8 px-3 rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 transition-colors shrink-0"
+                        >
+                          <Calendar className="w-3 h-3" />
+                          {TIME_PILL_LABELS[b.id] ?? b.label}
+                        </button>
+                      ))}
+                  </div>
+                </>
+              ) : (
+                <span />
+              )}
+              <span className="text-sm text-slate-500 ml-auto">{countLabel}</span>
+            </div>
           </div>
-
-          {/* Search */}
-          <div className="flex items-center border border-gray-200 rounded-lg px-2.5 py-1.5 gap-1.5 focus-within:ring-2 focus-within:ring-[#4ea8de]">
-            <Search size={14} className="text-gray-400 shrink-0" />
-            <input
-              type="text"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search events…"
-              className="text-sm text-gray-700 focus:outline-none w-44"
-            />
-            {search && (
-              <button onClick={() => setSearch("")} className="text-gray-400 hover:text-gray-600 transition-colors">
-                <X size={13} />
-              </button>
-            )}
-          </div>
-
-          {/* SDG */}
-          <select
-            value={sdgFilter ?? ""}
-            onChange={e => setSdgFilter(e.target.value ? Number(e.target.value) : null)}
-            className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
-          >
-            <option value="">All SDGs</option>
-            {Array.from({ length: 17 }, (_, i) => i + 1).map(n => (
-              <option key={n} value={n}>SDG {n} — {SDG_META[n].label}</option>
-            ))}
-          </select>
-
-          {/* Format */}
-          <select
-            value={formatFilter ?? ""}
-            onChange={e => setFormatFilter(e.target.value || null)}
-            className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
-          >
-            <option value="">All Formats</option>
-            {Object.entries(FORMAT_LABELS).map(([v, l]) => (
-              <option key={v} value={v}>{l}</option>
-            ))}
-          </select>
-
-          {/* Type */}
-          <select
-            value={typeFilter ?? ""}
-            onChange={e => setTypeFilter(e.target.value || null)}
-            className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
-          >
-            <option value="">All Types</option>
-            {Object.entries(EVENT_TYPE_LABELS).map(([v, l]) => (
-              <option key={v} value={v}>{l}</option>
-            ))}
-          </select>
-
-          {/* Region */}
-          <select
-            value={regionFilter ?? ""}
-            onChange={e => setRegionFilter(e.target.value || null)}
-            className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
-          >
-            <option value="">All Regions</option>
-            {ALL_REGIONS.map(r => (
-              <option key={r} value={r}>{r}</option>
-            ))}
-          </select>
-
-          {hasFilters && (
-            <button
-              onClick={clearAll}
-              className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors ml-auto"
-            >
-              <X size={14} /> Clear all
-            </button>
-          )}
-
-          <span className="text-sm text-gray-400 ml-auto">{countLabel}</span>
         </div>
       </div>
-
-      {/* Quick filter pills + time navigation */}
-      {viewMode === "list" && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Content filter pills (toggle) */}
-            {QUICK_FILTER_OPTIONS.map(q => {
-              const active = quickFilters.has(q.id);
-              return (
-                <button
-                  key={q.id}
-                  type="button"
-                  onClick={() => toggleQuick(q.id)}
-                  className={`text-sm font-semibold px-3.5 py-1.5 rounded-full border transition-colors ${
-                    active
-                      ? "bg-blue-100 text-blue-700 border-blue-300"
-                      : "bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300"
-                  }`}
-                >
-                  {q.label}
-                </button>
-              );
-            })}
-            {quickFilters.size > 0 && (
-              <button
-                type="button"
-                onClick={() => setQuickFilters(new Set())}
-                className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 px-2 py-1.5"
-              >
-                <X size={12} /> Clear quick filters
-              </button>
-            )}
-
-            {/* Time navigation pills (scroll, no filtering) — only when sections exist */}
-            {showSectionedView && buckets.some(b => b.events.length > 0) && (
-              <>
-                <span className="hidden sm:inline-block self-stretch w-px bg-slate-200 mx-2" aria-hidden="true" />
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 mr-1">Jump to</span>
-                {buckets
-                  .filter(b => b.events.length > 0)
-                  .map(b => (
-                    <button
-                      key={b.id}
-                      type="button"
-                      onClick={() => jumpToBucket(b.id)}
-                      className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-full border border-slate-200 bg-slate-50 text-slate-700 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 transition-colors"
-                    >
-                      <Calendar className="w-3.5 h-3.5" />
-                      {TIME_PILL_LABELS[b.id] ?? b.label}
-                    </button>
-                  ))}
-              </>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Featured strip (Upcoming only) */}
       {showFeaturedStrip && (
