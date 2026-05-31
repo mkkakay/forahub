@@ -14,6 +14,7 @@ import { backfillBannersAsync } from "@/lib/events/fetchEventBanner";
 import { getResolvedFeaturedCalendars } from "@/lib/organizations/getResolvedOrg";
 import { getActiveRegions } from "@/lib/regions/getActiveRegions";
 import { adminSupabase } from "@/lib/supabase/admin";
+import { getActiveTrustLogos } from "@/lib/trustLogos";
 
 // Search queries aligned to each slide's content — specific enough for accurate Pexels results
 const SLIDE_QUERIES = [
@@ -124,6 +125,7 @@ export default async function Home() {
 
   const featuredCalendars = await getResolvedFeaturedCalendars().catch(() => []);
   const regions = await getActiveRegions().catch(() => []);
+  const trustLogos = await getActiveTrustLogos().catch(() => []);
 
   const { count: mapEventsCount } = await adminSupabase
     .from("events")
@@ -162,7 +164,7 @@ export default async function Home() {
     <div className="min-h-screen">
       <Navbar />
       <HeroSection slideImages={slideImages} heroImages={heroImages} />
-      <TrustStrip />
+      <TrustStrip logos={trustLogos.map(l => ({ name: l.name, image_url: l.image_url }))} />
       <LiveActivityTicker />
       <HomeClient
         events={events}

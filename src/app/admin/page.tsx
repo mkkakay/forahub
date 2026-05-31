@@ -13,6 +13,7 @@ import PendingSubmissionsPanel from './PendingSubmissionsPanel'
 import GeocodePanel from '@/components/admin/GeocodePanel'
 import PageBannersPanel from '@/components/admin/PageBannersPanel'
 import CategorizationPanel from '@/components/admin/CategorizationPanel'
+import TrustLogosPanel from '@/components/admin/TrustLogosPanel'
 import DirectoryPanel from './DirectoryPanel'
 
 export const dynamic = 'force-dynamic'
@@ -273,6 +274,11 @@ export default async function AdminDashboard() {
       {/* Page Banners section */}
       <div className="mt-6">
         <PageBannersPanel adminSecret={process.env.ADMIN_SECRET ?? ''} />
+      </div>
+
+      {/* Trust Strip Logos section */}
+      <div className="mt-6">
+        <TrustLogosPanel adminSecret={process.env.ADMIN_SECRET ?? ''} />
       </div>
 
       {/* Pending Submissions from /submit */}

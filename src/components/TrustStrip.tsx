@@ -7,8 +7,10 @@ const BRANDFETCH_KEY = "NJ56JESB-y_Yq9XLTApT75PLDyFi9Qf7-pz31r4tAVRcF1jD_r6AES98
 const bf = (domain: string) =>
   `https://cdn.brandfetch.io/${domain}/w/200/h/200/logo?c=${BRANDFETCH_KEY}`;
 
-const ORGS: { name: string; logo: string }[] = [
-  // Confirmed Wikipedia SVGs — served locally
+// Fallback list — used only when the trust_logos table returns zero active
+// rows (e.g. fresh install). Once the admin has added entries, the server
+// passes them via the `logos` prop and this list is ignored.
+const DEFAULT_ORGS: { name: string; logo: string }[] = [
   { name: "WHO",               logo: "/images/logos/who.svg" },
   { name: "UNICEF",            logo: "/images/logos/unicef.svg" },
   { name: "UNDP",              logo: "/images/logos/undp.svg" },
@@ -30,7 +32,6 @@ const ORGS: { name: string; logo: string }[] = [
   { name: "ECOWAS",            logo: "/images/logos/ecowas.svg" },
   { name: "ASEAN",             logo: "/images/logos/asean.svg" },
   { name: "NUS",               logo: "/images/logos/nus.svg" },
-  // Brandfetch CDN
   { name: "Gates Foundation",  logo: bf("gatesfoundation.org") },
   { name: "CDC",               logo: bf("cdc.gov") },
   { name: "NIH",               logo: bf("nih.gov") },
@@ -67,33 +68,41 @@ const ORGS: { name: string; logo: string }[] = [
   { name: "IDB",               logo: bf("iadb.org") },
 ];
 
-// Duplicate exactly twice: -50% CSS keyframe scrolls one full set then loops seamlessly
-const looped = [...ORGS, ...ORGS];
+interface TrustStripProps {
+  /** Active logo rows from the trust_logos table. Empty array = use defaults. */
+  logos?: { name: string; image_url: string }[];
+}
 
-function LogoItem({ name, logo }: { name: string; logo: string }) {
-  const [imgFailed, setImgFailed] = useState(false);
+function LogoItem({ name, src }: { name: string; src: string }) {
+  const [hidden, setHidden] = useState(false);
+  // Per CLAUDE.md: on the public strip a broken image is hidden, never shown
+  // as text. The container collapses with the image so the marquee rhythm
+  // stays even when a logo fails.
+  if (hidden) return null;
   return (
     <div className="flex items-center justify-center mx-6 flex-shrink-0 h-8 w-28">
-      {imgFailed ? (
-        <span className="text-xs font-semibold text-gray-500 text-center leading-tight">
-          {name}
-        </span>
-      ) : (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={logo}
-          alt={name}
-          title={name}
-          className="max-h-7 max-w-24 object-contain"
-          crossOrigin="anonymous"
-          onError={() => setImgFailed(true)}
-        />
-      )}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={name}
+        title={name}
+        className="max-h-7 max-w-24 object-contain"
+        crossOrigin="anonymous"
+        onError={() => setHidden(true)}
+      />
     </div>
   );
 }
 
-export default function TrustStrip() {
+export default function TrustStrip({ logos }: TrustStripProps) {
+  const source =
+    logos && logos.length > 0
+      ? logos.map(l => ({ name: l.name, logo: l.image_url }))
+      : DEFAULT_ORGS;
+
+  // Duplicate exactly twice: -50% CSS keyframe scrolls one full set then loops seamlessly.
+  const looped = [...source, ...source];
+
   return (
     <div className="w-full bg-white py-6 px-4">
       <p className="text-xs text-gray-400 uppercase tracking-widest text-center mb-4">
@@ -102,7 +111,7 @@ export default function TrustStrip() {
       <div className="overflow-hidden">
         <div className="logos-track pause-on-hover flex items-center">
           {looped.map((org, i) => (
-            <LogoItem key={`${org.name}-${i}`} name={org.name} logo={org.logo} />
+            <LogoItem key={`${org.name}-${i}`} name={org.name} src={org.logo} />
           ))}
         </div>
       </div>
