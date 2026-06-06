@@ -94,14 +94,18 @@ function LogoItem({ name, src }: { name: string; src: string }) {
   );
 }
 
+// Below this count the strip renders statically (no duplication, no scroll).
+// At/above it, the marquee duplicates the list so the -50% keyframe loops seamlessly.
+const MARQUEE_MIN = 6;
+
 export default function TrustStrip({ logos }: TrustStripProps) {
   const source =
     logos && logos.length > 0
       ? logos.map(l => ({ name: l.name, logo: l.image_url }))
       : DEFAULT_ORGS;
 
-  // Duplicate exactly twice: -50% CSS keyframe scrolls one full set then loops seamlessly.
-  const looped = [...source, ...source];
+  const shouldScroll = source.length >= MARQUEE_MIN;
+  const items = shouldScroll ? [...source, ...source] : source;
 
   return (
     <div className="w-full bg-white py-6 px-4">
@@ -109,8 +113,14 @@ export default function TrustStrip({ logos }: TrustStripProps) {
         Tracking events from 1,000+ organizations worldwide
       </p>
       <div className="overflow-hidden">
-        <div className="logos-track pause-on-hover flex items-center">
-          {looped.map((org, i) => (
+        <div
+          className={
+            shouldScroll
+              ? "logos-track pause-on-hover flex items-center"
+              : "flex items-center justify-center flex-wrap"
+          }
+        >
+          {items.map((org, i) => (
             <LogoItem key={`${org.name}-${i}`} name={org.name} src={org.logo} />
           ))}
         </div>
