@@ -106,7 +106,7 @@ html {
   100% { transform: translate3d(-50%, 0, 0); }
 }
 .logos-track {
-  animation: logos-scroll 40s linear infinite;
+  animation: logos-scroll 25s linear infinite;
   display: flex;
   white-space: nowrap;
   will-change: transform;
