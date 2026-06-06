@@ -80,13 +80,13 @@ function LogoItem({ name, src }: { name: string; src: string }) {
   // stays even when a logo fails.
   if (hidden) return null;
   return (
-    <div className="flex items-center justify-center flex-shrink-0 h-16 w-56">
+    <div className="flex items-center justify-center flex-shrink-0 h-16 w-56 rounded-lg bg-white px-4 py-2">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}
         alt={name}
         title={name}
-        className="max-h-14 max-w-52 w-auto object-contain"
+        className="max-h-14 max-w-full w-auto object-contain"
         crossOrigin="anonymous"
         onError={() => setHidden(true)}
       />
