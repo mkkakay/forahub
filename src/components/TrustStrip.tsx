@@ -108,8 +108,8 @@ export default function TrustStrip({ logos }: TrustStripProps) {
   const items = shouldScroll ? [...source, ...source] : source;
 
   return (
-    <div className="w-full bg-white py-6 px-4">
-      <p className="text-xs text-gray-400 uppercase tracking-widest text-center mb-4">
+    <div className="w-full bg-white dark:bg-[#1e293b] py-6 px-4">
+      <p className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-widest text-center mb-4">
         Tracking events from 1,000+ organizations worldwide
       </p>
       <div className="overflow-hidden">
