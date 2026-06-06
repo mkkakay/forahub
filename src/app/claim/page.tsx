@@ -195,7 +195,10 @@ export default function ClaimPage() {
               Didn&apos;t receive it? Check spam, or try again in 5 minutes.
             </p>
 
-            {emailSent === false && devUrl && (
+            {/* Belt-and-suspenders: the server already withholds dev_verify_url
+                in production, but also gate the UI on NODE_ENV so a stray
+                response can't surface the raw token in a prod build. */}
+            {process.env.NODE_ENV !== "production" && emailSent === false && devUrl && (
               <div className="mt-5 text-left bg-amber-50 border border-amber-200 rounded-xl p-3">
                 <p className="text-xs text-amber-900 font-semibold mb-1">
                   Dev mode: email service is not configured

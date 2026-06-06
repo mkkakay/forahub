@@ -167,7 +167,33 @@ export async function POST(req: NextRequest) {
     verifyUrl,
   });
 
-  const devFallback = !emailResult.sent ? { dev_verify_url: verifyUrl } : {};
+  // Production guard: never leak the raw verification URL to the client. The
+  // dev-mode fallback link only ships when the server is running in a
+  // non-production NODE_ENV — local `npm run dev`, preview deploys with
+  // VERCEL_ENV=preview behave like production, so we explicitly check both.
+  const isProd =
+    process.env.NODE_ENV === "production" || process.env.VERCEL_ENV === "production";
+
+  if (!emailResult.sent && isProd) {
+    // Email failed in production — return a clean failure the client can
+    // render as "couldn't send, please try again". The org_claims row is
+    // already inserted so the user can re-request and we'll re-use the
+    // same token until it expires.
+    return NextResponse.json(
+      {
+        success: false,
+        email_sent: false,
+        error: "email_send_failed",
+        message:
+          "We couldn't send the verification email. Please try again in a few minutes, or contact hello@forahub.org if it keeps failing.",
+        reason: emailResult.reason,
+      },
+      { status: 502 },
+    );
+  }
+
+  const devFallback =
+    !emailResult.sent && !isProd ? { dev_verify_url: verifyUrl } : {};
   return NextResponse.json({
     success: true,
     message: "Check your email",
