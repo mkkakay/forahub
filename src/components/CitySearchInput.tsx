@@ -97,6 +97,7 @@ export default function CitySearchInput({
       const res = await fetch(`/api/geo/resolve?q=${encodeURIComponent(s.display_name)}`);
       if (res.ok) {
         const r = (await res.json()) as { lat: number; lng: number; country_code: string | null; provider: "locationiq" | "nominatim" };
+        setResolving(false);
         onResolved({
           query: s.display_name,
           display_name: s.display_name,
@@ -110,6 +111,7 @@ export default function CitySearchInput({
     } catch {
       // ignore
     }
+    setResolving(false);
     // Fallback: use the Nominatim suggestion's coordinates directly.
     onResolved({
       query: s.display_name,
@@ -119,7 +121,6 @@ export default function CitySearchInput({
       country_code: s.country_code,
       provider: "nominatim",
     });
-    setResolving(false);
   }
 
   return (
@@ -137,8 +138,10 @@ export default function CitySearchInput({
       {(loading || resolving) && (
         <Loader2 size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 animate-spin" />
       )}
+      {/* z-[1100] beats Leaflet's popupPane (700) and zoomControl (~1000)
+          so the dropdown is always clickable above the map below. */}
       {open && results.length > 0 && (
-        <ul className="absolute z-30 mt-1 w-full bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-[#334155] rounded-xl shadow-lg overflow-hidden max-h-64 overflow-y-auto">
+        <ul className="absolute z-[1100] mt-1 w-full bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-[#334155] rounded-xl shadow-lg overflow-hidden max-h-64 overflow-y-auto">
           {results.map((s, i) => (
             <li key={i}>
               <button
