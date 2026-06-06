@@ -106,7 +106,7 @@ html {
   100% { transform: translate3d(-50%, 0, 0); }
 }
 .logos-track {
-  animation: logos-scroll 25s linear infinite;
+  animation: logos-scroll 15s linear infinite;
   display: flex;
   white-space: nowrap;
   will-change: transform;
@@ -115,6 +115,16 @@ html {
 @media (hover: hover) {
   .pause-on-hover:hover {
     animation-play-state: paused;
+  }
+}
+/* Some browsers (Safari, Chromium Energy Saver) silently halt CSS animations
+   when the OS has Reduce Motion enabled. The trust strip is a decorative,
+   informational scroll — content awareness depends on it actually scrolling.
+   Keep motion alive (slowed) rather than letting users miss logos. */
+@media (prefers-reduced-motion: reduce) {
+  .logos-track {
+    animation: logos-scroll 45s linear infinite !important;
+    animation-play-state: running !important;
   }
 }
 
