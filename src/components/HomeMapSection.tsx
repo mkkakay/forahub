@@ -7,6 +7,7 @@ import { ArrowRight, Globe } from "lucide-react";
 import type { MapPin, ShowFilter, FlyToTarget } from "./EventsMap";
 import { ShowFilterPills } from "./MapFilterPills";
 import UseMyLocationButton, { type GeolocationOutcome } from "./UseMyLocationButton";
+import CitySearchInput, { type ResolvedCity } from "./CitySearchInput";
 
 // Lazy-loaded so leaflet's window-dependent module only runs in the browser.
 const EventsMap = dynamic(() => import("./EventsMap"), {
@@ -68,9 +69,9 @@ export default function HomeMapSection({ totalWithCoords }: { totalWithCoords: n
 
   async function handleNearMe(outcome: GeolocationOutcome) {
     if (!outcome.ok) {
-      if (outcome.reason === "denied") setGeoError("Location access denied. Try the full map to search by city.");
-      else if (outcome.reason === "timeout") setGeoError("Couldn't detect location. Try the full map to search by city.");
-      else if (outcome.reason === "unavailable") setGeoError("Couldn't detect location. Try the full map.");
+      if (outcome.reason === "denied") setGeoError("Location access denied. Try searching for a city instead.");
+      else if (outcome.reason === "timeout") setGeoError("Couldn't detect location. Try searching for a city instead.");
+      else if (outcome.reason === "unavailable") setGeoError("Couldn't detect location. Try searching for a city.");
       return;
     }
     setGeoError(null);
@@ -83,6 +84,23 @@ export default function HomeMapSection({ totalWithCoords }: { totalWithCoords: n
       }
     } catch {
       // ignore — the count is a nicety, not a blocker
+    }
+  }
+
+  // City search — typed city resolved through /api/geo/resolve, then map flies
+  // to it and the same /api/map/nearest call backs the "events near" count so
+  // the UX matches "Find events near me" once resolved.
+  async function handleCityPicked(city: ResolvedCity) {
+    setGeoError(null);
+    setFlyTarget({ lat: city.lat, lng: city.lng, zoom: 7, nonce: Date.now() });
+    try {
+      const res = await fetch(`/api/map/nearest?lat=${city.lat}&lng=${city.lng}&limit=20`);
+      if (res.ok) {
+        const data = (await res.json()) as { events: unknown[] };
+        setNearMeCount(data.events.length);
+      }
+    } catch {
+      // ignore
     }
   }
 
@@ -115,6 +133,13 @@ export default function HomeMapSection({ totalWithCoords }: { totalWithCoords: n
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <ShowFilterPills value={showFilter} onChange={setShowFilter} />
           <UseMyLocationButton onLocate={handleNearMe} label="Find events near me" compact />
+          {/* City search — typed city flies the map there, independent of geolocation. */}
+          <div className="w-full sm:w-64">
+            <CitySearchInput
+              onResolved={handleCityPicked}
+              placeholder="Search a city (e.g. Geneva)…"
+            />
+          </div>
         </div>
         {geoError && (
           <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-3">{geoError}</p>
