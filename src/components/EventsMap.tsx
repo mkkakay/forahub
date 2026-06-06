@@ -26,6 +26,7 @@ export interface MapEventDetail {
   start_date: string;
   end_date: string | null;
   location: string | null;
+  location_inferred?: boolean;
   banner_image_url: string | null;
   banner_display_mode: "contain" | "cover" | null;
   sdg: number | null;
@@ -56,13 +57,26 @@ export interface EventsMapProps {
   onPinsLoaded?: (pins: MapPin[], total: number) => void;
 }
 
-// CARTO Basemap Positron family — labelled variant for light, Dark Matter
-// labelled for dark. Same provider/attribution/pyramid → instant theme swap.
-const TILE_URL_LIGHT = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
-const TILE_URL_DARK = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
-const TILE_SUBDOMAINS = ["a", "b", "c", "d"];
-const ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer">CARTO</a>';
+// Primary basemap: Stadia Maps "Alidade Smooth" (English labels, blue water,
+// legible typography). Falls back to CARTO Positron when no Stadia key is
+// present so a missing env var never blanks the map. Stadia honours the API
+// key via ?api_key=… on the raster endpoint.
+const STADIA_KEY =
+  typeof process !== "undefined" ? process.env.NEXT_PUBLIC_STADIA_API_KEY ?? "" : "";
+const STADIA_ENABLED = STADIA_KEY.length > 0;
+const STADIA_LIGHT = `https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png?api_key=${STADIA_KEY}`;
+const STADIA_DARK = `https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png?api_key=${STADIA_KEY}`;
+const CARTO_LIGHT = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
+const CARTO_DARK = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+const CARTO_SUBDOMAINS = ["a", "b", "c", "d"];
+// Stadia ToS requires the Stadia + OpenMapTiles + OSM attribution together.
+const STADIA_ATTRIBUTION =
+  '&copy; <a href="https://www.stadiamaps.com/" target="_blank" rel="noopener noreferrer">Stadia Maps</a>' +
+  ' &copy; <a href="https://openmaptiles.org/" target="_blank" rel="noopener noreferrer">OpenMapTiles</a>' +
+  ' &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors';
+const CARTO_ATTRIBUTION =
+  '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors' +
+  ' &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer">CARTO</a>';
 const WORLD_BOUNDS: L.LatLngBoundsLiteral = [[-90, -180], [90, 180]];
 // ForaHub palette anchors for cluster bubbles + zoom controls.
 const BRAND_ACCENT = "#4ea8de";
@@ -149,7 +163,7 @@ function buildPopupHtml(detail: MapEventDetail): string {
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
           ${fmtDate(detail.start_date)}${detail.end_date ? ` &ndash; ${fmtDate(detail.end_date)}` : ""}
         </div>
-        ${detail.location ? `<div class="forahub-popup-meta">${escapeHtml(detail.location)}</div>` : ""}
+        ${detail.location ? `<div class="forahub-popup-meta">${escapeHtml(detail.location)}${detail.location_inferred ? ` <span class="forahub-popup-badge" title="City inferred from event title/organization — not a verified venue">approx.</span>` : ""}</div>` : ""}
         <a href="/events/${detail.id}" class="forahub-popup-cta">View event →</a>
       </div>
     </div>`;
@@ -300,15 +314,27 @@ export default function EventsMap({
       map.setView([20, 0], mobile ? 2 : 2);
     }
 
-    const buildTileLayer = () =>
-      L.tileLayer(isDarkTheme() ? TILE_URL_DARK : TILE_URL_LIGHT, {
-        attribution: ATTRIBUTION,
-        subdomains: TILE_SUBDOMAINS,
+    const buildTileLayer = () => {
+      const dark = isDarkTheme();
+      if (STADIA_ENABLED) {
+        return L.tileLayer(dark ? STADIA_DARK : STADIA_LIGHT, {
+          attribution: STADIA_ATTRIBUTION,
+          maxZoom: 20,
+          minZoom: 2,
+          noWrap: true,
+          bounds: WORLD_BOUNDS,
+        });
+      }
+      // No Stadia key — fall back to CARTO Positron so the map still renders.
+      return L.tileLayer(dark ? CARTO_DARK : CARTO_LIGHT, {
+        attribution: CARTO_ATTRIBUTION,
+        subdomains: CARTO_SUBDOMAINS,
         maxZoom: 19,
         minZoom: 2,
         noWrap: true,
         bounds: WORLD_BOUNDS,
       });
+    };
 
     tileLayerRef.current = buildTileLayer().addTo(map);
 

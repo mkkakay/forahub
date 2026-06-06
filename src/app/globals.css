@@ -307,6 +307,25 @@ html {
   margin-top: 6px;
 }
 .dark .forahub-popup-meta { color: #cbd5e1; }
+.forahub-popup-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #b45309;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: 999px;
+  vertical-align: middle;
+}
+.dark .forahub-popup-badge {
+  color: #fbbf24;
+  background: rgba(180, 83, 9, 0.18);
+  border-color: rgba(251, 191, 36, 0.35);
+}
 .forahub-popup-cta {
   display: inline-block;
   margin-top: 10px;

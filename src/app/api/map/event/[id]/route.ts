@@ -11,6 +11,7 @@ interface EventRow {
   start_date: string;
   end_date: string | null;
   location: string | null;
+  location_inferred: boolean | null;
   banner_image_url: string | null;
   banner_display_mode: "contain" | "cover" | null;
   sdg_goals: number[] | null;
@@ -23,7 +24,7 @@ export async function GET(_req: NextRequest, ctx: { params: { id: string } }) {
 
   const { data, error } = await adminSupabase
     .from("events")
-    .select("id, title, organization, start_date, end_date, location, banner_image_url, banner_display_mode, sdg_goals, format")
+    .select("id, title, organization, start_date, end_date, location, location_inferred, banner_image_url, banner_display_mode, sdg_goals, format")
     .eq("id", id)
     .maybeSingle();
 
@@ -38,6 +39,7 @@ export async function GET(_req: NextRequest, ctx: { params: { id: string } }) {
     start_date: row.start_date,
     end_date: row.end_date,
     location: row.location,
+    location_inferred: !!row.location_inferred,
     banner_image_url: row.banner_image_url,
     banner_display_mode: row.banner_display_mode,
     sdg: row.sdg_goals?.[0] ?? null,

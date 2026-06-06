@@ -93,6 +93,12 @@ EXTRACTION RULES:
 7. Detect side events: if this is clearly a satellite/side event of a larger conference, set is_side_event=true and fill parent_conference_name.
 8. Detect recurring series: if this is an annual or regular series (e.g. "World Health Assembly 2027", "COP30"), set is_recurring=true and series_name to the canonical series name.
 9. Extract ALL hidden deadlines separately in the deadlines array.
+10. LOCATION IS MANDATORY for in_person and hybrid events. If format is "in_person" or "hybrid":
+   - location_city MUST be filled with a real city name (never null, never an event name, never an org name).
+   - location_country MUST be filled when known; infer from the city if unambiguous.
+   - location_venue may be null if only the city is known.
+   - If you genuinely cannot determine the city, use format="virtual" instead — never insert a placeholder city or leave it null while keeping in_person/hybrid.
+   - For well-known recurring events (e.g. COP, WHA, UN sessions), use the actual confirmed host city for that edition, not a guess.
 
 Return a JSON array. If no events are found, return [].
 Each object must match this schema exactly:
