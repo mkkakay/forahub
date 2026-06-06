@@ -109,7 +109,24 @@ export async function POST(req: NextRequest) {
       .eq("status", "verified")
       .limit(1)
       .maybeSingle();
-    const masked = existing ? maskEmail((existing as ClaimRow).user_email) : "***";
+    const ownerEmail = existing ? (existing as ClaimRow).user_email.trim().toLowerCase() : null;
+    // `email` is already normalized higher up (trimmed + lowercased on
+    // line ~89). If the submitter matches the verified owner, surface a
+    // clear "you already own this" message + an own_org flag so the client
+    // can route them to sign-in / manage UI instead of showing a masked
+    // address back to them.
+    if (ownerEmail && ownerEmail === email) {
+      return NextResponse.json(
+        {
+          error: "already_owned_by_you",
+          own_org: true,
+          org_slug: org.slug,
+          message: `You already own ${org.name}. Sign in to manage it.`,
+        },
+        { status: 409 }
+      );
+    }
+    const masked = ownerEmail ? maskEmail(ownerEmail) : "***";
     return NextResponse.json(
       {
         error: "already_claimed",
