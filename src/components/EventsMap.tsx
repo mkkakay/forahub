@@ -57,15 +57,20 @@ export interface EventsMapProps {
   onPinsLoaded?: (pins: MapPin[], total: number) => void;
 }
 
-// Primary basemap: Stadia Maps "Alidade Smooth" (English labels, blue water,
-// legible typography). Falls back to CARTO Positron when no Stadia key is
-// present so a missing env var never blanks the map. Stadia honours the API
-// key via ?api_key=… on the raster endpoint.
+// Primary basemap: Stadia Maps. For light we use "OSM Bright" — the same
+// vivid blue water and saturated land you see on Google / OpenStreetMap.org,
+// instead of the muted blue-grey of Alidade Smooth. Dark theme stays on
+// Alidade Smooth Dark (Stadia doesn't ship an OSM-Bright dark twin; the
+// dark Alidade water reads navy/teal which fits the brand).
+// `lang=en` asks Stadia/OpenMapTiles to prefer English label fields where
+// they exist (city/country names, road shields fall back to local when not).
+// Falls back to CARTO Positron when no Stadia key is present so a missing
+// env var never blanks the map.
 const STADIA_KEY =
   typeof process !== "undefined" ? process.env.NEXT_PUBLIC_STADIA_API_KEY ?? "" : "";
 const STADIA_ENABLED = STADIA_KEY.length > 0;
-const STADIA_LIGHT = `https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png?api_key=${STADIA_KEY}`;
-const STADIA_DARK = `https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png?api_key=${STADIA_KEY}`;
+const STADIA_LIGHT = `https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}{r}.png?api_key=${STADIA_KEY}&lang=en`;
+const STADIA_DARK = `https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png?api_key=${STADIA_KEY}&lang=en`;
 const CARTO_LIGHT = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
 const CARTO_DARK = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
 const CARTO_SUBDOMAINS = ["a", "b", "c", "d"];
@@ -296,14 +301,24 @@ export default function EventsMap({
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
+    const container = containerRef.current;
     const mobile = window.matchMedia("(max-width: 640px)").matches;
 
-    const map = L.map(containerRef.current, {
+    // World width at zoom Z is 256 * 2^Z CSS pixels. To stop the gray bands
+    // on either side of the tiles at low zoom, the smallest allowed zoom
+    // has to make the rendered world at least as wide as the container.
+    function computeMinZoom(): number {
+      const w = container.clientWidth || 1;
+      return Math.max(2, Math.ceil(Math.log2(w / 256)));
+    }
+
+    const initialMinZoom = computeMinZoom();
+    const map = L.map(container, {
       worldCopyJump: false,
       attributionControl: true,
       zoomControl: !mobile,
       scrollWheelZoom: true,
-      minZoom: 2,
+      minZoom: initialMinZoom,
       maxBounds: WORLD_BOUNDS,
       maxBoundsViscosity: 1.0,
     });
@@ -311,7 +326,7 @@ export default function EventsMap({
     if (initialBounds) {
       map.fitBounds(initialBounds);
     } else {
-      map.setView([20, 0], mobile ? 2 : 2);
+      map.setView([20, 0], initialMinZoom);
     }
 
     const buildTileLayer = () => {
@@ -377,10 +392,32 @@ export default function EventsMap({
     mapRef.current = map;
     clusterRef.current = cluster;
 
+    // Belt-and-suspenders for "tiles don't fill the rectangle". Two things
+    // can leave Leaflet thinking the container is smaller than it really is:
+    //   1. The map mounts before its parent finished layout (e.g. when the
+    //      IntersectionObserver fires mid-paint). One invalidateSize on the
+    //      next frame catches that.
+    //   2. The window — or the parent column — resizes after mount.
+    //      ResizeObserver re-runs invalidateSize and recomputes minZoom so
+    //      no new gray bands appear at the new width.
+    requestAnimationFrame(() => map.invalidateSize());
+    const resizeObserver = typeof ResizeObserver !== "undefined"
+      ? new ResizeObserver(() => {
+          const newMin = computeMinZoom();
+          if (newMin !== map.getMinZoom()) {
+            map.setMinZoom(newMin);
+            if (map.getZoom() < newMin) map.setZoom(newMin);
+          }
+          map.invalidateSize();
+        })
+      : null;
+    resizeObserver?.observe(container);
+
     fetchDataRef.current();
 
     return () => {
       themeObserver?.disconnect();
+      resizeObserver?.disconnect();
       map.remove();
       mapRef.current = null;
       clusterRef.current = null;
