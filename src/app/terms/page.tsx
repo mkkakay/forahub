@@ -71,7 +71,7 @@ export default async function TermsPage() {
         ))}
         <p className="text-sm text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-[#334155] pt-6">
           Questions? Contact us at{" "}
-          <a href="mailto:mo@forahub.org" className="text-[#4ea8de] hover:underline">mo@forahub.org</a>
+          <a href="mailto:hello@forahub.org" className="text-[#4ea8de] hover:underline">hello@forahub.org</a>
         </p>
       </main>
     </div>

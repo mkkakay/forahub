@@ -22,7 +22,7 @@ export default async function DataDeletionPage() {
     {
       title: "2. Option B — Email request",
       content:
-        "If you can no longer sign in, signed up via Google / Microsoft / Facebook and prefer a manual deletion, or want a written confirmation, email admin@forahub.org from the address registered on your account with the subject line \"Delete my ForaHub account\". We will verify the request belongs to the account holder before processing.",
+        "If you can no longer sign in, signed up via Google / Microsoft / Facebook and prefer a manual deletion, or want a written confirmation, email hello@forahub.org from the address registered on your account with the subject line \"Delete my ForaHub account\". We will verify the request belongs to the account holder before processing.",
     },
     {
       title: "3. What gets deleted",
@@ -42,7 +42,7 @@ export default async function DataDeletionPage() {
     {
       title: "6. Facebook Login users",
       content:
-        "If you signed in with Facebook and want only the Facebook link removed — not the whole ForaHub account — email admin@forahub.org and ask us to unlink the Facebook identity. You will then need to sign in with email/password or another provider going forward.",
+        "If you signed in with Facebook and want only the Facebook link removed — not the whole ForaHub account — email hello@forahub.org and ask us to unlink the Facebook identity. You will then need to sign in with email/password or another provider going forward.",
     },
   ];
 
@@ -77,10 +77,10 @@ export default async function DataDeletionPage() {
         <p className="text-sm text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-[#334155] pt-6">
           Questions about a deletion request? Email{" "}
           <a
-            href="mailto:admin@forahub.org"
+            href="mailto:hello@forahub.org"
             className="text-[#4ea8de] hover:underline"
           >
-            admin@forahub.org
+            hello@forahub.org
           </a>
           .
         </p>

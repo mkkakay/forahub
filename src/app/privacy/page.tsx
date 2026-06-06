@@ -61,7 +61,7 @@ export default async function PrivacyPage() {
             <li>Data portability</li>
             <li>Opt out of the sale of personal information (we do not sell data)</li>
           </ul>
-          <p className="mt-2">To exercise these rights, contact <a href="mailto:mo@forahub.org" className="text-[#4ea8de] hover:underline">mo@forahub.org</a>.</p>
+          <p className="mt-2">To exercise these rights, contact <a href="mailto:hello@forahub.org" className="text-[#4ea8de] hover:underline">hello@forahub.org</a>.</p>
         </section>
         <section>
           <h2 className="text-lg font-bold text-[#0f2a4a] dark:text-white mb-2">6. Data Retention</h2>
@@ -69,7 +69,7 @@ export default async function PrivacyPage() {
         </section>
         <section>
           <h2 className="text-lg font-bold text-[#0f2a4a] dark:text-white mb-2">7. Event Data Sourcing</h2>
-          <p>ForaHub aggregates publicly available event information from organizational websites, press releases, and official event directories. We respect the public nature of this information. If you are an organization and wish to update or remove your event listing, contact us at <a href="mailto:mo@forahub.org" className="text-[#4ea8de] hover:underline">mo@forahub.org</a>.</p>
+          <p>ForaHub aggregates publicly available event information from organizational websites, press releases, and official event directories. We respect the public nature of this information. If you are an organization and wish to update or remove your event listing, contact us at <a href="mailto:hello@forahub.org" className="text-[#4ea8de] hover:underline">hello@forahub.org</a>.</p>
         </section>
         <section>
           <h2 className="text-lg font-bold text-[#0f2a4a] dark:text-white mb-2">8. Security</h2>
@@ -77,7 +77,7 @@ export default async function PrivacyPage() {
         </section>
         <section>
           <h2 className="text-lg font-bold text-[#0f2a4a] dark:text-white mb-2">9. Contact</h2>
-          <p>For privacy questions, contact our data controller at <a href="mailto:mo@forahub.org" className="text-[#4ea8de] hover:underline">mo@forahub.org</a>.</p>
+          <p>For privacy questions, contact our data controller at <a href="mailto:hello@forahub.org" className="text-[#4ea8de] hover:underline">hello@forahub.org</a>.</p>
         </section>
       </main>
     </div>
