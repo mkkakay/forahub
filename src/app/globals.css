@@ -112,8 +112,10 @@ html {
   will-change: transform;
   backface-visibility: hidden;
 }
-.pause-on-hover:hover {
-  animation-play-state: paused;
+@media (hover: hover) {
+  .pause-on-hover:hover {
+    animation-play-state: paused;
+  }
 }
 
 /* Live activity ticker scroll */
