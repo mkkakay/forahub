@@ -80,7 +80,7 @@ function LogoItem({ name, src }: { name: string; src: string }) {
   // stays even when a logo fails.
   if (hidden) return null;
   return (
-    <div className="flex items-center justify-center mx-6 flex-shrink-0 h-16 w-56">
+    <div className="flex items-center justify-center flex-shrink-0 h-16 w-56">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}
@@ -96,7 +96,7 @@ function LogoItem({ name, src }: { name: string; src: string }) {
 
 // Below this count the strip renders statically (no duplication, no scroll).
 // At/above it, the marquee duplicates the list so the -50% keyframe loops seamlessly.
-const MARQUEE_MIN = 6;
+const MARQUEE_MIN = 8;
 
 export default function TrustStrip({ logos }: TrustStripProps) {
   const source =
@@ -116,8 +116,8 @@ export default function TrustStrip({ logos }: TrustStripProps) {
         <div
           className={
             shouldScroll
-              ? "logos-track pause-on-hover flex items-center"
-              : "flex items-center justify-center flex-wrap"
+              ? "logos-track pause-on-hover flex items-center gap-12"
+              : "flex items-center justify-center flex-wrap gap-12"
           }
         >
           {items.map((org, i) => (
