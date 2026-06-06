@@ -3,6 +3,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import L, { LatLngBoundsExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
+import "leaflet.markercluster";
 import { SDG_COLORS } from "@/lib/assets/sdgFallbacks";
 
 export type ColorMode = "sdg" | "date" | "format";
@@ -14,15 +17,6 @@ export interface MapPin {
   lng: number;
   sdg: number | null;
   color?: string;
-}
-
-export interface MapCluster {
-  type: "cluster";
-  key: string;
-  name: string | null;
-  lat: number;
-  lng: number;
-  count: number;
 }
 
 export interface MapEventDetail {
@@ -62,69 +56,73 @@ export interface EventsMapProps {
   onPinsLoaded?: (pins: MapPin[], total: number) => void;
 }
 
-// CARTO Basemap Positron family — labelled variant for light theme,
-// Dark Matter labelled for dark theme. Same provider, same attribution,
-// same tile pyramid, so the swap is instant and tile cache friendly.
-// (Previously used the `light_nolabels` variant — cluster bubbles were the
-// only geographic context; we now rely on the basemap for country/city names.)
+// CARTO Basemap Positron family — labelled variant for light, Dark Matter
+// labelled for dark. Same provider/attribution/pyramid → instant theme swap.
 const TILE_URL_LIGHT = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
 const TILE_URL_DARK = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
 const TILE_SUBDOMAINS = ["a", "b", "c", "d"];
 const ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer">CARTO</a>';
+const WORLD_BOUNDS: L.LatLngBoundsLiteral = [[-90, -180], [90, 180]];
+// ForaHub palette anchors for cluster bubbles + zoom controls.
+const BRAND_ACCENT = "#4ea8de";
+const BRAND_NAVY = "#0f2a4a";
 
 function isDarkTheme(): boolean {
   if (typeof document === "undefined") return false;
   return document.documentElement.classList.contains("dark");
 }
-// Single-world bounds so the map doesn't repeat the globe horizontally.
-const WORLD_BOUNDS: L.LatLngBoundsLiteral = [[-90, -180], [90, 180]];
-const FORAHUB_BLUE = "#2563eb";
 
 function pinColor(pin: MapPin): string {
   if (pin.color) return pin.color;
   if (pin.sdg && SDG_COLORS[pin.sdg]) return SDG_COLORS[pin.sdg];
-  return "#4ea8de";
+  return BRAND_ACCENT;
 }
 
+// Custom SDG-tinted pin — small dot for the marker body plus a subtle white
+// ring so the colour still reads against any basemap. No teardrop.
 function buildPinIcon(pin: MapPin, isMobile: boolean): L.DivIcon {
   const color = pinColor(pin);
-  const size = isMobile ? 18 : 14;
+  const size = isMobile ? 16 : 14;
   const half = size / 2;
-  const html = `<span style="display:block;width:${size}px;height:${size}px;border-radius:9999px;background:${color};border:2px solid #ffffff;box-shadow:0 2px 4px rgba(0,0,0,0.15);transition:transform 120ms ease-out;"></span>`;
+  const html =
+    `<span class="forahub-pin-dot" style="` +
+    `width:${size}px;height:${size}px;background:${color};` +
+    `"></span>`;
   return L.divIcon({
     html,
     className: "forahub-event-pin",
     iconSize: [size, size],
     iconAnchor: [half, half],
-    popupAnchor: [0, -half],
+    popupAnchor: [0, -half - 2],
   });
 }
 
-function buildClusterIcon(cluster: MapCluster, level: "continent" | "country" | "city"): L.DivIcon {
-  const count = cluster.count;
+// Brand cluster bubble. Size scales with magnitude; colour stays brand-blue
+// in light mode, brand-accent in dark mode so it sits well on dark tiles.
+// Outer halo + tighter inner ring read as a soft "stack of pins" rather than
+// the default flat blob.
+function buildClusterIcon(count: number, dark: boolean): L.DivIcon {
   let size: number;
-  if (count < 10) size = 40;
-  else if (count < 50) size = 48;
-  else size = 60;
-  const fontSize = size <= 40 ? 12 : 13;
-  const label = level === "continent" && cluster.name
-    ? `<div style="font-size:${fontSize - 2}px;font-weight:500;line-height:1.1;opacity:.95;">${escapeHtml(cluster.name)}</div><div style="font-weight:700;font-size:${fontSize}px;">${count.toLocaleString()}</div>`
-    : `<div style="font-weight:700;font-size:${fontSize + 1}px;">${count.toLocaleString()}</div>`;
-  const html = `
-    <div style="
-      width:${size}px;height:${size}px;border-radius:9999px;
-      background:${FORAHUB_BLUE};color:#fff;
-      display:flex;flex-direction:column;align-items:center;justify-content:center;
-      border:2px solid #ffffff;
-      box-shadow:0 6px 14px rgba(15,42,74,0.28);
-      padding:0 4px;text-align:center;line-height:1.1;
-    ">${label}</div>`;
+  if (count < 10) size = 38;
+  else if (count < 50) size = 46;
+  else if (count < 200) size = 54;
+  else size = 64;
+  const fontSize = size <= 38 ? 12 : 13;
+  const innerColor = dark ? BRAND_ACCENT : BRAND_NAVY;
+  const haloColor = dark ? "rgba(78,168,222,0.18)" : "rgba(15,42,74,0.12)";
+  const html =
+    `<div class="forahub-cluster-halo" style="background:${haloColor};">` +
+    `  <div class="forahub-cluster-body" style="` +
+    `width:${size}px;height:${size}px;background:${innerColor};` +
+    `font-size:${fontSize}px;` +
+    `">${count.toLocaleString()}</div>` +
+    `</div>`;
   return L.divIcon({
     html,
     className: "forahub-cluster",
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
+    iconSize: [size + 12, size + 12],
+    iconAnchor: [(size + 12) / 2, (size + 12) / 2],
   });
 }
 
@@ -136,23 +134,23 @@ function fmtDate(iso: string): string {
 
 function buildPopupHtml(detail: MapEventDetail): string {
   const banner = detail.banner_image_url
-    ? `<div style="height:96px;overflow:hidden;background:#f1f5f9;">
+    ? `<div class="forahub-popup-banner">
          <img src="${escapeAttr(detail.banner_image_url)}" alt=""
-              style="width:100%;height:100%;object-fit:${detail.banner_display_mode === "contain" ? "contain" : "cover"};" />
+              style="object-fit:${detail.banner_display_mode === "contain" ? "contain" : "cover"};" />
        </div>`
-    : `<div style="height:64px;background:linear-gradient(135deg, #2563eb 0%, #4ea8de 100%);"></div>`;
+    : `<div class="forahub-popup-banner forahub-popup-banner-fallback"></div>`;
   return `
-    <div style="font-family:Inter,system-ui,sans-serif;width:240px;background:#ffffff;border-radius:16px;overflow:hidden;">
+    <div class="forahub-popup-card">
       ${banner}
-      <div style="padding:12px;">
-        <div style="font-weight:600;font-size:13px;line-height:1.35;color:#0f2a4a;">${escapeHtml(detail.title)}</div>
-        ${detail.organization ? `<div style="font-size:11px;color:#64748b;margin-top:2px;">${escapeHtml(detail.organization)}</div>` : ""}
-        <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#475569;margin-top:6px;">
+      <div class="forahub-popup-body">
+        <div class="forahub-popup-title">${escapeHtml(detail.title)}</div>
+        ${detail.organization ? `<div class="forahub-popup-org">${escapeHtml(detail.organization)}</div>` : ""}
+        <div class="forahub-popup-meta">
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
           ${fmtDate(detail.start_date)}${detail.end_date ? ` &ndash; ${fmtDate(detail.end_date)}` : ""}
         </div>
-        ${detail.location ? `<div style="font-size:11px;color:#64748b;margin-top:2px;">${escapeHtml(detail.location)}</div>` : ""}
-        <a href="/events/${detail.id}" style="display:inline-block;margin-top:10px;font-size:12px;font-weight:600;color:#2563eb;text-decoration:none;">View event →</a>
+        ${detail.location ? `<div class="forahub-popup-meta">${escapeHtml(detail.location)}</div>` : ""}
+        <a href="/events/${detail.id}" class="forahub-popup-cta">View event →</a>
       </div>
     </div>`;
 }
@@ -179,23 +177,17 @@ async function fetchEventDetail(id: string): Promise<MapEventDetail | null> {
   }
 }
 
-interface AggregatedResponse {
-  type: "aggregated";
-  level: "continent" | "country" | "city";
-  items: MapCluster[];
-  total: number;
-}
 interface PinsResponse {
   type: "pins";
-  level: "pin";
   items: MapPin[];
   total: number;
   truncated?: boolean;
 }
-type PinsApiResponse = AggregatedResponse | PinsResponse;
 
+// `mode` is still on the props contract so HomeMapSection and the /map page
+// don't need to be re-touched, but the client-side clusterer makes the same
+// global fetch in both cases now — there's no zoom/bbox-aware fetch path.
 export default function EventsMap({
-  mode,
   height = 400,
   initialBounds,
   initialFilters,
@@ -206,9 +198,10 @@ export default function EventsMap({
 }: EventsMapProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
-  const layerRef = useRef<L.LayerGroup | null>(null);
+  // We use a MarkerClusterGroup as the layer host. Adding/removing markers
+  // through it is what gives us the animated zoom-split behaviour.
+  const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
   const tileLayerRef = useRef<L.TileLayer | null>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [emptyAfterFilter, setEmptyAfterFilter] = useState(false);
@@ -224,7 +217,6 @@ export default function EventsMap({
     if (initialFilters?.dateFrom) params.set("date_from", initialFilters.dateFrom);
     if (initialFilters?.dateTo) params.set("date_to", initialFilters.dateTo);
 
-    // Convert showFilter into date_from/date_to/featured params.
     const now = new Date();
     if (showFilter === "this-week") {
       const to = new Date(now.getTime() + 7 * 86_400_000);
@@ -241,78 +233,51 @@ export default function EventsMap({
     return params;
   }, [initialFilters, showFilter, colorBy]);
 
-  const fetchData = useCallback(async (map: L.Map | null) => {
+  const fetchData = useCallback(async () => {
     const params = new URLSearchParams(filterQS);
-    if (mode === "teaser") params.set("teaser", "1");
-    if (mode === "full" && map) {
-      const b = map.getBounds();
-      params.set("bbox", `${b.getWest()},${b.getSouth()},${b.getEast()},${b.getNorth()}`);
-      params.set("zoom", String(map.getZoom()));
-    }
     try {
       const res = await fetch(`/api/map/pins?${params.toString()}`);
       if (!res.ok) { setError("Map temporarily unavailable."); return; }
-      const json = (await res.json()) as PinsApiResponse;
+      const json = (await res.json()) as PinsResponse;
       setError(null);
       setEmptyAfterFilter(json.total === 0);
-      drawData(json);
-      if (json.type === "pins") onPinsLoaded?.(json.items, json.total);
-      else onPinsLoaded?.([], json.total);
+      drawPins(json.items);
+      onPinsLoaded?.(json.items, json.total);
     } catch {
       setError("Map temporarily unavailable.");
     } finally {
       setLoading(false);
     }
-  }, [filterQS, mode, onPinsLoaded]);
+  }, [filterQS, onPinsLoaded]);
 
-  // Hold fetchData in a ref so the moveend / zoomend / cluster-click handlers
-  // (registered once on mount) always invoke the current version with fresh
-  // filterQS + onPinsLoaded closure rather than the stale initial one.
   const fetchDataRef = useRef(fetchData);
   useEffect(() => { fetchDataRef.current = fetchData; }, [fetchData]);
 
-  function drawData(payload: PinsApiResponse) {
-    const layer = layerRef.current;
+  function drawPins(pins: MapPin[]) {
+    const cluster = clusterRef.current;
     const map = mapRef.current;
-    if (!layer || !map) return;
-    layer.clearLayers();
+    if (!cluster || !map) return;
+    cluster.clearLayers();
     const mobile = window.matchMedia("(max-width: 640px)").matches;
 
-    if (payload.type === "pins") {
-      for (const p of payload.items) {
-        const marker = L.marker([p.lat, p.lng], { icon: buildPinIcon(p, mobile) });
-        marker.on("click", async () => {
-          const detail = await fetchEventDetail(p.id);
-          if (detail) {
-            marker.bindPopup(buildPopupHtml(detail), {
-              maxWidth: 260, minWidth: 240,
-              className: "forahub-event-popup",
-              closeButton: true, autoPan: true,
-            }).openPopup();
-          }
-        });
-        layer.addLayer(marker);
-      }
-      return;
-    }
-
-    // Aggregated clusters — clicking zooms in toward the cluster center and
-    // explicitly schedules a refetch so the next granularity level renders
-    // even when the moveend/zoomend chain is unreliable.
-    for (const c of payload.items) {
-      const marker = L.marker([c.lat, c.lng], { icon: buildClusterIcon(c, payload.level) });
-      marker.on("click", () => {
-        const currentZoom = map.getZoom();
-        const targetZoom = payload.level === "continent" ? 4 : payload.level === "country" ? 7 : 11;
-        const newZoom = Math.max(currentZoom + 2, targetZoom);
-        map.flyTo([c.lat, c.lng], newZoom, { duration: 0.6 });
-        // Belt-and-suspenders: 700 ms after flyTo (just past the 600 ms
-        // animation), refetch with the new bounds + zoom directly. Avoids
-        // depending on Leaflet emitting moveend at the exact end of flyTo.
-        setTimeout(() => fetchDataRef.current(map), 700);
+    // Build all markers first, then add as a batch — markercluster does its
+    // own bulk-load optimisation when given an array via addLayers().
+    const markers: L.Marker[] = [];
+    for (const p of pins) {
+      const marker = L.marker([p.lat, p.lng], { icon: buildPinIcon(p, mobile) });
+      marker.on("click", async () => {
+        const detail = await fetchEventDetail(p.id);
+        if (detail) {
+          marker.bindPopup(buildPopupHtml(detail), {
+            maxWidth: 280, minWidth: 240,
+            className: "forahub-event-popup",
+            closeButton: true, autoPan: true,
+          }).openPopup();
+        }
       });
-      layer.addLayer(marker);
+      markers.push(marker);
     }
+    cluster.addLayers(markers);
   }
 
   useEffect(() => {
@@ -347,13 +312,14 @@ export default function EventsMap({
 
     tileLayerRef.current = buildTileLayer().addTo(map);
 
-    // Hot-swap tiles when the global theme toggles, without re-creating the map.
     const themeObserver = typeof MutationObserver !== "undefined"
       ? new MutationObserver(() => {
           const current = tileLayerRef.current;
           if (!current || !mapRef.current) return;
           map.removeLayer(current);
           tileLayerRef.current = buildTileLayer().addTo(map);
+          // Rebuild cluster icons in the new theme too.
+          if (clusterRef.current) clusterRef.current.refreshClusters();
         })
       : null;
     themeObserver?.observe(document.documentElement, {
@@ -361,30 +327,37 @@ export default function EventsMap({
       attributeFilter: ["class"],
     });
 
-    const layer = L.layerGroup().addTo(map);
+    const cluster = L.markerClusterGroup({
+      // chunkedLoading keeps the main thread responsive when adding ~5K
+      // markers in one shot — adds them in batches of ~200 per frame.
+      chunkedLoading: true,
+      chunkInterval: 100,
+      chunkDelay: 25,
+      // Show coverage shape on hover only at higher zooms — at world view it's
+      // a screen-filling polygon for every continent and adds nothing.
+      showCoverageOnHover: false,
+      // Pixel radius at which markers cluster. Default is 80; tightened so
+      // distinct cities don't collapse into mega-bubbles too aggressively.
+      maxClusterRadius: 60,
+      // Animations on, but spiderfy capped so a hundred-event venue doesn't
+      // explode into spaghetti at max zoom — instead it stays a single
+      // cluster the user must click to zoom into.
+      spiderfyOnMaxZoom: true,
+      animate: true,
+      iconCreateFunction: (c) =>
+        buildClusterIcon(c.getChildCount(), isDarkTheme()),
+    });
+    cluster.addTo(map);
     mapRef.current = map;
-    layerRef.current = layer;
+    clusterRef.current = cluster;
 
-    const onViewEnd = () => {
-      if (mode !== "full") return;
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      // 250 ms debounce — snappier than 400 ms while still coalescing pan +
-      // zoom into a single refetch.
-      debounceRef.current = setTimeout(() => fetchDataRef.current(map), 250);
-    };
-    map.on("moveend", onViewEnd);
-    map.on("zoomend", onViewEnd);
-
-    fetchDataRef.current(mode === "full" ? map : null);
+    fetchDataRef.current();
 
     return () => {
-      map.off("moveend", onViewEnd);
-      map.off("zoomend", onViewEnd);
-      if (debounceRef.current) clearTimeout(debounceRef.current);
       themeObserver?.disconnect();
       map.remove();
       mapRef.current = null;
-      layerRef.current = null;
+      clusterRef.current = null;
       tileLayerRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -392,9 +365,8 @@ export default function EventsMap({
 
   // Refetch on filter changes.
   useEffect(() => {
-    const map = mapRef.current;
-    if (!map) return;
-    fetchData(mode === "full" ? map : null);
+    if (!mapRef.current) return;
+    fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterQS]);
 
@@ -408,24 +380,24 @@ export default function EventsMap({
 
   return (
     <div className="relative w-full" style={{ height }}>
-      <div ref={containerRef} className="absolute inset-0 bg-slate-50" />
+      <div ref={containerRef} className="absolute inset-0 bg-slate-50 dark:bg-[#0f172a]" />
       {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white/40 pointer-events-none">
-          <div className="animate-pulse text-xs text-slate-500">Loading map…</div>
+        <div className="absolute inset-0 flex items-center justify-center bg-white/40 dark:bg-[#0f172a]/40 pointer-events-none">
+          <div className="animate-pulse text-xs text-slate-500 dark:text-slate-300">Loading map…</div>
         </div>
       )}
       {emptyAfterFilter && !loading && (
-        <div className="absolute inset-x-0 top-3 mx-auto w-fit max-w-[90%] bg-white border border-slate-200 text-slate-700 text-xs rounded-full px-4 py-2 shadow-md text-center">
+        <div className="absolute inset-x-0 top-3 mx-auto w-fit max-w-[90%] bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-[#334155] text-slate-700 dark:text-slate-200 text-xs rounded-full px-4 py-2 shadow-md text-center">
           No events match this filter — adjust filters or{" "}
           <a href="/events" className="font-semibold text-blue-600 hover:underline">browse all events</a>.
         </div>
       )}
       {error && (
-        <div className="absolute inset-x-0 bottom-3 mx-auto w-fit bg-white border border-red-200 text-red-700 text-xs rounded-full px-3 py-1.5 shadow-md flex items-center gap-2">
+        <div className="absolute inset-x-0 bottom-3 mx-auto w-fit bg-white dark:bg-[#1e293b] border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs rounded-full px-3 py-1.5 shadow-md flex items-center gap-2">
           {error}
           <button
             type="button"
-            onClick={() => { setLoading(true); fetchData(mapRef.current); }}
+            onClick={() => { setLoading(true); fetchData(); }}
             className="text-blue-600 hover:underline"
           >
             Retry

@@ -1,6 +1,7 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { ExtractedEvent, UpsertResult } from './types';
 import { classifyEventSync } from '@/lib/categories/classify';
+import { geocodeLocation } from '@/lib/geo/geocode';
 
 // Using a permissive Supabase client type to avoid complex generic constraints
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -127,16 +128,44 @@ export async function deduplicateAndUpsert(
       sdg_goals: event.sdg_goals,
     });
 
+    // Geocode at ingest for in-person / hybrid events so the map never has
+    // to backfill them out-of-band. Online-only and missing-location events
+    // are skipped cheaply by geocodeLocation. Failures are stored as
+    // geocode_status so the admin backfill panel can retry them later;
+    // the row still inserts with latitude=null and won't break.
+    const format = event.format ?? 'in_person';
+    let lat: number | null = null;
+    let lng: number | null = null;
+    let geocodeStatus: string | null = null;
+    let geocodeError: string | null = null;
+    if ((format === 'in_person' || format === 'hybrid') && location) {
+      try {
+        const geo = await geocodeLocation(location);
+        lat = geo.lat ?? null;
+        lng = geo.lng ?? null;
+        geocodeStatus = geo.status;
+        geocodeError = geo.error ?? null;
+      } catch (err) {
+        geocodeStatus = 'failed';
+        geocodeError = err instanceof Error ? err.message : String(err);
+      }
+    }
+
     const row = {
       title: event.title,
       description: event.description ?? null,
       start_date: event.start_date,
       end_date: event.end_date ?? null,
       location,
+      latitude: lat,
+      longitude: lng,
+      geocode_status: geocodeStatus,
+      geocode_error: geocodeError,
+      geocoded_at: geocodeStatus ? new Date().toISOString() : null,
       organization: event.organization,
       sdg_goals: event.sdg_goals,
       event_type: event.event_type ?? 'conference',
-      format: event.format ?? 'in_person',
+      format,
       registration_url: event.registration_url ?? null,
       status,
       source_url: event.source_url,
