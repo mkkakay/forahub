@@ -116,8 +116,8 @@ export default function TrustStrip({ logos }: TrustStripProps) {
         <div
           className={
             shouldScroll
-              ? "logos-track pause-on-hover flex items-center gap-6"
-              : "flex items-center justify-center flex-wrap gap-6"
+              ? "logos-track pause-on-hover flex items-center gap-4"
+              : "flex items-center justify-center flex-wrap gap-4"
           }
         >
           {items.map((org, i) => (
