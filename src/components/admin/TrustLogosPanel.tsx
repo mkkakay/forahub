@@ -250,7 +250,7 @@ export default function TrustLogosPanel({ adminSecret }: { adminSecret: string }
       {open && (
         <div className="border-t border-blue-900/40 p-5 space-y-5">
           <div className="text-xs text-blue-400 bg-[#0a1a2e] border border-blue-900/40 rounded-lg px-3 py-2">
-            SVG / PNG / WebP only, max 500KB, recommended ≤ 400px. Rendered at 28px tall in the strip.
+            SVG / PNG / WebP only, max 500KB, recommended ≤ 400px. Rendered at 40px tall in the strip.
             Use either a file upload or paste a URL (e.g. a Brandfetch or Wikipedia SVG).
           </div>
 

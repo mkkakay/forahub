@@ -80,13 +80,13 @@ function LogoItem({ name, src }: { name: string; src: string }) {
   // stays even when a logo fails.
   if (hidden) return null;
   return (
-    <div className="flex items-center justify-center mx-6 flex-shrink-0 h-8 w-28">
+    <div className="flex items-center justify-center mx-6 flex-shrink-0 h-12 w-40">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}
         alt={name}
         title={name}
-        className="max-h-7 max-w-24 object-contain"
+        className="max-h-10 max-w-36 w-auto object-contain"
         crossOrigin="anonymous"
         onError={() => setHidden(true)}
       />
