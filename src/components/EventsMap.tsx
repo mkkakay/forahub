@@ -57,19 +57,24 @@ export interface EventsMapProps {
   onPinsLoaded?: (pins: MapPin[], total: number) => void;
 }
 
-// Primary basemap: Stadia Maps. For light we use "OSM Bright" — the same
-// vivid blue water and saturated land you see on Google / OpenStreetMap.org,
-// instead of the muted blue-grey of Alidade Smooth. Dark theme stays on
-// Alidade Smooth Dark (Stadia doesn't ship an OSM-Bright dark twin; the
-// dark Alidade water reads navy/teal which fits the brand).
-// `lang=en` asks Stadia/OpenMapTiles to prefer English label fields where
-// they exist (city/country names, road shields fall back to local when not).
-// Falls back to CARTO Positron when no Stadia key is present so a missing
-// env var never blanks the map.
+// Primary basemap: Stadia Maps. Light = "outdoors", dark = "alidade_smooth_dark".
+//
+// We started on osm_bright for its vivid blue ocean, but inspecting its
+// style JSON showed a `boundary-water` line layer that bakes maritime /
+// EEZ borders into the tiles. In the Pacific those follow lat/lng and
+// read as a graticule across the ocean. `outdoors` uses the same
+// OpenMapTiles vector source and the same hsl(210,60%,80%) blue water,
+// but has no maritime boundary layer — clean oceans, same Google-Maps
+// feel. `alidade_smooth_dark` (dark variant) was already clean: only
+// boundary_state and boundary_country layers, no maritime line.
+//
+// `lang=en` asks OpenMapTiles to prefer the name:en label field when it
+// exists; the rest of the dependency surface (key handling, CARTO
+// fallback, theme swap) is identical to the previous version.
 const STADIA_KEY =
   typeof process !== "undefined" ? process.env.NEXT_PUBLIC_STADIA_API_KEY ?? "" : "";
 const STADIA_ENABLED = STADIA_KEY.length > 0;
-const STADIA_LIGHT = `https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}{r}.png?api_key=${STADIA_KEY}&lang=en`;
+const STADIA_LIGHT = `https://tiles.stadiamaps.com/tiles/outdoors/{z}/{x}/{y}{r}.png?api_key=${STADIA_KEY}&lang=en`;
 const STADIA_DARK = `https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png?api_key=${STADIA_KEY}&lang=en`;
 const CARTO_LIGHT = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
 const CARTO_DARK = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
