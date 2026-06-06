@@ -62,12 +62,21 @@ export interface EventsMapProps {
   onPinsLoaded?: (pins: MapPin[], total: number) => void;
 }
 
-// Label-free CartoDB Positron — our own cluster labels (Africa · 25, etc.)
-// sit on top and provide the geographic context.
-const TILE_URL = "https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png";
+// CARTO Basemap Positron family — labelled variant for light theme,
+// Dark Matter labelled for dark theme. Same provider, same attribution,
+// same tile pyramid, so the swap is instant and tile cache friendly.
+// (Previously used the `light_nolabels` variant — cluster bubbles were the
+// only geographic context; we now rely on the basemap for country/city names.)
+const TILE_URL_LIGHT = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
+const TILE_URL_DARK = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
 const TILE_SUBDOMAINS = ["a", "b", "c", "d"];
 const ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer">CARTO</a>';
+
+function isDarkTheme(): boolean {
+  if (typeof document === "undefined") return false;
+  return document.documentElement.classList.contains("dark");
+}
 // Single-world bounds so the map doesn't repeat the globe horizontally.
 const WORLD_BOUNDS: L.LatLngBoundsLiteral = [[-90, -180], [90, 180]];
 const FORAHUB_BLUE = "#2563eb";
@@ -198,6 +207,7 @@ export default function EventsMap({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
+  const tileLayerRef = useRef<L.TileLayer | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -325,14 +335,31 @@ export default function EventsMap({
       map.setView([20, 0], mobile ? 2 : 2);
     }
 
-    L.tileLayer(TILE_URL, {
-      attribution: ATTRIBUTION,
-      subdomains: TILE_SUBDOMAINS,
-      maxZoom: 19,
-      minZoom: 2,
-      noWrap: true,
-      bounds: WORLD_BOUNDS,
-    }).addTo(map);
+    const buildTileLayer = () =>
+      L.tileLayer(isDarkTheme() ? TILE_URL_DARK : TILE_URL_LIGHT, {
+        attribution: ATTRIBUTION,
+        subdomains: TILE_SUBDOMAINS,
+        maxZoom: 19,
+        minZoom: 2,
+        noWrap: true,
+        bounds: WORLD_BOUNDS,
+      });
+
+    tileLayerRef.current = buildTileLayer().addTo(map);
+
+    // Hot-swap tiles when the global theme toggles, without re-creating the map.
+    const themeObserver = typeof MutationObserver !== "undefined"
+      ? new MutationObserver(() => {
+          const current = tileLayerRef.current;
+          if (!current || !mapRef.current) return;
+          map.removeLayer(current);
+          tileLayerRef.current = buildTileLayer().addTo(map);
+        })
+      : null;
+    themeObserver?.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
 
     const layer = L.layerGroup().addTo(map);
     mapRef.current = map;
@@ -354,9 +381,11 @@ export default function EventsMap({
       map.off("moveend", onViewEnd);
       map.off("zoomend", onViewEnd);
       if (debounceRef.current) clearTimeout(debounceRef.current);
+      themeObserver?.disconnect();
       map.remove();
       mapRef.current = null;
       layerRef.current = null;
+      tileLayerRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
