@@ -91,14 +91,14 @@ export default async function DataSourcesPage() {
             </div>
             <div className="bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-[#334155] rounded-xl p-4">
               <h3 className="font-semibold text-sm text-[#0f2a4a] dark:text-white">
-                International Aid Transparency Initiative (IATI)
+                International Aid Transparency Initiative (IATI) — Bulk Data Service
               </h3>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                Public domain — IATI Standard data ·{" "}
-                <a href="https://iatistandard.org/" target="_blank" rel="noopener noreferrer" className="text-[#4ea8de] hover:underline">iatistandard.org</a>
+                CC-BY 4.0 (per source row) ·{" "}
+                <a href="https://bulk-data.iatistandard.org/reporting-orgs" target="_blank" rel="noopener noreferrer" className="text-[#4ea8de] hover:underline">bulk-data.iatistandard.org/reporting-orgs</a>
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-300 mt-2 leading-relaxed">
-                The international standard for publishing aid, development, and humanitarian resource flows. We pull the canonical list of bilateral donors, multilateral agencies, INGOs, and foundations registered with IATI via the IATI Datastore, including names, organisation identifiers, types, and official websites.
+                The IATI Reporting Orgs Index — a single open JSON file maintained by the IATI Standard team. We import names, IATI organisation identifiers, organisation types, HQ country, and official websites for the ~2,000 bilateral donors, multilateral agencies, INGOs, national NGOs, and foundations registered with IATI.
               </p>
             </div>
             <div className="bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-[#334155] rounded-xl p-4">

@@ -19,8 +19,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { fetchRorPage } from "@/lib/orgs/rorImport";
-import { fetchIatiPage } from "@/lib/orgs/iatiImport";
+import { fetchIatiSlice } from "@/lib/orgs/iatiImport";
 import { upsertImportedOrg } from "@/lib/orgs/upsertImported";
+
+// IATI rows-per-call. The bulk file is ~2K rows total, so the admin
+// auto-loop drains in ~10 POSTs at 200 rows each, with the per-process
+// 5-minute cache making subsequent fetches free.
+const IATI_BATCH_SIZE = 200;
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -58,10 +63,27 @@ async function processBatch(
   let cursor = startCursor;
   let total = Infinity;
   let done = false;
+
+  if (source === "iati") {
+    // IATI cursor is a row offset into the bulk file. One POST drains
+    // IATI_BATCH_SIZE rows; the auto-loop continues until done=true.
+    // `pages` is ignored — IATI doesn't paginate at the source.
+    const slice = await fetchIatiSlice(cursor, IATI_BATCH_SIZE);
+    total = slice.total;
+    counters.rows_seen += slice.orgs.length;
+    for (const org of slice.orgs) {
+      const r = await upsertImportedOrg(adminSupabase, org);
+      if (r.outcome === "inserted") counters.rows_inserted += 1;
+      else if (r.outcome === "updated") counters.rows_updated += 1;
+      else if (r.outcome === "merged") counters.rows_merged += 1;
+      else counters.rows_skipped += 1;
+    }
+    return { counters, nextCursor: slice.next_cursor, total, done: slice.done };
+  }
+
+  // ROR: paginated REST API (20 rows per page, 1-indexed).
   for (let i = 0; i < pages; i++) {
-    const page = source === "ror"
-      ? await fetchRorPage(cursor)
-      : await fetchIatiPage(cursor);
+    const page = await fetchRorPage(cursor);
     total = page.totalResults;
     counters.rows_seen += page.rows.length + page.dropped;
     for (const org of page.rows) {
@@ -71,13 +93,8 @@ async function processBatch(
       else if (r.outcome === "merged") counters.rows_merged += 1;
       else counters.rows_skipped += 1;
     }
-    // ROR pages are 1-indexed by page number; IATI is start-offset by row.
-    cursor = source === "ror" ? cursor + 1 : cursor + page.pageSize;
-    if (source === "ror") {
-      if ((cursor - 1) * 20 >= total) { done = true; break; }
-    } else {
-      if (cursor >= total) { done = true; break; }
-    }
+    cursor += 1;
+    if ((cursor - 1) * 20 >= total) { done = true; break; }
     if (INTER_PAGE_DELAY_MS > 0) {
       await new Promise(r => setTimeout(r, INTER_PAGE_DELAY_MS));
     }
@@ -102,13 +119,7 @@ export async function GET(req: NextRequest) {
     .select("*")
     .order("started_at", { ascending: false })
     .limit(20);
-  // Runtime env probe so the admin can confirm the key actually made it
-  // into the deployed instance (only key length, never the value).
-  const env_probe = {
-    has_iati_key: !!process.env.IATI_API_KEY,
-    iati_key_length: (process.env.IATI_API_KEY ?? "").length,
-  };
-  return NextResponse.json({ directoryCounts, jobs: jobs ?? [], env_probe });
+  return NextResponse.json({ directoryCounts, jobs: jobs ?? [] });
 }
 
 export async function POST(req: NextRequest) {
@@ -119,9 +130,14 @@ export async function POST(req: NextRequest) {
   if (source !== "ror" && source !== "iati") {
     return NextResponse.json({ error: "source must be 'ror' or 'iati'" }, { status: 400 });
   }
+  // ROR honours `pages` (default 8); IATI ignores it — one POST = one row
+  // batch of IATI_BATCH_SIZE rows. The default still applies to ROR.
   const pages = Math.max(1, Math.min(MAX_PAGES_PER_CALL, body.pages ?? DEFAULT_PAGES_PER_CALL));
 
-  // Resume an existing running job, or create one.
+  // Resume an existing running job, or create one. Initial cursor:
+  //   ROR  → page 1
+  //   IATI → row 0
+  const initialCursor = source === "ror" ? 1 : 0;
   let jobId = body.job_id ?? null;
   let startCursor: number;
   if (jobId) {
@@ -134,9 +150,9 @@ export async function POST(req: NextRequest) {
     if (job.status !== "running") {
       return NextResponse.json({ error: `job already ${job.status}` }, { status: 409 });
     }
-    startCursor = Number(job.next_cursor ?? (source === "ror" ? 1 : 0));
+    startCursor = Number(job.next_cursor ?? initialCursor);
   } else {
-    startCursor = body.cursor ?? (source === "ror" ? 1 : 0);
+    startCursor = body.cursor ?? initialCursor;
     const { data: created, error: createErr } = await adminSupabase
       .from("directory_import_jobs")
       .insert({ source, status: "running", next_cursor: String(startCursor) })

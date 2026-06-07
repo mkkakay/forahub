@@ -16,7 +16,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { fetchRorPage } from "@/lib/orgs/rorImport";
-import { fetchIatiPage } from "@/lib/orgs/iatiImport";
+import { fetchIatiBulk } from "@/lib/orgs/iatiImport";
 import { upsertImportedOrg } from "@/lib/orgs/upsertImported";
 
 export const runtime = "nodejs";
@@ -128,24 +128,22 @@ async function runRorIncremental(startedAt: number): Promise<SourceOutcome> {
 }
 
 async function tryIati(): Promise<SourceOutcome> {
-  // IATI is on a different cadence — they don't publish a "recently modified"
-  // filter on the Datastore. So the cron just touches the first page to
-  // surface new orgs. The expensive bulk drain is still manual. If IATI
-  // returns 403/401 (subscription not yet active on the operator's account),
-  // we catch and log it so ROR isn't blocked.
+  // IATI bulk file is ~2 K rows total — drain the whole thing in one cron
+  // run. Idempotent on external_ids.iati so a daily re-run is just UPDATEs.
+  // Errors are caught so a transient network blip doesn't block ROR.
   const counters = emptyCounters();
   const { data: job, error: jobErr } = await adminSupabase
     .from("directory_import_jobs")
-    .insert({ source: "iati", status: "running", next_cursor: "cron" })
+    .insert({ source: "iati", status: "running", next_cursor: "cron:bulk" })
     .select("id")
     .single();
   if (jobErr || !job) {
     return { source: "iati", ok: false, pages_processed: 0, counters, error: jobErr?.message ?? "could not create job" };
   }
   try {
-    const page = await fetchIatiPage(0);
-    counters.rows_seen = page.rows.length + page.dropped;
-    for (const org of page.rows) {
+    const bulk = await fetchIatiBulk();
+    counters.rows_seen = bulk.orgs.length + bulk.dropped;
+    for (const org of bulk.orgs) {
       const r = await upsertImportedOrg(adminSupabase, org);
       if (r.outcome === "inserted") counters.rows_inserted += 1;
       else if (r.outcome === "updated") counters.rows_updated += 1;
@@ -161,10 +159,9 @@ async function tryIati(): Promise<SourceOutcome> {
       rows_skipped: counters.rows_skipped,
       finished_at: new Date().toISOString(),
     }).eq("id", job.id);
-    return { source: "iati", ok: true, pages_processed: 1, counters, total_results: page.totalResults, done: false, job_id: job.id };
+    return { source: "iati", ok: true, pages_processed: 1, counters, total_results: bulk.orgs.length, done: true, job_id: job.id };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    // Soft-fail: ROR portion must still succeed.
     await adminSupabase.from("directory_import_jobs").update({
       status: "failed",
       last_error: msg,
