@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
+import { renderClaimVerificationEmail } from "@/lib/email/claimVerification";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -37,6 +38,7 @@ function maskEmail(email: string): string {
 
 async function sendVerificationEmail(opts: {
   to: string;
+  recipientName: string | null;
   orgName: string;
   verifyUrl: string;
 }): Promise<{ sent: boolean; reason?: string }> {
@@ -45,6 +47,12 @@ async function sendVerificationEmail(opts: {
     console.warn(`[org-claim] RESEND_API_KEY not set. Verify URL for ${opts.to}: ${opts.verifyUrl}`);
     return { sent: false, reason: "no_api_key" };
   }
+  const { subject, html, text } = renderClaimVerificationEmail({
+    to: opts.to,
+    recipientName: opts.recipientName,
+    orgName: opts.orgName,
+    verifyUrl: opts.verifyUrl,
+  });
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -54,31 +62,22 @@ async function sendVerificationEmail(opts: {
     body: JSON.stringify({
       from: "ForaHub <hello@forahub.org>",
       to: opts.to,
-      subject: "Verify your organization claim for ForaHub",
-      html: `
-        <div style="font-family:sans-serif;max-width:560px;margin:0 auto;background:#0f2a4a;padding:32px;border-radius:12px">
-          <h1 style="color:#4ea8de;margin-top:0">Fora<span style="color:#ffffff">Hub</span></h1>
-          <h2 style="color:#ffffff">Verify your organization claim</h2>
-          <p style="color:#bfdbfe">Hi, you requested to claim <strong style="color:#ffffff">${opts.orgName}</strong> on ForaHub.
-          Click the link below to verify your email and complete the claim.</p>
-          <p style="color:#bfdbfe">This link expires in 1 hour.</p>
-          <a href="${opts.verifyUrl}"
-            style="display:inline-block;background:#4ea8de;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;margin-top:8px">
-            Verify and claim →
-          </a>
-          <p style="color:#94a3b8;font-size:13px;margin-top:24px">If you didn't request this, you can safely ignore this email.</p>
-          <p style="color:#64748b;font-size:12px;margin-top:24px">ForaHub · Global Development Events</p>
-        </div>`,
+      subject,
+      html,
+      text,
     }),
   });
   if (!res.ok) {
+    let detail = "";
+    try { detail = await res.text(); } catch {}
+    console.warn(`[org-claim] Resend failed ${res.status}: ${detail.slice(0, 200)}`);
     return { sent: false, reason: `resend_${res.status}` };
   }
   return { sent: true };
 }
 
 export async function POST(req: NextRequest) {
-  let body: { org_slug?: string; email?: string };
+  let body: { org_slug?: string; email?: string; name?: string };
   try {
     body = await req.json();
   } catch {
@@ -87,6 +86,10 @@ export async function POST(req: NextRequest) {
 
   const orgSlug = (body.org_slug ?? "").trim();
   const email = (body.email ?? "").trim().toLowerCase();
+  // Names are not required at the API layer (the resend flow on the verify
+  // page reuses an already-stored row that may pre-date the name capture),
+  // but the /claim page enforces "name required when not signed in".
+  const claimantName = ((body.name ?? "").trim()) || null;
   if (!orgSlug) return NextResponse.json({ error: "org_slug required" }, { status: 400 });
   if (!email || !email.includes("@")) {
     return NextResponse.json({ error: "valid email required" }, { status: 400 });
@@ -160,12 +163,25 @@ export async function POST(req: NextRequest) {
 
   const token = crypto.randomUUID();
   const expiresAt = new Date(Date.now() + TOKEN_TTL_MS).toISOString();
+  // Preserve any previously-captured claimant_name across resend cycles —
+  // if the caller didn't supply one (e.g. resend flow on /claim/verify),
+  // fall back to whatever is already on the row.
+  const { data: prior } = await adminSupabase
+    .from("org_claims")
+    .select("claimant_name")
+    .eq("org_slug", org.slug)
+    .eq("user_email", email)
+    .maybeSingle();
+  const priorName = (prior as { claimant_name: string | null } | null)?.claimant_name ?? null;
+  const finalName = claimantName ?? priorName;
+
   const { error: upsertErr } = await adminSupabase
     .from("org_claims")
     .upsert(
       {
         org_slug: org.slug,
         user_email: email,
+        claimant_name: finalName,
         status: "pending_verification",
         verification_token: token,
         token_expires_at: expiresAt,
@@ -180,6 +196,7 @@ export async function POST(req: NextRequest) {
 
   const emailResult = await sendVerificationEmail({
     to: email,
+    recipientName: finalName,
     orgName: org.name,
     verifyUrl,
   });

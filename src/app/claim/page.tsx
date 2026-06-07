@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  BadgeCheck, Building2, Mail, ArrowRight, Loader2, AlertCircle, CheckCircle2, X,
+  BadgeCheck, Building2, Mail, ArrowRight, Loader2, AlertCircle, CheckCircle2, X, User,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import OrgCombobox from "@/app/submit/_components/OrgCombobox";
 import type { OrgSuggestion } from "@/app/submit/_components/orgTypes";
 import { parseApiResponse } from "@/lib/admin/fetchJson";
+import { supabase } from "@/lib/supabase/client";
 
 type Step = "pick" | "email" | "submitted";
 
@@ -25,11 +26,47 @@ export default function ClaimPage() {
   const [search, setSearch] = useState("");
   const [picked, setPicked] = useState<OrgSuggestion | null>(null);
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  // `signedInName` is non-null when we successfully read a name from the
+  // current session (OAuth user_metadata or the profiles row). In that case
+  // we skip the "Your name" form field and pass the captured name through.
+  const [signedInName, setSignedInName] = useState<string | null>(null);
   const [step, setStep] = useState<Step>("pick");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [devUrl, setDevUrl] = useState<string | null>(null);
   const [emailSent, setEmailSent] = useState<boolean | null>(null);
+
+  // Pull the signed-in user's name once on mount. Priority:
+  // 1) auth.users.user_metadata.name / full_name (set by Google/MS/Facebook OAuth)
+  // 2) public.profiles.full_name (email/password signups can fill this later).
+  // If none of these are present, treat the user as "not signed in for name"
+  // and render the Your-name field so we still capture it.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data: u } = await supabase.auth.getUser();
+        const user = u.user;
+        if (!user) return;
+        const meta = (user.user_metadata ?? {}) as Record<string, unknown>;
+        const fromMeta = (typeof meta.name === "string" && meta.name.trim()) ||
+                         (typeof meta.full_name === "string" && meta.full_name.trim()) ||
+                         null;
+        if (fromMeta) { if (!cancelled) setSignedInName(fromMeta); return; }
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("id", user.id)
+          .maybeSingle();
+        const fromProfile = (profile as { full_name: string | null } | null)?.full_name?.trim() || null;
+        if (fromProfile && !cancelled) setSignedInName(fromProfile);
+      } catch {
+        // Anonymous browse — fine, the form will ask for the name.
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   function chooseOrg(org: OrgSuggestion) {
     setPicked(org);
@@ -55,12 +92,17 @@ export default function ClaimPage() {
       setError("Please enter a valid email address.");
       return;
     }
+    const finalName = signedInName ?? name.trim();
+    if (!signedInName && finalName.length < 2) {
+      setError("Please enter your name so the verification email reads cleanly.");
+      return;
+    }
     setSubmitting(true);
     try {
       const res = await fetch("/api/orgs/request-claim", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ org_slug: picked.slug, email: email.trim() }),
+        body: JSON.stringify({ org_slug: picked.slug, email: email.trim(), name: finalName }),
       });
       const parsed = await parseApiResponse<RequestResponse>(res);
       if (!parsed.ok) {
@@ -140,7 +182,31 @@ export default function ClaimPage() {
             )}
 
             <form onSubmit={submitRequest} className="mt-5 space-y-3">
-              <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              {signedInName ? (
+                <p className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2">
+                  Signed in as <span className="font-semibold">{signedInName}</span>. We&apos;ll use this on your claim.
+                </p>
+              ) : (
+                <>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Your name
+                  </label>
+                  <div className="relative">
+                    <User size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={e => setName(e.target.value)}
+                      placeholder="Your full name"
+                      required
+                      minLength={2}
+                      className="w-full bg-white border border-gray-200 rounded-xl pl-9 pr-3.5 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]/40 focus:border-[#4ea8de] transition-colors"
+                    />
+                  </div>
+                </>
+              )}
+
+              <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider pt-1">
                 Your work email
               </label>
               <div className="relative">
