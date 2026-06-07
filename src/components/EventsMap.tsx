@@ -309,12 +309,16 @@ export default function EventsMap({
     const container = containerRef.current;
     const mobile = window.matchMedia("(max-width: 640px)").matches;
 
-    // World width at zoom Z is 256 * 2^Z CSS pixels. To stop the gray bands
-    // on either side of the tiles at low zoom, the smallest allowed zoom
-    // has to make the rendered world at least as wide as the container.
+    // World tiles are 256 * 2^Z CSS pixels per side (square). To kill the
+    // gray bands at low zoom we need the rendered world to be at least as
+    // big as the container in BOTH dimensions — width was enough on the
+    // homepage card but /map's 70vh container can leave a vertical gap.
     function computeMinZoom(): number {
       const w = container.clientWidth || 1;
-      return Math.max(2, Math.ceil(Math.log2(w / 256)));
+      const h = container.clientHeight || 1;
+      const needWidth  = Math.ceil(Math.log2(w / 256));
+      const needHeight = Math.ceil(Math.log2(h / 256));
+      return Math.max(2, needWidth, needHeight);
     }
 
     const initialMinZoom = computeMinZoom();
@@ -405,7 +409,27 @@ export default function EventsMap({
     //   2. The window — or the parent column — resizes after mount.
     //      ResizeObserver re-runs invalidateSize and recomputes minZoom so
     //      no new gray bands appear at the new width.
-    requestAnimationFrame(() => map.invalidateSize());
+    // Two-pass invalidate: the rAF catches the post-mount layout, the timeout
+    // catches the case where the parent's height value (e.g. "70vh") settles
+    // a tick later. Cheap insurance against the "world doesn't fill height"
+    // first-paint flash some browsers show.
+    requestAnimationFrame(() => {
+      map.invalidateSize();
+      const z = computeMinZoom();
+      if (z !== map.getMinZoom()) {
+        map.setMinZoom(z);
+        if (map.getZoom() < z) map.setZoom(z);
+      }
+    });
+    setTimeout(() => {
+      if (!mapRef.current) return;
+      map.invalidateSize();
+      const z = computeMinZoom();
+      if (z !== map.getMinZoom()) {
+        map.setMinZoom(z);
+        if (map.getZoom() < z) map.setZoom(z);
+      }
+    }, 250);
     const resizeObserver = typeof ResizeObserver !== "undefined"
       ? new ResizeObserver(() => {
           const newMin = computeMinZoom();

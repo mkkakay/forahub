@@ -8,6 +8,7 @@ import { MapPin, Tag, Calendar, Globe, AlertCircle } from "lucide-react";
 import type { ShowFilter, ColorMode, FlyToTarget } from "@/components/EventsMap";
 import { ShowFilterPills, ColorByPills } from "@/components/MapFilterPills";
 import { EVENT_CATEGORIES, type CategoryKey } from "@/lib/categories";
+import { SDG_COLORS } from "@/lib/assets/sdgFallbacks";
 import CitySearchInput, { type ResolvedCity } from "@/components/CitySearchInput";
 import UseMyLocationButton, { type GeolocationOutcome } from "@/components/UseMyLocationButton";
 
@@ -309,19 +310,36 @@ export default function MapPageClient() {
           <div className="flex flex-wrap gap-1.5">
             {Array.from({ length: 17 }, (_, i) => i + 1).map(n => {
               const active = sdgs.has(n);
+              const color = SDG_COLORS[n] ?? "#0f2a4a";
               return (
                 <button
                   key={n}
                   type="button"
                   onClick={() => toggleSdg(n)}
-                  title={SDG_LABELS[n]}
-                  className={`text-xs font-semibold px-2 py-1 rounded border transition-colors ${
+                  title={`SDG ${n}: ${SDG_LABELS[n]}`}
+                  className={`inline-flex items-center gap-1.5 text-[11px] font-semibold pl-1.5 pr-2 py-0.5 rounded-full border transition-all ${
                     active
-                      ? "bg-blue-100 text-blue-700 border-blue-300"
-                      : "bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300"
+                      ? "text-white border-transparent shadow-sm ring-2 ring-offset-1"
+                      : "bg-white text-slate-700 border-slate-200 hover:border-slate-300"
                   }`}
+                  style={
+                    active
+                      ? ({ backgroundColor: color, ["--tw-ring-color" as string]: color } as React.CSSProperties)
+                      : undefined
+                  }
                 >
-                  {n}
+                  {/* Number disc — always coloured even on inactive chips so
+                      the palette is recognisable at rest. */}
+                  <span
+                    className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold leading-none"
+                    style={{
+                      backgroundColor: active ? "rgba(255,255,255,0.22)" : color,
+                      color: "#ffffff",
+                    }}
+                  >
+                    {n}
+                  </span>
+                  <span className="whitespace-nowrap">{SDG_LABELS[n]}</span>
                 </button>
               );
             })}

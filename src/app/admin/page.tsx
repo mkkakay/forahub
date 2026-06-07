@@ -16,6 +16,7 @@ import CategorizationPanel from '@/components/admin/CategorizationPanel'
 import TrustLogosPanel from '@/components/admin/TrustLogosPanel'
 import DirectoryPanel from './DirectoryPanel'
 import OrgImportPanel from './OrgImportPanel'
+import ClaimReviewPanel from './ClaimReviewPanel'
 
 export const dynamic = 'force-dynamic'
 
@@ -255,6 +256,11 @@ export default async function AdminDashboard() {
       {/* Directory bulk import (ROR + IATI) */}
       <div className="mt-6">
         <OrgImportPanel adminSecret={process.env.ADMIN_SECRET ?? ''} />
+      </div>
+
+      {/* Claim review queue */}
+      <div className="mt-6">
+        <ClaimReviewPanel adminSecret={process.env.ADMIN_SECRET ?? ''} />
       </div>
 
       {/* Regions section */}
