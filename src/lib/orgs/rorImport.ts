@@ -101,8 +101,19 @@ function rorIdFromUrl(url: string): string | null {
   return m ? m[1] : null;
 }
 
-export async function fetchRorPage(page: number): Promise<RorPageResult> {
-  const res = await fetch(`${ROR_API}?page=${page}`, {
+export interface FetchRorOptions {
+  /** Lucene-style filter pushed through ROR's query.advanced parameter.
+   *  Example for the cron: `admin.last_modified.date:[2026-05-24 TO *]` */
+  advancedQuery?: string;
+}
+
+export async function fetchRorPage(
+  page: number,
+  opts: FetchRorOptions = {},
+): Promise<RorPageResult> {
+  const params = new URLSearchParams({ page: page.toString() });
+  if (opts.advancedQuery) params.set("query.advanced", opts.advancedQuery);
+  const res = await fetch(`${ROR_API}?${params.toString()}`, {
     headers: { Accept: "application/json", "User-Agent": "forahub-org-importer (hello@forahub.org)" },
   });
   if (!res.ok) {
