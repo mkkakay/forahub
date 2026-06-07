@@ -15,6 +15,7 @@ import PageBannersPanel from '@/components/admin/PageBannersPanel'
 import CategorizationPanel from '@/components/admin/CategorizationPanel'
 import TrustLogosPanel from '@/components/admin/TrustLogosPanel'
 import DirectoryPanel from './DirectoryPanel'
+import OrgImportPanel from './OrgImportPanel'
 
 export const dynamic = 'force-dynamic'
 
@@ -249,6 +250,11 @@ export default async function AdminDashboard() {
       {/* Organizations section */}
       <div className="mt-6">
         <OrganizationsPanel adminSecret={process.env.ADMIN_SECRET ?? ''} />
+      </div>
+
+      {/* Directory bulk import (ROR + IATI) */}
+      <div className="mt-6">
+        <OrgImportPanel adminSecret={process.env.ADMIN_SECRET ?? ''} />
       </div>
 
       {/* Regions section */}

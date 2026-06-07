@@ -180,6 +180,17 @@ function ResultRow({ org, onPick }: { org: OrgSuggestion; onPick: () => void }) 
             {org.is_verified && org.is_claimed && (
               <BadgeCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" aria-label="Verified organization" />
             )}
+            {/* Tier-3 community / auto-discovered rows surface a small
+                "unverified org" pill so the picker shows the user this is
+                not a curated listing. */}
+            {org.tier === 3 && (
+              <span
+                className="ml-1 shrink-0 text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200"
+                title="This organization hasn't been verified yet."
+              >
+                Unverified
+              </span>
+            )}
           </span>
           <span className="text-[11px] text-gray-500 block truncate">{org.name}</span>
         </span>

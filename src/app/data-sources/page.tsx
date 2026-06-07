@@ -69,6 +69,53 @@ export default async function DataSourcesPage() {
             All events are reviewed for quality and accuracy. We use AI-assisted classification to tag events with relevant SDG goals, regions, and formats. Human review is applied to featured and promoted listings. Despite our best efforts, event details can change — always verify with the organizing institution before registering.
           </p>
         </section>
+
+        <section>
+          <h2 className="text-xl font-bold text-[#0f2a4a] dark:text-white mb-3">Open Data Partners</h2>
+          <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
+            Our organization directory blends our own curation with open public-domain datasets. We credit each source per its license terms. If you spot a missed attribution, write to{" "}
+            <a href="mailto:hello@forahub.org" className="text-[#4ea8de] hover:underline">hello@forahub.org</a>.
+          </p>
+          <div className="space-y-3">
+            <div className="bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-[#334155] rounded-xl p-4">
+              <h3 className="font-semibold text-sm text-[#0f2a4a] dark:text-white">
+                Research Organization Registry (ROR)
+              </h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                CC0 1.0 Public Domain Dedication ·{" "}
+                <a href="https://ror.org/" target="_blank" rel="noopener noreferrer" className="text-[#4ea8de] hover:underline">ror.org</a>
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mt-2 leading-relaxed">
+                Open registry of research organizations — universities, institutes, hospitals, government labs, funders — maintained by Crossref, DataCite, and a community of contributors. ForaHub imports ROR records (names, aliases, types, country, official website, Wikidata / GRID / ISNI / FundRef cross-references) to seed the global organization directory.
+              </p>
+            </div>
+            <div className="bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-[#334155] rounded-xl p-4">
+              <h3 className="font-semibold text-sm text-[#0f2a4a] dark:text-white">
+                International Aid Transparency Initiative (IATI)
+              </h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                Public domain — IATI Standard data ·{" "}
+                <a href="https://iatistandard.org/" target="_blank" rel="noopener noreferrer" className="text-[#4ea8de] hover:underline">iatistandard.org</a>
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mt-2 leading-relaxed">
+                The international standard for publishing aid, development, and humanitarian resource flows. We pull the canonical list of bilateral donors, multilateral agencies, INGOs, and foundations registered with IATI via the IATI Datastore, including names, organisation identifiers, types, and official websites.
+              </p>
+            </div>
+            <div className="bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-[#334155] rounded-xl p-4">
+              <h3 className="font-semibold text-sm text-[#0f2a4a] dark:text-white">
+                OpenStreetMap, OpenMapTiles, Stadia Maps, CARTO
+              </h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                ODbL / provider terms ·{" "}
+                <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="text-[#4ea8de] hover:underline">OSM</a>{" "}·{" "}
+                <a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer" className="text-[#4ea8de] hover:underline">CARTO</a>
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mt-2 leading-relaxed">
+                Base map tiles and geocoding for the events map. Stadia Maps is our primary tile provider (Outdoors / Alidade Smooth Dark), with CARTO as a safety fallback. Reverse and forward geocoding via Nominatim and LocationIQ.
+              </p>
+            </div>
+          </div>
+        </section>
       </main>
     </div>
   );
