@@ -14,6 +14,7 @@ interface ClaimRow {
   user_email: string;
   status: string;
   token_expires_at: string | null;
+  verification_path: string | null;
 }
 
 // Plain-language copy — no "token". Distinguishes expired vs. used vs. other.
@@ -38,6 +39,11 @@ const ERROR_COPY: Record<string, ErrorCopy> = {
     variant: "used",
     title: "This link has already been used",
     body: "Your organization is already verified. Sign in to manage it.",
+  },
+  pending_admin_review: {
+    variant: "used",
+    title: "Your claim is already pending review",
+    body: "We've confirmed your email and your claim is in the review queue. We'll email you with the decision, usually within 2 business days.",
   },
   invalid_status: {
     variant: "invalid",
@@ -74,12 +80,23 @@ interface VerificationFailure {
   context?: { orgSlug: string; userEmail: string };
 }
 
+interface VerificationQueued {
+  ok: true;
+  outcome: "queued";
+  orgSlug: string;
+}
+interface VerificationApproved {
+  ok: true;
+  outcome: "approved";
+  orgSlug: string;
+}
+
 async function performVerification(
   token: string,
-): Promise<{ ok: true; orgSlug: string } | VerificationFailure> {
+): Promise<VerificationApproved | VerificationQueued | VerificationFailure> {
   const { data, error } = await adminSupabase
     .from("org_claims")
-    .select("id, org_slug, user_email, status, token_expires_at")
+    .select("id, org_slug, user_email, status, token_expires_at, verification_path")
     .eq("verification_token", token)
     .maybeSingle();
   if (error) return { ok: false, reason: "lookup_failed" };
@@ -87,6 +104,7 @@ async function performVerification(
   if (!claim) return { ok: false, reason: "invalid_token" };
   const context = { orgSlug: claim.org_slug, userEmail: claim.user_email };
   if (claim.status === "verified") return { ok: false, reason: "already_verified", context };
+  if (claim.status === "pending_admin_review") return { ok: false, reason: "pending_admin_review", context };
   if (claim.status !== "pending_verification") return { ok: false, reason: "invalid_status", context };
   if (!claim.token_expires_at || new Date(claim.token_expires_at).getTime() < Date.now()) {
     await adminSupabase.from("org_claims").update({ status: "expired" }).eq("id", claim.id);
@@ -103,6 +121,24 @@ async function performVerification(
   }
 
   const nowIso = new Date().toISOString();
+
+  // Free-mail or domain-mismatch path: email is now proven but the row goes
+  // to the admin queue. Do NOT flip is_claimed / is_verified on the org —
+  // an admin grants those after reviewing the supporting context.
+  if (claim.verification_path === "admin_review") {
+    const { error: claimErr } = await adminSupabase
+      .from("org_claims")
+      .update({
+        status: "pending_admin_review",
+        verification_token: null,
+        user_id: userId,
+      })
+      .eq("id", claim.id);
+    if (claimErr) return { ok: false, reason: "update_failed", context };
+    return { ok: true, outcome: "queued", orgSlug: claim.org_slug };
+  }
+
+  // Default / explicit domain_match path: instant grant.
   const { error: claimErr } = await adminSupabase
     .from("org_claims")
     .update({
@@ -125,7 +161,7 @@ async function performVerification(
     .eq("slug", claim.org_slug);
   if (orgErr) return { ok: false, reason: "org_update_failed", context };
 
-  return { ok: true, orgSlug: claim.org_slug };
+  return { ok: true, outcome: "approved", orgSlug: claim.org_slug };
 }
 
 export default async function ClaimVerifyPage({
@@ -142,9 +178,52 @@ export default async function ClaimVerifyPage({
 
   const result = await performVerification(searchParams.token!.trim());
   if (result.ok) {
-    redirect(`/orgs/${result.orgSlug}/manage?claimed=1`);
+    if (result.outcome === "approved") {
+      redirect(`/orgs/${result.orgSlug}/manage?claimed=1`);
+    }
+    // outcome === "queued": email was just confirmed, but the claim sits in
+    // the admin review queue. Don't redirect to the manage page — show a
+    // calm "thanks, we'll get back to you" screen instead.
+    return renderQueued();
   }
   return renderError(result.reason, result.context);
+}
+
+function renderQueued() {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <main className="max-w-xl mx-auto px-4 py-16">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 text-center">
+          <div className="mx-auto w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center mb-4">
+            <Clock className="w-7 h-7 text-amber-600" />
+          </div>
+          <h1 className="text-2xl font-bold text-[#0f2a4a]">Email confirmed — pending review</h1>
+          <p className="text-sm text-gray-600 mt-3">
+            Thanks for confirming your email. Because your address isn&apos;t on the
+            organization&apos;s known domain, we&apos;ll review your claim manually
+            before granting access. We&apos;ll email you with the decision — usually
+            within 2 business days.
+          </p>
+          <p className="text-xs text-gray-500 mt-4">
+            Need to share more context? Reply to the verification email or write to{" "}
+            <a href="mailto:hello@forahub.org" className="text-blue-700 hover:underline font-medium">
+              hello@forahub.org
+            </a>
+            .
+          </p>
+          <div className="mt-6">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 bg-[#0f2a4a] hover:bg-[#1a3f6e] text-white font-semibold px-5 py-2.5 rounded-xl text-sm"
+            >
+              Back to ForaHub
+            </Link>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
 }
 
 function renderError(

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { renderClaimVerificationEmail } from "@/lib/email/claimVerification";
+import { isFreeMailDomain } from "@/lib/email/freeMailDomains";
+
+type VerificationPath = "domain_match" | "admin_review";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -139,27 +142,26 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Decide the verification path.
+  //
+  // AUTO ("domain_match") requires BOTH:
+  //   - the email's host equals the org's known domain on file, AND
+  //   - that host is NOT on the free-mail / personal-provider list.
+  //
+  // Everything else — free-mail domains, custom-domain mismatch, or org with
+  // no domain on file — falls to ADMIN REVIEW. Never hard-reject. The user
+  // still email-verifies the address (proves ownership) but the row lands
+  // in the queue at status='pending_admin_review' until a human approves.
   const orgDomain = normalizeOrgDomain(org.domain);
   const emailDomain = extractDomain(email);
-  if (!orgDomain) {
-    return NextResponse.json(
-      {
-        error: "no_org_domain",
-        message: `We don't have a verified domain on file for ${org.name}. To list events, use the standard submission form.`,
-      },
-      { status: 422 }
-    );
-  }
-  if (!emailDomain || emailDomain !== orgDomain) {
-    return NextResponse.json(
-      {
-        error: "domain_mismatch",
-        org_domain: orgDomain,
-        message: `Your email domain doesn't match ${org.name}'s verified domain (@${orgDomain}). To list events for this organization, use the standard submission form instead.`,
-      },
-      { status: 422 }
-    );
-  }
+  const emailIsFreeMail = isFreeMailDomain(emailDomain);
+  const verificationPath: VerificationPath =
+    !!orgDomain &&
+    !!emailDomain &&
+    emailDomain === orgDomain &&
+    !emailIsFreeMail
+      ? "domain_match"
+      : "admin_review";
 
   const token = crypto.randomUUID();
   const expiresAt = new Date(Date.now() + TOKEN_TTL_MS).toISOString();
@@ -183,6 +185,11 @@ export async function POST(req: NextRequest) {
         user_email: email,
         claimant_name: finalName,
         status: "pending_verification",
+        // verification_path is decided here and locked in for the rest of
+        // the flow. /claim/verify reads it on token-click to decide whether
+        // to auto-approve (domain_match) or send the row to the admin
+        // review queue (admin_review).
+        verification_path: verificationPath,
         verification_token: token,
         token_expires_at: expiresAt,
         claimed_at: null,
@@ -232,6 +239,7 @@ export async function POST(req: NextRequest) {
     success: true,
     message: "Check your email",
     email_sent: emailResult.sent,
+    verification_path: verificationPath,
     ...devFallback,
   });
 }
