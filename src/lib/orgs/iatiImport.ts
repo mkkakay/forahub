@@ -1,16 +1,17 @@
-// Pulls IATI organisations via the IATI Datastore Search API. The Datastore
-// returns Solr-style paginated JSON which is friendlier than the registry's
-// XML organisation files (we don't need the full IATI activities, just
-// publisher org metadata).
+// Pulls IATI organisations via the IATI Datastore v3 (Azure APIM, Solr
+// backend). The canonical Solr handler is `/select` — earlier versions of
+// this file targeted `/search`, which APIM rejects with HTTP 403 because
+// the path doesn't match a registered operation on the subscription.
 //
-// Endpoint: https://api.iatistandard.org/datastore/organisation/search
-// Public free tier — rate-limited to ~100 req / min.
+// Endpoint: https://api.iatistandard.org/datastore/organisation/select
+// Auth: Ocp-Apim-Subscription-Key header sourced from IATI_API_KEY env var.
+// Subscribed product must include the `organisation` collection.
 
 import { mapIatiType, type ForaHubOrgType } from "./typeMap";
 import { extractDomain } from "./extractDomain";
 import type { ImportedOrg } from "./upsertImported";
 
-const IATI_API = "https://api.iatistandard.org/datastore/organisation/search";
+const IATI_API = "https://api.iatistandard.org/datastore/organisation/select";
 const PAGE_SIZE = 100;
 
 interface IatiDoc {
@@ -61,7 +62,18 @@ export async function fetchIatiPage(start: number): Promise<IatiPageResult> {
   if (apiKey) headers["Ocp-Apim-Subscription-Key"] = apiKey;
   const res = await fetch(`${IATI_API}?${params.toString()}`, { headers });
   if (!res.ok) {
-    throw new Error(`IATI Datastore HTTP ${res.status} at start=${start}`);
+    // Surface up to ~200 chars of the response body so a 403/404 from APIM
+    // includes the rejection reason (wrong product, missing path, etc.)
+    // instead of just the status code.
+    let detail = "";
+    try { detail = (await res.text()).slice(0, 200); } catch {}
+    const headerHint = apiKey
+      ? `key sent via Ocp-Apim-Subscription-Key (length=${apiKey.length})`
+      : `no Ocp-Apim-Subscription-Key header sent (env var missing)`;
+    throw new Error(
+      `IATI Datastore HTTP ${res.status} at start=${start} — ${headerHint}` +
+        (detail ? ` · response: ${detail}` : ""),
+    );
   }
   const body = (await res.json()) as IatiSearchResponse;
   const docs = body.response?.docs ?? [];

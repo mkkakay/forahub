@@ -102,7 +102,13 @@ export async function GET(req: NextRequest) {
     .select("*")
     .order("started_at", { ascending: false })
     .limit(20);
-  return NextResponse.json({ directoryCounts, jobs: jobs ?? [] });
+  // Runtime env probe so the admin can confirm the key actually made it
+  // into the deployed instance (only key length, never the value).
+  const env_probe = {
+    has_iati_key: !!process.env.IATI_API_KEY,
+    iati_key_length: (process.env.IATI_API_KEY ?? "").length,
+  };
+  return NextResponse.json({ directoryCounts, jobs: jobs ?? [], env_probe });
 }
 
 export async function POST(req: NextRequest) {
