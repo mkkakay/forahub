@@ -24,9 +24,19 @@ export const dynamic = "force-dynamic";
 // Leaves us ~60s of headroom under Vercel's 300s hard cap for cleanup.
 export const maxDuration = 300;
 
-const ROR_LOOKBACK_DAYS = 14;
-// Belt-and-suspenders: stop the loop a comfortable margin before maxDuration.
-const RUNTIME_BUDGET_MS = 240_000;
+// ROR daily window. Once the catalog is in steady state this yields
+// roughly 30–80 modified records per day — comfortably under the budget.
+// A one-time catch-up after a long gap is handled by the cron running
+// daily; we don't try to drain a huge window in a single invocation.
+const ROR_LOOKBACK_DAYS = 3;
+// Belt-and-suspenders: stop the ROR loop comfortably before the IATI step
+// starts, so the *combined* wall-clock fits inside Vercel's 300s cap.
+const ROR_RUNTIME_BUDGET_MS = 120_000;
+// IATI rotation: the bulk file has ~2K rows, no native "modified since"
+// filter, and each upsert is a Supabase REST round-trip. Processing 400
+// rows takes ~70s. We rotate through the catalog one daily slice at a
+// time so any given row is touched every ~5–6 days.
+const IATI_DAILY_CHUNK = 400;
 const INTER_PAGE_DELAY_MS = 50;
 
 function authorized(req: NextRequest): boolean {
@@ -82,7 +92,7 @@ async function runRorIncremental(startedAt: number): Promise<SourceOutcome> {
 
   try {
     while (true) {
-      if (Date.now() - startedAt > RUNTIME_BUDGET_MS) break;
+      if (Date.now() - startedAt > ROR_RUNTIME_BUDGET_MS) break;
       const page = await fetchRorPage(cursor, { advancedQuery });
       pagesProcessed += 1;
       total = page.totalResults;
@@ -128,13 +138,18 @@ async function runRorIncremental(startedAt: number): Promise<SourceOutcome> {
 }
 
 async function tryIati(): Promise<SourceOutcome> {
-  // IATI bulk file is ~2 K rows total — drain the whole thing in one cron
-  // run. Idempotent on external_ids.iati so a daily re-run is just UPDATEs.
-  // Errors are caught so a transient network blip doesn't block ROR.
+  // IATI rotation strategy: the bulk file has no per-row "modified since"
+  // metadata, so we can't be incremental like ROR. Instead we touch
+  // IATI_DAILY_CHUNK rows per day, rotating through the catalog so every
+  // row gets refreshed every ~5–6 days. Idempotent: re-running same slice
+  // is just UPDATEs through external_ids.iati. Errors are soft-failed so
+  // ROR isn't blocked.
   const counters = emptyCounters();
+  const dayIndex = Math.floor(Date.now() / 86_400_000);
+
   const { data: job, error: jobErr } = await adminSupabase
     .from("directory_import_jobs")
-    .insert({ source: "iati", status: "running", next_cursor: "cron:bulk" })
+    .insert({ source: "iati", status: "running", next_cursor: `cron:day${dayIndex}` })
     .select("id")
     .single();
   if (jobErr || !job) {
@@ -142,8 +157,11 @@ async function tryIati(): Promise<SourceOutcome> {
   }
   try {
     const bulk = await fetchIatiBulk();
-    counters.rows_seen = bulk.orgs.length + bulk.dropped;
-    for (const org of bulk.orgs) {
+    const total = bulk.orgs.length;
+    const startCursor = total > 0 ? (dayIndex * IATI_DAILY_CHUNK) % total : 0;
+    const slice = bulk.orgs.slice(startCursor, startCursor + IATI_DAILY_CHUNK);
+    counters.rows_seen = slice.length;
+    for (const org of slice) {
       const r = await upsertImportedOrg(adminSupabase, org);
       if (r.outcome === "inserted") counters.rows_inserted += 1;
       else if (r.outcome === "updated") counters.rows_updated += 1;
@@ -152,6 +170,7 @@ async function tryIati(): Promise<SourceOutcome> {
     }
     await adminSupabase.from("directory_import_jobs").update({
       status: "completed",
+      next_cursor: `cron:day${dayIndex}:rows ${startCursor}-${startCursor + slice.length}`,
       rows_seen: counters.rows_seen,
       rows_inserted: counters.rows_inserted,
       rows_updated: counters.rows_updated,
@@ -159,7 +178,7 @@ async function tryIati(): Promise<SourceOutcome> {
       rows_skipped: counters.rows_skipped,
       finished_at: new Date().toISOString(),
     }).eq("id", job.id);
-    return { source: "iati", ok: true, pages_processed: 1, counters, total_results: bulk.orgs.length, done: true, job_id: job.id };
+    return { source: "iati", ok: true, pages_processed: 1, counters, total_results: total, done: true, job_id: job.id };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     await adminSupabase.from("directory_import_jobs").update({
