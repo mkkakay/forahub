@@ -3,15 +3,16 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  BadgeCheck, Building2, Mail, ArrowRight, Loader2, AlertCircle, CheckCircle2, X, User,
+  BadgeCheck, Building2, Mail, ArrowRight, Loader2, AlertCircle, CheckCircle2, X, User, Sparkles, Info,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import OrgCombobox from "@/app/submit/_components/OrgCombobox";
 import type { OrgSuggestion } from "@/app/submit/_components/orgTypes";
 import { parseApiResponse } from "@/lib/admin/fetchJson";
 import { supabase } from "@/lib/supabase/client";
+import { resolveClaimMessage, CLAIM_GENERIC_ERROR, type ClaimMessage } from "@/lib/claim/messages";
 
-type Step = "pick" | "email" | "submitted";
+type Step = "pick" | "email" | "submitted" | "already_owned";
 
 interface RequestResponse {
   success?: boolean;
@@ -20,6 +21,11 @@ interface RequestResponse {
   error?: string;
   message?: string;
   org_domain?: string;
+  verification_path?: "domain_match" | "admin_review";
+  /** Present when the server returns already_owned_by_you so we can build
+   *  the Manage CTA without re-deriving the slug. */
+  org_slug?: string;
+  own_org?: boolean;
 }
 
 export default function ClaimPage() {
@@ -33,9 +39,14 @@ export default function ClaimPage() {
   const [signedInName, setSignedInName] = useState<string | null>(null);
   const [step, setStep] = useState<Step>("pick");
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // `feedback` carries the resolved ClaimMessage — never a raw error code.
+  // The renderer below switches on feedback.kind, so positive states aren't
+  // styled as errors.
+  const [feedback, setFeedback] = useState<ClaimMessage | null>(null);
   const [devUrl, setDevUrl] = useState<string | null>(null);
   const [emailSent, setEmailSent] = useState<boolean | null>(null);
+  const [verificationPath, setVerificationPath] = useState<"domain_match" | "admin_review" | null>(null);
+  const [ownedOrgSlug, setOwnedOrgSlug] = useState<string | null>(null);
 
   // Pull the signed-in user's name once on mount. Priority:
   // 1) auth.users.user_metadata.name / full_name (set by Google/MS/Facebook OAuth)
@@ -71,7 +82,7 @@ export default function ClaimPage() {
   function chooseOrg(org: OrgSuggestion) {
     setPicked(org);
     setSearch(org.name);
-    setError(null);
+    setFeedback(null);
     setStep("email");
   }
 
@@ -79,22 +90,27 @@ export default function ClaimPage() {
     setPicked(null);
     setStep("pick");
     setEmail("");
-    setError(null);
+    setFeedback(null);
     setDevUrl(null);
     setEmailSent(null);
+    setVerificationPath(null);
+    setOwnedOrgSlug(null);
   }
 
   async function submitRequest(e: React.FormEvent) {
     e.preventDefault();
     if (!picked) return;
-    setError(null);
+    setFeedback(null);
     if (!email.trim() || !email.includes("@")) {
-      setError("Please enter a valid email address.");
+      setFeedback({ kind: "error", text: "Please enter a valid email address." });
       return;
     }
     const finalName = signedInName ?? name.trim();
     if (!signedInName && finalName.length < 2) {
-      setError("Please enter your name so the verification email reads cleanly.");
+      setFeedback({
+        kind: "error",
+        text: "Please enter your name so the verification email reads cleanly.",
+      });
       return;
     }
     setSubmitting(true);
@@ -106,14 +122,30 @@ export default function ClaimPage() {
       });
       const parsed = await parseApiResponse<RequestResponse>(res);
       if (!parsed.ok) {
-        setError(parsed.error || "Could not submit your claim. Please try again.");
+        // Map the raw code to friendly copy — never let raw "already_owned_by_you"
+        // / "already_claimed" / etc. underscore strings reach the UI.
+        const code = parsed.error;
+        const orgSlugCtx = picked?.slug ?? null;
+        const msg = resolveClaimMessage(code, { orgSlug: orgSlugCtx });
+        // The "you already own this" case is a POSITIVE outcome — promote it
+        // to its own step with a Manage CTA rather than rendering as a red
+        // error on the form.
+        if (code === "already_owned_by_you") {
+          setOwnedOrgSlug(orgSlugCtx);
+          setStep("already_owned");
+          return;
+        }
+        setFeedback(msg);
         return;
       }
       setEmailSent(!!parsed.data.email_sent);
       setDevUrl(parsed.data.dev_verify_url ?? null);
+      setVerificationPath(parsed.data.verification_path ?? null);
       setStep("submitted");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+    } catch {
+      // Network-level failure: fall back to the generic friendly sentence
+      // — never surface the raw Error message string.
+      setFeedback(CLAIM_GENERIC_ERROR);
     } finally {
       setSubmitting(false);
     }
@@ -228,15 +260,9 @@ export default function ClaimPage() {
                 )}
               </p>
 
-              {error && (
-                <div className="flex items-start gap-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
-                  <AlertCircle size={14} className="mt-0.5 shrink-0" />
-                  <span className="flex-1">{error}</span>
-                  <button type="button" onClick={() => setError(null)} className="text-red-500 hover:text-red-700">
-                    <X size={14} />
-                  </button>
-                </div>
-              )}
+              {/* Feedback pill — switches styling on `kind` so positive /
+                  info states never render as a red error. */}
+              {feedback && <FeedbackPill feedback={feedback} onDismiss={() => setFeedback(null)} />}
 
               <button
                 type="submit"
@@ -256,7 +282,13 @@ export default function ClaimPage() {
               <CheckCircle2 size={28} className="text-green-600" />
             </div>
             <h2 className="text-xl font-bold text-[#0f2a4a]">Check your inbox at {email}</h2>
-            <p className="text-sm text-gray-600 mt-2">Link expires in 1 hour.</p>
+            {verificationPath === "admin_review" ? (
+              <p className="text-sm text-gray-600 mt-2">
+                After you click the verify link, we&apos;ll review your request and follow up by email — usually within 2 business days.
+              </p>
+            ) : (
+              <p className="text-sm text-gray-600 mt-2">Link expires in 1 hour.</p>
+            )}
             <p className="text-xs text-gray-500 mt-3">
               Didn&apos;t receive it? Check spam, or try again in 5 minutes.
             </p>
@@ -287,7 +319,65 @@ export default function ClaimPage() {
             </button>
           </section>
         )}
+
+        {/* Positive end-state: the submitter already owns the org. NOT an
+            error — green styling, action-oriented CTA. */}
+        {step === "already_owned" && picked && (
+          <section className="bg-white rounded-2xl border border-emerald-200 shadow-sm p-6 text-center">
+            <div className="mx-auto w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center mb-4">
+              <Sparkles size={28} className="text-emerald-600" />
+            </div>
+            <h2 className="text-xl font-bold text-[#0f2a4a]">You already manage {picked.name}</h2>
+            <p className="text-sm text-gray-600 mt-2">
+              Sign in with <span className="font-semibold">{email}</span> if you&apos;re not already, then head to the manage page.
+            </p>
+            <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link
+                href={`/orgs/${ownedOrgSlug ?? picked.slug}/manage`}
+                className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-5 py-2.5 rounded-xl text-sm"
+              >
+                Manage organization →
+              </Link>
+              <button
+                type="button"
+                onClick={resetPick}
+                className="text-sm font-semibold text-blue-700 hover:text-blue-800"
+              >
+                Claim a different org
+              </button>
+            </div>
+          </section>
+        )}
       </main>
+    </div>
+  );
+}
+
+function FeedbackPill({ feedback, onDismiss }: { feedback: ClaimMessage; onDismiss: () => void }) {
+  const palette =
+    feedback.kind === "positive"
+      ? { wrap: "bg-emerald-50 border-emerald-200 text-emerald-800", icon: "text-emerald-600", dismiss: "text-emerald-500 hover:text-emerald-700", Icon: Sparkles }
+      : feedback.kind === "info"
+      ? { wrap: "bg-blue-50 border-blue-200 text-blue-800", icon: "text-blue-600", dismiss: "text-blue-500 hover:text-blue-700", Icon: Info }
+      : { wrap: "bg-red-50 border-red-200 text-red-700", icon: "text-red-600", dismiss: "text-red-500 hover:text-red-700", Icon: AlertCircle };
+  const Icon = palette.Icon;
+  return (
+    <div className={`flex items-start gap-2 text-sm border rounded-xl px-3 py-2 ${palette.wrap}`}>
+      <Icon size={14} className={`mt-0.5 shrink-0 ${palette.icon}`} />
+      <span className="flex-1">
+        {feedback.text}
+        {feedback.cta && (
+          <>
+            {" "}
+            <Link href={feedback.cta.href} className="font-semibold underline">
+              {feedback.cta.label}
+            </Link>
+          </>
+        )}
+      </span>
+      <button type="button" onClick={onDismiss} className={palette.dismiss}>
+        <X size={14} />
+      </button>
     </div>
   );
 }

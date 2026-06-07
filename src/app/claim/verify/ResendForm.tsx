@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Loader2, Mail, ArrowRight, CheckCircle2 } from "lucide-react";
 import { parseApiResponse } from "@/lib/admin/fetchJson";
+import { resolveClaimMessage, CLAIM_GENERIC_ERROR } from "@/lib/claim/messages";
 
 interface Props {
   orgSlug: string;
@@ -37,12 +38,16 @@ export default function ResendForm({ orgSlug, prefillEmail }: Props) {
       });
       const parsed = await parseApiResponse<ApiResponse>(res);
       if (!parsed.ok) {
-        setError(parsed.error || "Could not send a new link. Please try again.");
+        // Map raw codes to a friendly sentence. Unknown codes fall through
+        // to the generic "Something went wrong" message — never a raw
+        // underscored identifier.
+        const msg = resolveClaimMessage(parsed.error, { orgSlug });
+        setError(msg.text);
         return;
       }
       setSent(true);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+    } catch {
+      setError(CLAIM_GENERIC_ERROR.text);
     } finally {
       setSubmitting(false);
     }
