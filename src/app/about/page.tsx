@@ -4,9 +4,11 @@ import Navbar from "@/components/Navbar";
 import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
 import { getPageBanner } from "@/lib/pageBanners";
+import { getActiveAudienceCards } from "@/lib/audienceCards";
 import {
   Microscope, FileText, ClipboardList, Users, HandCoins,
-  Landmark, Briefcase, GraduationCap, Megaphone,
+  Landmark, Briefcase, GraduationCap, Megaphone, Circle,
+  type LucideIcon,
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -14,22 +16,18 @@ export const metadata: Metadata = {
   description: "ForaHub is the premier platform for global development professionals to discover conferences and events.",
 };
 
-const AUDIENCES: {
-  label: string;
-  Icon: typeof Microscope;
-  bg: string;
-  iconColor: string;
-}[] = [
-  { label: "Researchers & Scientists",   Icon: Microscope,     bg: "bg-green-50 dark:bg-green-950/30",   iconColor: "text-green-600 dark:text-green-400" },
-  { label: "Policy Advisors",            Icon: FileText,       bg: "bg-blue-50 dark:bg-blue-950/30",     iconColor: "text-blue-600 dark:text-blue-400" },
-  { label: "Programme Officers",         Icon: ClipboardList,  bg: "bg-indigo-50 dark:bg-indigo-950/30", iconColor: "text-indigo-600 dark:text-indigo-400" },
-  { label: "NGO Professionals",          Icon: Users,          bg: "bg-teal-50 dark:bg-teal-950/30",     iconColor: "text-teal-600 dark:text-teal-400" },
-  { label: "Donors & Funders",           Icon: HandCoins,      bg: "bg-amber-50 dark:bg-amber-950/30",   iconColor: "text-amber-600 dark:text-amber-400" },
-  { label: "Government Officials",       Icon: Landmark,       bg: "bg-slate-50 dark:bg-slate-800/40",   iconColor: "text-slate-600 dark:text-slate-300" },
-  { label: "Consultants",                Icon: Briefcase,      bg: "bg-sky-50 dark:bg-sky-950/30",       iconColor: "text-sky-600 dark:text-sky-400" },
-  { label: "Students & Early Career",    Icon: GraduationCap,  bg: "bg-violet-50 dark:bg-violet-950/30", iconColor: "text-violet-600 dark:text-violet-400" },
-  { label: "Journalists & Advocates",    Icon: Megaphone,      bg: "bg-rose-50 dark:bg-rose-950/30",     iconColor: "text-rose-600 dark:text-rose-400" },
-];
+// Icon names come from the audience_cards.icon column as strings. Map only
+// the known names and fall back to Circle. Keep this list in sync with the
+// admin panel's ICON_MAP.
+const ICON_MAP: Record<string, LucideIcon> = {
+  Microscope, FileText, ClipboardList, Users, HandCoins,
+  Landmark, Briefcase, GraduationCap, Megaphone,
+};
+
+function iconFor(name: string | null): LucideIcon {
+  if (name && ICON_MAP[name]) return ICON_MAP[name];
+  return Circle;
+}
 
 const STATS: { value: string; label: string }[] = [
   { value: "10,000+", label: "Organizations tracked" },
@@ -78,7 +76,10 @@ const TESTIMONIALS: {
 ];
 
 export default async function AboutPage() {
-  const banner = await getPageBanner("about").catch(() => null);
+  const [banner, audienceCards] = await Promise.all([
+    getPageBanner("about").catch(() => null),
+    getActiveAudienceCards().catch(() => []),
+  ]);
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -118,15 +119,42 @@ export default async function AboutPage() {
         <section>
           <h2 className="text-2xl font-bold text-[#0f2a4a] dark:text-white mb-4">Who We Serve</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-            {AUDIENCES.map(({ label, Icon, bg, iconColor }) => (
-              <div
-                key={label}
-                className={`flex items-center gap-3 ${bg} border border-gray-200 dark:border-[#334155] rounded-xl px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:shadow-md hover:-translate-y-0.5 transition`}
-              >
-                <Icon size={18} className={`${iconColor} shrink-0`} />
-                <span>{label}</span>
-              </div>
-            ))}
+            {audienceCards.map(card => {
+              const Icon = iconFor(card.icon);
+              const bg = card.bg_class ?? "bg-white";
+              const iconColor = card.icon_color_class ?? "text-[#4ea8de]";
+              const cardClass = `flex items-center gap-3 ${bg} border border-gray-200 dark:border-[#334155] rounded-xl px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:shadow-md hover:-translate-y-0.5 transition`;
+              const inner = (
+                <>
+                  {card.image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={card.image_url}
+                      alt=""
+                      className="w-6 h-6 rounded-sm object-cover shrink-0"
+                    />
+                  ) : (
+                    <Icon size={18} className={`${iconColor} shrink-0`} />
+                  )}
+                  <span>{card.label}</span>
+                </>
+              );
+              return card.link_url ? (
+                <a
+                  key={card.id}
+                  href={card.link_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cardClass}
+                >
+                  {inner}
+                </a>
+              ) : (
+                <div key={card.id} className={cardClass}>
+                  {inner}
+                </div>
+              );
+            })}
           </div>
         </section>
 

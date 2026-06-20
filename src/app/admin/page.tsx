@@ -18,6 +18,7 @@ import DirectoryPanel from './DirectoryPanel'
 import OrgImportPanel from './OrgImportPanel'
 import ClaimReviewPanel from './ClaimReviewPanel'
 import OrgManagersPanel from './OrgManagersPanel'
+import AudienceCardsPanel from './AudienceCardsPanel'
 
 export const dynamic = 'force-dynamic'
 
@@ -292,6 +293,11 @@ export default async function AdminDashboard() {
       {/* Page Banners section */}
       <div className="mt-6">
         <PageBannersPanel adminSecret={process.env.ADMIN_SECRET ?? ''} />
+      </div>
+
+      {/* Audience Cards (/about → Who We Serve) */}
+      <div className="mt-6">
+        <AudienceCardsPanel adminSecret={process.env.ADMIN_SECRET ?? ''} />
       </div>
 
       {/* Trust Strip Logos section */}
