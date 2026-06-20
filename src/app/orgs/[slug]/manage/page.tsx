@@ -1,18 +1,26 @@
+// Manage page — server entry. All data fetching + permission checks
+// stay here (unchanged from before). The visual layout now wraps the
+// existing five panels + a Settings tab in a sectioned tab nav so the
+// page no longer feels like an overwhelming scroll. NO functional
+// changes — same APIs, same isOrgManager gate, same data flows.
+
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BadgeCheck, ArrowLeft, Lock } from "lucide-react";
+import { Suspense } from "react";
+import { BadgeCheck, ArrowLeft, Lock, ShieldCheck, Calendar as CalendarIcon, Globe } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { isOrgManager, isDomainVerified, effectiveAutoPublish, listOrgManagers } from "@/lib/orgs/managers";
 import { listPendingInvites } from "@/lib/orgs/invites";
 import { AUTOPUBLISH_CAP_PER_24H, AUTOPUBLISH_WINDOW_HOURS } from "@/lib/orgs/autoPublish";
+import { loadOrgAnalytics } from "@/lib/analytics/aggregate";
 import ManageOrgForm from "./ManageOrgForm";
 import TeamPanel, { type ManagerView, type InviteView } from "./TeamPanel";
 import EventsPanel, { type EventView } from "./EventsPanel";
 import SeriesPanel from "./SeriesPanel";
 import AnalyticsPanel from "./AnalyticsPanel";
-import { loadOrgAnalytics } from "@/lib/analytics/aggregate";
+import ManageTabs from "./ManageTabs";
 
 export const dynamic = "force-dynamic";
 
@@ -32,17 +40,12 @@ interface OrgRow {
   claimed_at: string | null;
 }
 
-// Every "Coming soon" feature now ships as a live panel. Add new tiles
-// here if you have something to tease — otherwise this can stay empty
-// and the "Coming soon" section just won't render.
-const LOCKED_FEATURES: { title: string; body: string }[] = [];
-
 export default async function ManageOrgPage({
   params,
   searchParams,
 }: {
   params: { slug: string };
-  searchParams: { claimed?: string; invited?: string };
+  searchParams: { claimed?: string; invited?: string; tab?: string };
 }) {
   const sb = createServerSupabaseClient();
   const { data: u } = await sb.auth.getUser();
@@ -63,9 +66,7 @@ export default async function ManageOrgPage({
   }
   const org = data as OrgRow;
 
-  // Authoritative access check: a seat in org_managers for (slug, auth.uid()).
-  // Same predicate the /claim short-circuit uses (isOrgManager), so the two
-  // pages can never disagree.
+  // Authoritative access check — same predicate /claim short-circuits on.
   if (!(await isOrgManager(org.slug, userId!))) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -93,10 +94,11 @@ export default async function ManageOrgPage({
     );
   }
 
-  // Rolling-window cap counter — used by EventsPanel to show "X of N
-  // instant-publishes used today" when capacity is low.
+  // 24h auto-publish cap counter — same as before.
   const sinceIso = new Date(Date.now() - AUTOPUBLISH_WINDOW_HOURS * 3600 * 1000).toISOString();
-  const [managerRows, inviteRows, eventsRes, autoPublishedCountRes, analytics30, analytics90] = await Promise.all([
+  const [
+    managerRows, inviteRows, eventsRes, autoPublishedCountRes, analytics30, analytics90,
+  ] = await Promise.all([
     listOrgManagers(org.slug),
     listPendingInvites(org.slug),
     adminSupabase
@@ -114,148 +116,202 @@ export default async function ManageOrgPage({
     loadOrgAnalytics({ orgSlug: org.slug, windowDays: 90 }),
   ]);
 
-  // Annotate each manager with founder/self flags so the TeamPanel can
-  // disable the right buttons without re-running the same predicate
-  // client-side. Founder = earliest added_at (managerRows is already
-  // ordered ascending by listOrgManagers).
+  // Series count is a separate cheap query — used for the tab badge.
+  const { count: seriesCount } = await adminSupabase
+    .from("event_series")
+    .select("id", { count: "exact", head: true })
+    .eq("org_slug", org.slug)
+    .eq("status", "active");
+
   const founderId = managerRows[0]?.id ?? null;
   const viewerSeat = managerRows.find(m => m.user_id === userId) ?? null;
   const viewerIsDomainVerified = !!viewerSeat && isDomainVerified(viewerSeat.added_via);
   const viewerCanAutoPublish = !!viewerSeat && effectiveAutoPublish(viewerSeat);
 
   const managersForPanel: ManagerView[] = managerRows.map(m => ({
-    id: m.id,
-    user_id: m.user_id,
-    email: m.email,
-    role: m.role,
-    added_at: m.added_at,
-    verified_at: m.verified_at,
-    added_via: m.added_via,
-    is_founder: m.id === founderId,
-    is_self: m.user_id === userId,
+    id: m.id, user_id: m.user_id, email: m.email, role: m.role,
+    added_at: m.added_at, verified_at: m.verified_at, added_via: m.added_via,
+    is_founder: m.id === founderId, is_self: m.user_id === userId,
     can_autopublish: m.can_autopublish,
     autopublish_granted_at: m.autopublish_granted_at,
     is_trusted: isDomainVerified(m.added_via),
   }));
   const invitesForPanel: InviteView[] = inviteRows.map(i => ({
-    id: i.id,
-    invited_email: i.invited_email,
-    invited_by_email: i.invited_by_email,
-    note: i.note,
-    status: i.status,
-    expires_at: i.expires_at,
-    created_at: i.created_at,
+    id: i.id, invited_email: i.invited_email,
+    invited_by_email: i.invited_by_email, note: i.note, status: i.status,
+    expires_at: i.expires_at, created_at: i.created_at,
   }));
   const eventsForPanel: EventView[] = ((eventsRes.data ?? []) as EventView[]);
   const autoPublishedInWindow = autoPublishedCountRes.count ?? 0;
 
+  // Tab slots — each is the same component that used to render as a
+  // stacked section. Nothing about their props, fetch handlers, or
+  // server-validated permissions has changed.
+  const slots = {
+    profile: (
+      <ManageOrgForm
+        slug={org.slug}
+        initial={{
+          name: org.name,
+          short_name: org.short_name ?? "",
+          description: org.description ?? "",
+          logo_url: org.logo_url ?? "",
+          cover_image_url: org.cover_image_url ?? "",
+          website_url: org.website_url ?? "",
+          twitter_url: org.twitter_url ?? "",
+          linkedin_url: org.linkedin_url ?? "",
+        }}
+      />
+    ),
+    team: (
+      <TeamPanel
+        slug={org.slug}
+        orgName={org.name}
+        orgDomain={org.domain}
+        managers={managersForPanel}
+        invites={invitesForPanel}
+        viewerIsDomainVerified={viewerIsDomainVerified}
+      />
+    ),
+    events: (
+      <EventsPanel
+        slug={org.slug}
+        orgName={org.name}
+        events={eventsForPanel}
+        viewerCanAutoPublish={viewerCanAutoPublish}
+        viewerAddedVia={viewerSeat?.added_via ?? null}
+        autoPublishedInWindow={autoPublishedInWindow}
+        autoPublishCap={AUTOPUBLISH_CAP_PER_24H}
+        autoPublishWindowHours={AUTOPUBLISH_WINDOW_HOURS}
+      />
+    ),
+    series: (
+      <SeriesPanel
+        slug={org.slug}
+        orgName={org.name}
+        orgDomain={org.domain}
+        defaultOrganization={org.name}
+      />
+    ),
+    analytics: (
+      <AnalyticsPanel
+        slug={org.slug}
+        orgName={org.name}
+        summary30={analytics30}
+        summary90={analytics90}
+      />
+    ),
+    settings: <SettingsTab org={org} />,
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <main className="max-w-3xl mx-auto px-4 py-10 md:py-12">
-        <header className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-extrabold text-[#0f2a4a] tracking-tight inline-flex items-center gap-3">
-            Manage {org.name}
-            <BadgeCheck className="w-7 h-7 text-emerald-600" aria-label="Verified organization" />
-          </h1>
-          <p className="text-base text-gray-600 mt-2">
-            You&apos;re a verified manager. Update your org&apos;s profile below.
-          </p>
+      <main className="max-w-4xl mx-auto px-4 py-8 md:py-12">
+        {/* Header — always visible, sits above the tabs */}
+        <header className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+          <div className="min-w-0">
+            <Link
+              href={`/organizations/${org.slug}`}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-[#0f2a4a] mb-2"
+            >
+              <Globe className="w-3 h-3" /> View public page
+            </Link>
+            <h1 className="text-2xl md:text-3xl font-bold text-[#0f2a4a] tracking-tight inline-flex items-center gap-2">
+              {org.name}
+              {org.is_verified && (
+                <BadgeCheck
+                  className="w-5 h-5 md:w-6 md:h-6 text-emerald-600"
+                  aria-label="Verified organization"
+                />
+              )}
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Org settings · You&apos;re a verified manager.
+            </p>
+          </div>
         </header>
 
+        {/* Optional flash banners — same copy as before. */}
         {searchParams.claimed === "1" && (
-          <div className="mb-6 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl px-4 py-3 text-sm">
+          <div className="mb-5 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl px-4 py-3 text-sm">
             Claim verified. Your verified badge is now live across ForaHub.
           </div>
         )}
         {searchParams.invited === "1" && (
-          <div className="mb-6 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl px-4 py-3 text-sm">
-            Welcome to the team. You can update the org profile below and invite colleagues from the Team section.
+          <div className="mb-5 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl px-4 py-3 text-sm">
+            Welcome to the team. You can edit the org profile and invite colleagues.
           </div>
         )}
 
-        <ManageOrgForm
-          slug={org.slug}
-          initial={{
-            name: org.name,
-            short_name: org.short_name ?? "",
-            description: org.description ?? "",
-            logo_url: org.logo_url ?? "",
-            cover_image_url: org.cover_image_url ?? "",
-            website_url: org.website_url ?? "",
-            twitter_url: org.twitter_url ?? "",
-            linkedin_url: org.linkedin_url ?? "",
-          }}
-        />
-
-        <TeamPanel
-          slug={org.slug}
-          orgName={org.name}
-          orgDomain={org.domain}
-          managers={managersForPanel}
-          invites={invitesForPanel}
-          viewerIsDomainVerified={viewerIsDomainVerified}
-        />
-
-        <EventsPanel
-          slug={org.slug}
-          orgName={org.name}
-          events={eventsForPanel}
-          viewerCanAutoPublish={viewerCanAutoPublish}
-          viewerAddedVia={viewerSeat?.added_via ?? null}
-          autoPublishedInWindow={autoPublishedInWindow}
-          autoPublishCap={AUTOPUBLISH_CAP_PER_24H}
-          autoPublishWindowHours={AUTOPUBLISH_WINDOW_HOURS}
-        />
-
-        <SeriesPanel
-          slug={org.slug}
-          orgName={org.name}
-          orgDomain={org.domain}
-          defaultOrganization={org.name}
-        />
-
-        <AnalyticsPanel
-          slug={org.slug}
-          orgName={org.name}
-          summary30={analytics30}
-          summary90={analytics90}
-        />
-
-        <section className="mt-6 bg-white rounded-2xl border border-gray-200 shadow-sm p-5 md:p-6 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-          <div>
-            <dt className="text-xs font-semibold uppercase tracking-wider text-gray-500">Org status</dt>
-            <dd className="text-emerald-700 font-semibold inline-flex items-center gap-1.5 mt-1">
-              <BadgeCheck className="w-4 h-4" /> {org.is_verified ? "Verified" : "Claimed"}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-xs font-semibold uppercase tracking-wider text-gray-500">First verified</dt>
-            <dd className="text-gray-800 mt-1">
-              {org.claimed_at
-                ? new Date(org.claimed_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-                : "—"}
-            </dd>
-          </div>
-        </section>
-
-        {LOCKED_FEATURES.length > 0 && (
-          <section className="mt-8">
-            <h2 className="text-lg font-bold text-[#0f2a4a] mb-3">Coming soon</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {LOCKED_FEATURES.map(f => (
-                <div key={f.title} className="bg-white rounded-2xl border border-dashed border-gray-300 p-4 flex items-start gap-3">
-                  <Lock className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-sm font-semibold text-[#0f2a4a]">{f.title}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{f.body}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
+        {/* Tabs — replaces the previous long single-scroll layout. The
+            child component is wrapped in Suspense because it reads
+            useSearchParams() and Next 14 requires that under SSR. */}
+        <Suspense fallback={<div className="h-14" />}>
+          <ManageTabs
+            slots={slots}
+            badges={{
+              team: managerRows.length,
+              events: eventsForPanel.length,
+              series: seriesCount ?? 0,
+            }}
+            defaultTab="profile"
+          />
+        </Suspense>
       </main>
     </div>
+  );
+}
+
+// ─── Settings tab ────────────────────────────────────────────────────
+// The old in-page "Org status" mini-section. Same data, same source —
+// now lives behind the Settings tab instead of trailing the long scroll.
+
+function SettingsTab({ org }: { org: OrgRow }) {
+  const verifiedAt = org.claimed_at
+    ? new Date(org.claimed_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+    : null;
+  return (
+    <section className="space-y-4">
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 md:p-6">
+        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Org status</h2>
+        <dl className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+          <div>
+            <dt className="text-xs text-gray-500">Verification</dt>
+            <dd className="mt-1 inline-flex items-center gap-1.5 text-[#0f2a4a] font-semibold">
+              {org.is_verified ? (
+                <><BadgeCheck className="w-4 h-4 text-emerald-600" /> Verified</>
+              ) : org.is_claimed ? (
+                <><ShieldCheck className="w-4 h-4 text-[#4ea8de]" /> Claimed</>
+              ) : (
+                <span className="text-gray-500">Not claimed</span>
+              )}
+            </dd>
+            {org.domain && (
+              <dd className="text-xs text-gray-500 mt-0.5">
+                Domain: <span className="font-mono">@{org.domain}</span>
+              </dd>
+            )}
+          </div>
+          <div>
+            <dt className="text-xs text-gray-500">First verified</dt>
+            <dd className="mt-1 text-[#0f2a4a] font-semibold inline-flex items-center gap-1.5">
+              <CalendarIcon className="w-3.5 h-3.5 text-gray-400" />
+              {verifiedAt ?? "—"}
+            </dd>
+          </div>
+        </dl>
+      </div>
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 md:p-6">
+        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Public page</h2>
+        <p className="text-sm text-gray-600 mt-2">
+          Your organization&apos;s shareable page is at{" "}
+          <Link href={`/organizations/${org.slug}`} className="text-[#0f2a4a] font-semibold hover:underline">
+            /organizations/{org.slug}
+          </Link>
+          . Anything you update under Profile shows up there immediately.
+        </p>
+      </div>
+    </section>
   );
 }

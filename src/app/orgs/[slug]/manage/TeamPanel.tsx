@@ -10,7 +10,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Users, Mail, AlertCircle, CheckCircle2, X, Loader2, Trash2,
-  Send, RefreshCw, Crown, ShieldCheck, UserPlus, Clock, Info, Zap,
+  Send, RefreshCw, Crown, ShieldCheck, UserPlus, Clock, Info,
 } from "lucide-react";
 
 export interface ManagerView {
@@ -82,17 +82,19 @@ function fmtDate(iso: string | null | undefined): string {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
-function viaLabel(added_via: string | null): { label: string; cls: string; Icon: typeof ShieldCheck } {
-  if (added_via === "invitation") {
-    return { label: "Invited", cls: "bg-indigo-50 text-indigo-700 border-indigo-200", Icon: UserPlus };
-  }
-  if (added_via === "domain_match" || added_via === "oauth_session") {
-    return { label: "Work-email verified", cls: "bg-emerald-50 text-emerald-700 border-emerald-200", Icon: ShieldCheck };
-  }
-  if (added_via === "admin_review") {
-    return { label: "Admin-reviewed", cls: "bg-amber-50 text-amber-700 border-amber-200", Icon: ShieldCheck };
-  }
-  return { label: "Verified", cls: "bg-gray-50 text-gray-700 border-gray-200", Icon: ShieldCheck };
+function viaLabel(added_via: string | null): { label: string; Icon: typeof ShieldCheck } {
+  if (added_via === "invitation") return { label: "Invited", Icon: UserPlus };
+  if (added_via === "domain_match" || added_via === "oauth_session") return { label: "Verified via work email", Icon: ShieldCheck };
+  if (added_via === "admin_review") return { label: "Verified via admin review", Icon: ShieldCheck };
+  return { label: "Verified", Icon: ShieldCheck };
+}
+
+function initialFor(email: string): string {
+  const t = (email || "").trim();
+  if (!t) return "?";
+  const at = t.indexOf("@");
+  const local = at > 0 ? t.slice(0, at) : t;
+  return (local[0] || "?").toUpperCase();
 }
 
 export default function TeamPanel(props: Props) {
@@ -280,10 +282,11 @@ export default function TeamPanel(props: Props) {
         </div>
       )}
 
-      {/* Current managers */}
+      {/* Current managers — restrained Linear/Vercel/Notion-style list.
+          Single accent color, muted metadata, no competing pills. */}
       <div className="p-5 md:p-6 space-y-3">
-        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Current managers</h3>
-        <ul className="divide-y divide-gray-100 border border-gray-100 rounded-xl overflow-hidden">
+        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Members</h3>
+        <ul className="divide-y divide-gray-100 border border-gray-100 rounded-xl overflow-hidden bg-white">
           {managers.map(m => {
             const via = viaLabel(m.added_via);
             const ViaIcon = via.Icon;
@@ -292,90 +295,97 @@ export default function TeamPanel(props: Props) {
             const removeReason = isFounderRow
               ? "Founding manager — protected. Ask an admin to transfer."
               : !canActOnManagers ? "Can't remove the last manager." : null;
+            const showToggle = props.viewerIsDomainVerified && !m.is_trusted;
+            const effectiveAutoPub = m.is_trusted || m.can_autopublish;
             return (
-              <li key={m.id} className="px-4 py-3 text-sm">
-                <div className="flex items-center justify-between gap-3">
+              <li key={m.id} className="group px-4 py-3.5 sm:px-5 sm:py-4">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  {/* Avatar — single initial, muted gray. Same size for
+                      every row, sets a consistent rhythm. */}
+                  <div
+                    className="shrink-0 w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-sm font-semibold text-gray-600 select-none"
+                    aria-hidden="true"
+                  >
+                    {initialFor(m.email)}
+                  </div>
+
+                  {/* Email + tiny role indicators. "You" is muted text,
+                      Founder is a small icon — no colored pills. */}
                   <div className="min-w-0 flex-1">
-                    <div className="text-gray-900 truncate font-medium inline-flex items-center gap-1.5">
-                      {m.email || "(unknown email)"}
+                    <div className="flex items-center gap-1.5 text-sm">
+                      <span className="text-gray-900 font-medium truncate">
+                        {m.email || "(unknown email)"}
+                      </span>
                       {isFounderRow && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">
-                          <Crown className="w-2.5 h-2.5" /> Founder
-                        </span>
+                        <Crown
+                          className="w-3.5 h-3.5 text-gray-400 shrink-0"
+                          aria-label="Founding manager"
+                        />
                       )}
                       {m.is_self && (
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-200 rounded px-1.5 py-0.5">
-                          You
-                        </span>
+                        <span className="text-xs text-gray-400 shrink-0">(you)</span>
                       )}
                     </div>
-                    <div className="text-[11px] text-gray-500 mt-0.5 inline-flex items-center gap-1.5 flex-wrap">
-                      <span className={`inline-flex items-center gap-1 border rounded px-1.5 py-0.5 ${via.cls}`}>
-                        <ViaIcon className="w-2.5 h-2.5" /> {via.label}
-                      </span>
-                      <span>· joined {fmtDate(m.verified_at ?? m.added_at)}</span>
-                      {(m.is_trusted || m.can_autopublish) && (
-                        <span className="inline-flex items-center gap-1 border border-emerald-200 bg-emerald-50 text-emerald-700 rounded px-1.5 py-0.5">
-                          <Zap className="w-2.5 h-2.5" /> Instant publish
-                        </span>
-                      )}
+                    <div className="text-xs text-gray-500 mt-0.5 inline-flex items-center gap-1.5 truncate">
+                      <ViaIcon className="w-3 h-3 text-gray-400 shrink-0" aria-hidden="true" />
+                      <span className="truncate">{via.label}</span>
+                      <span className="text-gray-300" aria-hidden="true">·</span>
+                      <span className="truncate">Joined {fmtDate(m.verified_at ?? m.added_at)}</span>
                     </div>
-                    {/* Per-seat instant-publish toggle. Only renders for
-                        domain-verified viewers and only for non-trusted
-                        target seats — the server re-checks both. */}
-                    {props.viewerIsDomainVerified && !m.is_trusted && (
-                      <div className="mt-2 inline-flex items-center gap-2">
-                        <label className="inline-flex items-center gap-2 text-[11px] text-gray-600 cursor-pointer select-none">
-                          <input
-                            type="checkbox"
-                            checked={m.can_autopublish}
-                            disabled={actingId === m.id}
-                            onChange={(e) => toggleAutoPublish(m, e.target.checked)}
-                            className="w-3.5 h-3.5 accent-emerald-600"
-                          />
-                          Allow instant publishing
-                        </label>
-                        {actingId === m.id && <Loader2 size={10} className="animate-spin text-gray-400" />}
-                        {m.can_autopublish && m.autopublish_granted_at && (
-                          <span className="text-[10px] text-gray-400">granted {fmtDate(m.autopublish_granted_at)}</span>
-                        )}
-                      </div>
-                    )}
                   </div>
-                  {removeConfirmId === m.id ? (
-                    <div className="shrink-0 inline-flex items-center gap-2">
-                      <span className="text-[11px] text-amber-700">{m.is_self ? "Remove yourself?" : "Remove?"}</span>
-                      <button
-                        onClick={() => removeManager(m)}
-                        disabled={actingId === m.id}
-                        className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-semibold text-[11px] px-2 py-1 rounded"
-                      >
-                        {actingId === m.id ? <Loader2 size={10} className="animate-spin" /> : <Trash2 size={10} />}
-                        Confirm
-                      </button>
-                      <button
-                        onClick={() => setRemoveConfirmId(null)}
-                        className="text-[11px] text-gray-500 hover:text-gray-700"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
+
+                  {/* Right-side controls — instant-publish toggle (if
+                      applicable) + remove button. Toggle uses the brand
+                      accent ONLY when on; off-state is neutral gray. */}
+                  <div className="shrink-0 hidden sm:flex items-center gap-3">
+                    {showToggle && (
+                      <PublishToggle
+                        on={m.can_autopublish}
+                        busy={actingId === m.id}
+                        onChange={(next) => toggleAutoPublish(m, next)}
+                      />
+                    )}
+                    {!showToggle && effectiveAutoPub && (
+                      // Read-only "Instant publish" hint for non-grant-capable
+                      // viewers — just a muted line, no colored chip.
+                      <span className="text-xs text-gray-500">Instant publish</span>
+                    )}
+                    <RemoveControl
+                      m={m}
+                      confirmId={removeConfirmId}
+                      actingId={actingId}
                       disabled={removeDisabled}
-                      onClick={() => setRemoveConfirmId(m.id)}
-                      title={removeReason ?? (m.is_self ? "Remove yourself from the team" : "Remove from team")}
-                      className={`shrink-0 inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded border transition-colors ${
-                        removeDisabled
-                          ? "text-gray-300 border-gray-200 cursor-not-allowed"
-                          : "text-red-700 border-red-200 hover:bg-red-50"
-                      }`}
-                    >
-                      <Trash2 className="w-3 h-3" />
-                      {m.is_self ? "Leave team" : "Remove"}
-                    </button>
+                      reason={removeReason}
+                      onAskConfirm={() => setRemoveConfirmId(m.id)}
+                      onCancel={() => setRemoveConfirmId(null)}
+                      onConfirm={() => removeManager(m)}
+                    />
+                  </div>
+                </div>
+
+                {/* Mobile-only second row for actions, so the email line
+                    above doesn't get cramped. */}
+                <div className="sm:hidden mt-3 flex items-center justify-between gap-3 pl-12">
+                  {showToggle && (
+                    <PublishToggle
+                      on={m.can_autopublish}
+                      busy={actingId === m.id}
+                      onChange={(next) => toggleAutoPublish(m, next)}
+                    />
                   )}
+                  {!showToggle && effectiveAutoPub && (
+                    <span className="text-xs text-gray-500">Instant publish</span>
+                  )}
+                  <RemoveControl
+                    m={m}
+                    confirmId={removeConfirmId}
+                    actingId={actingId}
+                    disabled={removeDisabled}
+                    reason={removeReason}
+                    onAskConfirm={() => setRemoveConfirmId(m.id)}
+                    onCancel={() => setRemoveConfirmId(null)}
+                    onConfirm={() => removeManager(m)}
+                  />
                 </div>
               </li>
             );
@@ -505,5 +515,91 @@ export default function TeamPanel(props: Props) {
         </form>
       </div>
     </section>
+  );
+}
+
+// ─── Restrained sub-components for the manager row ───────────────────
+
+function PublishToggle({
+  on, busy, onChange,
+}: { on: boolean; busy: boolean; onChange: (next: boolean) => void }) {
+  return (
+    <label className="inline-flex items-center gap-2 text-xs text-gray-600 cursor-pointer select-none">
+      <span className="hidden sm:inline">Instant publish</span>
+      <span className="sm:hidden">Instant publish</span>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={on}
+        disabled={busy}
+        onClick={() => onChange(!on)}
+        className={
+          "relative inline-flex h-5 w-9 items-center rounded-full transition-colors disabled:opacity-60 " +
+          (on ? "bg-[#0f2a4a]" : "bg-gray-200")
+        }
+      >
+        <span
+          className={
+            "inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform " +
+            (on ? "translate-x-5" : "translate-x-1")
+          }
+        />
+      </button>
+      {busy && <Loader2 size={10} className="animate-spin text-gray-400" />}
+    </label>
+  );
+}
+
+function RemoveControl({
+  m, confirmId, actingId, disabled, reason,
+  onAskConfirm, onCancel, onConfirm,
+}: {
+  m: ManagerView;
+  confirmId: string | null;
+  actingId: string | null;
+  disabled: boolean;
+  reason: string | null;
+  onAskConfirm: () => void;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  if (confirmId === m.id) {
+    return (
+      <div className="inline-flex items-center gap-2">
+        <button
+          type="button"
+          onClick={onConfirm}
+          disabled={actingId === m.id}
+          className="inline-flex items-center gap-1 text-xs font-semibold text-red-700 hover:text-red-800 disabled:opacity-60"
+        >
+          {actingId === m.id ? <Loader2 size={11} className="animate-spin" /> : <Trash2 size={11} />}
+          {m.is_self ? "Leave team" : "Confirm remove"}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="text-xs text-gray-500 hover:text-gray-700"
+        >
+          Cancel
+        </button>
+      </div>
+    );
+  }
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onAskConfirm}
+      title={reason ?? (m.is_self ? "Remove yourself from the team" : "Remove from team")}
+      aria-label={m.is_self ? "Leave team" : `Remove ${m.email}`}
+      className={
+        "inline-flex items-center justify-center w-7 h-7 rounded-md transition-colors " +
+        (disabled
+          ? "text-gray-300 cursor-not-allowed"
+          : "text-gray-400 hover:text-red-600 hover:bg-red-50")
+      }
+    >
+      <Trash2 className="w-3.5 h-3.5" />
+    </button>
   );
 }
