@@ -104,22 +104,30 @@ async function processBatch(
 
 export async function GET(req: NextRequest) {
   if (!isAuthorized(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  // Per-source counts in the directory.
-  const { data: countsBySource } = await adminSupabase
-    .from("organizations_directory")
-    .select("source", { count: "exact" });
+  // Per-source counts via HEAD requests — read the exact count from the
+  // Content-Range header instead of fetching row bodies (PostgREST caps the
+  // response body at max-rows, which silently truncates an in-JS tally).
+  const SOURCES = ["manual", "ror", "iati", "submission"] as const;
   const directoryCounts: Record<string, number> = {};
-  for (const row of (countsBySource ?? []) as { source: string | null }[]) {
-    const key = row.source ?? "unknown";
-    directoryCounts[key] = (directoryCounts[key] ?? 0) + 1;
-  }
+  await Promise.all(
+    SOURCES.map(async (src) => {
+      const { count } = await adminSupabase
+        .from("organizations_directory")
+        .select("id", { count: "exact", head: true })
+        .eq("source", src);
+      directoryCounts[src] = count ?? 0;
+    })
+  );
+  const { count: directoryTotal } = await adminSupabase
+    .from("organizations_directory")
+    .select("id", { count: "exact", head: true });
   // Last job per source.
   const { data: jobs } = await adminSupabase
     .from("directory_import_jobs")
     .select("*")
     .order("started_at", { ascending: false })
     .limit(20);
-  return NextResponse.json({ directoryCounts, jobs: jobs ?? [] });
+  return NextResponse.json({ directoryCounts, directoryTotal: directoryTotal ?? 0, jobs: jobs ?? [] });
 }
 
 export async function POST(req: NextRequest) {

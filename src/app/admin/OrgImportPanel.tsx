@@ -25,6 +25,7 @@ interface JobRow {
 
 interface StatusResponse {
   directoryCounts: Record<string, number>;
+  directoryTotal: number;
   jobs: JobRow[];
 }
 
@@ -162,7 +163,14 @@ export default function OrgImportPanel({ adminSecret }: { adminSecret: string })
           {/* Directory size by source */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xs font-semibold text-blue-300 uppercase tracking-wider">Directory size by source</h3>
+              <h3 className="text-xs font-semibold text-blue-300 uppercase tracking-wider">
+                Directory size by source
+                {status && (
+                  <span className="ml-2 text-blue-400 normal-case font-normal tracking-normal">
+                    — total {status.directoryTotal.toLocaleString()}
+                  </span>
+                )}
+              </h3>
               <button
                 onClick={refresh}
                 disabled={refreshing}
