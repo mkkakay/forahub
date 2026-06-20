@@ -9,7 +9,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Users, Mail, AlertCircle, CheckCircle2, X, Loader2, Trash2,
+  Mail, AlertCircle, CheckCircle2, X, Loader2, Trash2,
   Send, RefreshCw, Crown, ShieldCheck, UserPlus, Clock, Info,
 } from "lucide-react";
 
@@ -253,17 +253,12 @@ export default function TeamPanel(props: Props) {
   }
 
   return (
-    <section className="mt-8 bg-white rounded-2xl border border-gray-200 shadow-sm">
-      <header className="flex items-start justify-between gap-3 p-5 md:p-6 border-b border-gray-100">
-        <div className="min-w-0">
-          <h2 className="text-lg font-bold text-[#0f2a4a] inline-flex items-center gap-2">
-            <Users className="w-4 h-4 text-[#0f2a4a]" /> Team
-            <span className="text-xs font-semibold text-gray-500 tabular-nums">({managers.length})</span>
-          </h2>
-          <p className="text-xs text-gray-500 mt-1">
-            Verified colleagues co-manage <span className="font-semibold">{props.orgName}</span>. Anyone at <span className="font-mono">@{props.orgDomain ?? "your work domain"}</span> can join automatically — invite external collaborators below.
-          </p>
-        </div>
+    <section className="bg-white rounded-2xl border border-gray-200/80 shadow-[0_1px_2px_rgba(15,42,74,0.04)]">
+      <header className="p-5 md:p-6 border-b border-gray-100">
+        <h2 className="text-lg font-bold text-[#0f2a4a]">Team</h2>
+        <p className="text-xs text-gray-500 mt-1">
+          Invite colleagues to help manage events and profile updates. Anyone at <span className="font-mono">@{props.orgDomain ?? "your work domain"}</span> can join automatically.
+        </p>
       </header>
 
       {toast && (
@@ -285,7 +280,10 @@ export default function TeamPanel(props: Props) {
       {/* Current managers — restrained Linear/Vercel/Notion-style list.
           Single accent color, muted metadata, no competing pills. */}
       <div className="p-5 md:p-6 space-y-3">
-        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Members</h3>
+        <h3 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider inline-flex items-center gap-2">
+          Members
+          <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full text-[10px] font-semibold text-gray-500 bg-gray-100 px-1 tabular-nums">{managers.length}</span>
+        </h3>
         <ul className="divide-y divide-gray-100 border border-gray-100 rounded-xl overflow-hidden bg-white">
           {managers.map(m => {
             const via = viaLabel(m.added_via);
@@ -394,13 +392,15 @@ export default function TeamPanel(props: Props) {
       </div>
 
       {/* Pending invites */}
-      <div className="px-5 md:px-6 pb-5 md:pb-6 space-y-3">
-        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider inline-flex items-center gap-2">
-          <Clock className="w-3 h-3" /> Pending invitations
-          <span className="text-gray-400 tabular-nums">({invites.length})</span>
+      <div className="px-5 md:px-6 pb-5 md:pb-6 space-y-3 border-t border-gray-100 pt-5 md:pt-6">
+        <h3 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider inline-flex items-center gap-2">
+          <Clock className="w-3 h-3 text-gray-400" /> Pending invitations
+          {invites.length > 0 && (
+            <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full text-[10px] font-semibold text-gray-500 bg-gray-100 px-1 tabular-nums">{invites.length}</span>
+          )}
         </h3>
         {invites.length === 0 ? (
-          <div className="border border-dashed border-gray-200 rounded-xl px-4 py-3 text-xs text-gray-500">
+          <div className="text-xs text-gray-500">
             No invitations are waiting on a reply.
           </div>
         ) : (
@@ -466,11 +466,11 @@ export default function TeamPanel(props: Props) {
       </div>
 
       {/* Invite form */}
-      <div className="border-t border-gray-100 bg-gray-50 rounded-b-2xl px-5 md:px-6 py-5">
-        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider inline-flex items-center gap-2 mb-3">
-          <UserPlus className="w-3 h-3" /> Invite a co-manager
+      <div className="border-t border-gray-100 bg-gray-50/60 rounded-b-2xl px-5 md:px-6 py-5">
+        <h3 className="text-sm font-bold text-[#0f2a4a] inline-flex items-center gap-2">
+          <UserPlus className="w-3.5 h-3.5 text-[#0f2a4a]" /> Invite a co-manager
         </h3>
-        <p className="text-xs text-gray-500 mb-3 inline-flex items-start gap-1.5">
+        <p className="text-xs text-gray-500 mb-4 mt-1 inline-flex items-start gap-1.5">
           <Info className="w-3 h-3 mt-0.5 shrink-0" />
           <span>
             Any email works — including external collaborators outside <span className="font-mono">@{props.orgDomain ?? "your domain"}</span>. They&apos;ll be asked to sign in with the invited email to accept.

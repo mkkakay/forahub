@@ -77,48 +77,59 @@ export default function AnalyticsPanel(props: Props) {
   })), [data]);
 
   return (
-    <section className="mt-8 bg-white rounded-2xl border border-gray-200 shadow-sm">
+    <section className="bg-white rounded-2xl border border-gray-200/80 shadow-[0_1px_2px_rgba(15,42,74,0.04)]">
       <header className="flex items-start justify-between gap-3 p-5 md:p-6 border-b border-gray-100 flex-wrap">
         <div className="min-w-0">
-          <h2 className="text-lg font-bold text-[#0f2a4a] inline-flex items-center gap-2">
-            <BarChart3 className="w-4 h-4 text-[#0f2a4a]" /> Analytics
-          </h2>
+          <h2 className="text-lg font-bold text-[#0f2a4a]">Analytics</h2>
           <p className="text-xs text-gray-500 mt-1 max-w-prose">
-            Aggregate views, saves, and registration clicks across <span className="font-semibold">{props.orgName}</span>&apos;s events — from visitors who&apos;ve consented to analytics. We never show individual identities, only totals and trends.
+            Track how people discover, save, and click through to your events.
           </p>
         </div>
-        <div className="shrink-0 inline-flex bg-gray-100 rounded-lg p-0.5 text-[11px] font-semibold">
+        <div
+          role="tablist"
+          aria-label="Window"
+          className="shrink-0 inline-flex bg-gray-100 rounded-lg p-0.5 text-[11px] font-semibold"
+        >
           {(["30", "90"] as const).map(d => (
             <button
               key={d}
               type="button"
+              role="tab"
+              aria-selected={window === d}
               onClick={() => setWindow(d)}
-              className={`px-3 py-1 rounded-md ${window === d ? "bg-white text-[#0f2a4a] shadow-sm" : "text-gray-500"}`}
+              className={
+                "px-3 py-1.5 rounded-md transition-colors " +
+                (window === d
+                  ? "bg-white text-[#0f2a4a] shadow-sm"
+                  : "text-gray-500 hover:text-[#0f2a4a]")
+              }
             >
-              {d}d
+              Last {d} days
             </button>
           ))}
         </div>
       </header>
 
-      {showEmpty ? (
-        <div className="p-5 md:p-6">
-          <div className="border border-dashed border-gray-200 rounded-xl px-4 py-10 text-center">
-            <BarChart3 className="w-7 h-7 text-gray-300 mx-auto mb-2" />
-            <p className="text-sm font-semibold text-[#0f2a4a]">Nothing logged yet</p>
-            <p className="text-xs text-gray-500 mt-1">
-              Either no consented visitors have engaged with your events in the last {data.windowDays} days, or analytics is brand-new on your org. Counts populate as users opt in.
+      <div className="p-5 md:p-6 space-y-6">
+        {/* Metric cards — always shown, even when zero. Aggregate only. */}
+        <div className="grid grid-cols-3 gap-3">
+          <Stat icon={<Eye className="w-3.5 h-3.5" />} label="Views" value={data.total.views} />
+          <Stat icon={<Bookmark className="w-3.5 h-3.5" />} label="Saves" value={data.total.saves} />
+          <Stat icon={<ExternalLink className="w-3.5 h-3.5" />} label="Reg. clicks" value={data.total.registration_clicks} />
+        </div>
+
+        {showEmpty ? (
+          <div className="rounded-xl bg-gray-50/60 border border-gray-100 px-4 py-12 text-center">
+            <div className="mx-auto w-12 h-12 rounded-full bg-white border border-gray-200 flex items-center justify-center mb-3">
+              <BarChart3 className="w-5 h-5 text-gray-300" aria-hidden="true" />
+            </div>
+            <p className="text-sm font-bold text-[#0f2a4a]">No data yet for this window</p>
+            <p className="text-xs text-gray-500 mt-1 max-w-md mx-auto">
+              Analytics will appear once visitors engage with your published events.
             </p>
           </div>
-        </div>
-      ) : (
-        <div className="p-5 md:p-6 space-y-6">
-          {/* Totals — aggregate only */}
-          <div className="grid grid-cols-3 gap-3">
-            <Stat icon={<Eye className="w-3.5 h-3.5" />} label="Views" value={data.total.views} />
-            <Stat icon={<Bookmark className="w-3.5 h-3.5" />} label="Saves" value={data.total.saves} />
-            <Stat icon={<ExternalLink className="w-3.5 h-3.5" />} label="Reg. clicks" value={data.total.registration_clicks} />
-          </div>
+        ) : (
+          <div className="space-y-6">
 
           {/* Trend chart */}
           <div className="bg-gray-50 border border-gray-100 rounded-xl px-3 py-4">
@@ -207,9 +218,10 @@ export default function AnalyticsPanel(props: Props) {
           )}
         </div>
       )}
+      </div>
 
-      <footer className="px-5 md:px-6 py-3 border-t border-gray-100 text-[11px] text-gray-400">
-        Raw logs auto-delete after 14 months. We never share or expose individual user identities — only the aggregate totals shown here.
+      <footer className="px-5 md:px-6 py-3 border-t border-gray-100 text-[11px] text-gray-500">
+        Only aggregate analytics are shown. Individual visitor identities are never exposed. Raw logs auto-delete after 14 months.
       </footer>
     </section>
   );
@@ -217,11 +229,11 @@ export default function AnalyticsPanel(props: Props) {
 
 function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
   return (
-    <div className="bg-gray-50 border border-gray-100 rounded-xl px-4 py-3">
+    <div className="bg-white border border-gray-200/80 rounded-xl px-4 py-3">
       <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider inline-flex items-center gap-1.5">
-        {icon} {label}
+        <span className="text-gray-400">{icon}</span> {label}
       </p>
-      <p className="text-2xl font-extrabold text-[#0f2a4a] mt-1 tabular-nums">{value.toLocaleString()}</p>
+      <p className="text-2xl font-bold text-[#0f2a4a] mt-1 tabular-nums">{value.toLocaleString()}</p>
     </div>
   );
 }

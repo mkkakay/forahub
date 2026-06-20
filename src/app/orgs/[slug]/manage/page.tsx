@@ -7,7 +7,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { BadgeCheck, ArrowLeft, Lock, ShieldCheck, Calendar as CalendarIcon, Globe } from "lucide-react";
+import { BadgeCheck, ArrowLeft, Lock, ShieldCheck, Calendar as CalendarIcon, Globe, Users, Plus, Building2 } from "lucide-react";
+import CopyLinkButton from "./CopyLinkButton";
 import Navbar from "@/components/Navbar";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -261,30 +262,91 @@ export default async function ManageOrgPage({
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <main className="max-w-4xl mx-auto px-4 py-8 md:py-12">
-        {/* Header — always visible, sits above the tabs */}
-        <header className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-          <div className="min-w-0">
-            <Link
-              href={`/organizations/${org.slug}`}
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-[#0f2a4a] mb-2"
-            >
-              <Globe className="w-3 h-3" /> View public page
-            </Link>
-            <h1 className="text-2xl md:text-3xl font-bold text-[#0f2a4a] tracking-tight inline-flex items-center gap-2">
-              {org.name}
-              {org.is_verified && (
-                <BadgeCheck
-                  className="w-5 h-5 md:w-6 md:h-6 text-emerald-600"
-                  aria-label="Verified organization"
-                />
+      <main className="max-w-5xl mx-auto px-4 py-8 md:py-10">
+        {/* Header card — logo + name + verified badge + key stats + CTAs */}
+        <section className="mb-6 bg-white rounded-2xl border border-gray-200/80 shadow-[0_1px_2px_rgba(15,42,74,0.04)] p-5 md:p-6">
+          <div className="flex flex-col md:flex-row md:items-center gap-5">
+            {/* Logo tile */}
+            <div className="shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-gray-50 border border-gray-200/80 flex items-center justify-center overflow-hidden">
+              {org.logo_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={org.logo_url} alt={`${org.name} logo`} className="max-w-full max-h-full object-contain p-2" />
+              ) : (
+                <Building2 className="w-7 h-7 text-gray-300" aria-hidden="true" />
               )}
-            </h1>
-            <p className="text-sm text-gray-500 mt-1">
-              Org settings · You&apos;re a verified manager.
-            </p>
+            </div>
+
+            {/* Identity */}
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-xl md:text-2xl font-bold text-[#0f2a4a] tracking-tight truncate">
+                  {org.name}
+                </h1>
+                {org.is_verified && (
+                  <span
+                    title="Verified organization"
+                    className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5"
+                  >
+                    <BadgeCheck className="w-3 h-3" /> Verified
+                  </span>
+                )}
+                {!org.is_verified && org.is_claimed && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-[#0f2a4a] bg-[#0f2a4a]/5 border border-[#0f2a4a]/15 rounded-full px-2 py-0.5">
+                    <ShieldCheck className="w-3 h-3" /> Claimed
+                  </span>
+                )}
+              </div>
+              {(org.short_name || org.domain) && (
+                <p className="text-xs text-gray-500 mt-1 inline-flex items-center gap-2">
+                  {org.short_name && <span>{org.short_name}</span>}
+                  {org.short_name && org.domain && <span className="text-gray-300" aria-hidden="true">·</span>}
+                  {org.domain && <span className="font-mono">@{org.domain}</span>}
+                </p>
+              )}
+              <Link
+                href={`/organizations/${org.slug}`}
+                className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-[#0f2a4a]/70 hover:text-[#0f2a4a] hover:underline underline-offset-2"
+              >
+                <Globe className="w-3 h-3" /> View public page
+              </Link>
+            </div>
+
+            {/* CTAs */}
+            <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-2 shrink-0">
+              <Link
+                href="/submit/single"
+                className="inline-flex items-center justify-center gap-1.5 bg-[#0f2a4a] hover:bg-[#1a3f6e] text-white font-semibold text-sm px-4 py-2 rounded-xl transition-colors"
+              >
+                <Plus className="w-4 h-4" /> New event
+              </Link>
+              <Link
+                href={`/organizations/${org.slug}`}
+                className="inline-flex items-center justify-center gap-1.5 bg-white text-[#0f2a4a] font-semibold text-sm px-4 py-2 rounded-xl border border-gray-200 hover:border-[#0f2a4a]/40 hover:bg-gray-50 transition-colors"
+              >
+                <Globe className="w-4 h-4" /> Public page
+              </Link>
+            </div>
           </div>
-        </header>
+
+          {/* Stats strip */}
+          <dl className="mt-5 grid grid-cols-3 gap-3 border-t border-gray-100 pt-4">
+            <Stat
+              label="Published events"
+              value={(publishedEventsCount ?? 0).toLocaleString()}
+              Icon={CalendarIcon}
+            />
+            <Stat
+              label="Team members"
+              value={managerRows.length.toLocaleString()}
+              Icon={Users}
+            />
+            <Stat
+              label="Setup completion"
+              value={`${orgSetupSignals.corePct}%`}
+              Icon={ShieldCheck}
+            />
+          </dl>
+        </section>
 
         {/* Optional flash banners — same copy as before. */}
         {searchParams.claimed === "1" && (
@@ -322,22 +384,47 @@ export default async function ManageOrgPage({
   );
 }
 
+// ─── Small helpers ───────────────────────────────────────────────────
+
+function Stat({ label, value, Icon }: { label: string; value: string; Icon: typeof CalendarIcon }) {
+  return (
+    <div className="flex items-start gap-2.5">
+      <span className="shrink-0 w-8 h-8 rounded-lg bg-[#0f2a4a]/5 flex items-center justify-center">
+        <Icon className="w-4 h-4 text-[#0f2a4a]" aria-hidden="true" />
+      </span>
+      <div className="min-w-0">
+        <div className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">{label}</div>
+        <div className="text-lg font-bold text-[#0f2a4a] leading-tight tabular-nums">{value}</div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Settings tab ────────────────────────────────────────────────────
-// The old in-page "Org status" mini-section. Same data, same source —
-// now lives behind the Settings tab instead of trailing the long scroll.
+// Four section cards: status, verification, public page, publishing
+// permissions. Same data, same source — restyled into a more polished
+// settings surface. The Public page card carries a copy-link button.
 
 function SettingsTab({ org }: { org: OrgRow }) {
   const verifiedAt = org.claimed_at
     ? new Date(org.claimed_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
     : null;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://forahub.org";
+  const publicUrl = `${appUrl}/organizations/${org.slug}`;
+  const verificationCopy = org.is_verified && org.domain
+    ? `Your organization is verified through the @${org.domain} domain.`
+    : org.is_claimed && org.domain
+      ? `Your organization is claimed via @${org.domain}. Add a domain-verified colleague to upgrade to a Verified badge.`
+      : `Claim or verify this organization to unlock the Verified badge.`;
+
   return (
-    <section className="space-y-4">
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 md:p-6">
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Org status</h2>
-        <dl className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+    <div className="space-y-4">
+      {/* 1. Organization status */}
+      <SettingsCard title="Organization status" subtitle="At a glance.">
+        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
           <div>
-            <dt className="text-xs text-gray-500">Verification</dt>
-            <dd className="mt-1 inline-flex items-center gap-1.5 text-[#0f2a4a] font-semibold">
+            <dt className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">Verification</dt>
+            <dd className="mt-1.5 inline-flex items-center gap-1.5 text-[#0f2a4a] font-semibold">
               {org.is_verified ? (
                 <><BadgeCheck className="w-4 h-4 text-emerald-600" /> Verified</>
               ) : org.is_claimed ? (
@@ -347,30 +434,76 @@ function SettingsTab({ org }: { org: OrgRow }) {
               )}
             </dd>
             {org.domain && (
-              <dd className="text-xs text-gray-500 mt-0.5">
-                Domain: <span className="font-mono">@{org.domain}</span>
+              <dd className="text-xs text-gray-500 mt-1">
+                Domain on file: <span className="font-mono">@{org.domain}</span>
               </dd>
             )}
           </div>
           <div>
-            <dt className="text-xs text-gray-500">First verified</dt>
-            <dd className="mt-1 text-[#0f2a4a] font-semibold inline-flex items-center gap-1.5">
+            <dt className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">First verified</dt>
+            <dd className="mt-1.5 text-[#0f2a4a] font-semibold inline-flex items-center gap-1.5">
               <CalendarIcon className="w-3.5 h-3.5 text-gray-400" />
               {verifiedAt ?? "—"}
             </dd>
           </div>
         </dl>
-      </div>
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 md:p-6">
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Public page</h2>
-        <p className="text-sm text-gray-600 mt-2">
-          Your organization&apos;s shareable page is at{" "}
-          <Link href={`/organizations/${org.slug}`} className="text-[#0f2a4a] font-semibold hover:underline">
-            /organizations/{org.slug}
-          </Link>
-          . Anything you update under Profile shows up there immediately.
+      </SettingsCard>
+
+      {/* 2. Verification provenance */}
+      <SettingsCard title="Verification" subtitle="How ForaHub confirmed this organization.">
+        <p className="text-sm text-gray-700 leading-relaxed">{verificationCopy}</p>
+      </SettingsCard>
+
+      {/* 3. Public page + copy link */}
+      <SettingsCard title="Public page" subtitle="What you share to LinkedIn, Slack, or email.">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+          <code className="flex-1 min-w-0 text-xs text-gray-600 bg-gray-50 border border-gray-200/80 rounded-lg px-3 py-2 font-mono truncate">
+            {publicUrl}
+          </code>
+          <div className="flex gap-2 shrink-0">
+            <CopyLinkButton url={publicUrl} />
+            <Link
+              href={`/organizations/${org.slug}`}
+              className="inline-flex items-center justify-center gap-1.5 text-sm font-semibold text-[#0f2a4a] bg-white border border-gray-200/80 hover:border-[#0f2a4a]/40 hover:bg-gray-50 rounded-lg px-3 py-2"
+            >
+              Open
+            </Link>
+          </div>
+        </div>
+        <p className="text-xs text-gray-500 mt-2.5">
+          Anything you update under Profile appears here immediately.
         </p>
+      </SettingsCard>
+
+      {/* 4. Publishing permissions */}
+      <SettingsCard title="Publishing permissions" subtitle="Who can publish events instantly.">
+        <ul className="space-y-2 text-sm text-gray-700">
+          <li className="flex items-start gap-2">
+            <ShieldCheck className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+            <span>Domain-verified managers publish instantly.</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <ShieldCheck className="w-4 h-4 text-[#4ea8de] mt-0.5 shrink-0" />
+            <span>Invited / admin-reviewed managers can be granted instant publishing from the Team tab.</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <CalendarIcon className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
+            <span>A rolling 24-hour soft cap protects against accidental flooding.</span>
+          </li>
+        </ul>
+      </SettingsCard>
+    </div>
+  );
+}
+
+function SettingsCard({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
+  return (
+    <section className="bg-white rounded-2xl border border-gray-200/80 shadow-[0_1px_2px_rgba(15,42,74,0.04)] p-5 md:p-6">
+      <div className="mb-3">
+        <h2 className="text-sm font-bold text-[#0f2a4a]">{title}</h2>
+        {subtitle && <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>}
       </div>
+      {children}
     </section>
   );
 }

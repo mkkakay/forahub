@@ -95,64 +95,73 @@ export default function OrgSetupChecklist({ slug, signals }: Props) {
   return (
     <section
       className={
-        "rounded-2xl border shadow-sm overflow-hidden mb-6 " +
+        "rounded-2xl border shadow-[0_1px_2px_rgba(15,42,74,0.04)] overflow-hidden mb-6 " +
         (fullySetUp
-          ? "bg-emerald-50 border-emerald-200"
-          : "bg-gradient-to-br from-[#0f2a4a] via-[#1a3f6e] to-[#1f4d83] border-blue-900/20")
+          ? "bg-emerald-50/60 border-emerald-200/70"
+          : "bg-white border-gray-200/80")
       }
     >
       <button
         type="button"
         onClick={() => setCollapsed(v => !v)}
         aria-expanded={!collapsed}
-        className={
-          "w-full flex items-center gap-3 px-5 py-4 text-left " +
-          (fullySetUp ? "" : "text-white")
-        }
+        className="w-full flex items-center gap-3 px-5 py-4 text-left"
       >
-        <Sparkles size={16} className={fullySetUp ? "text-emerald-700" : "text-[#bfe1ff]"} aria-hidden="true" />
+        <span className={
+          "shrink-0 w-9 h-9 rounded-xl flex items-center justify-center " +
+          (fullySetUp ? "bg-emerald-100" : "bg-[#0f2a4a]/5")
+        }>
+          <Sparkles size={15} className={fullySetUp ? "text-emerald-700" : "text-[#0f2a4a]"} aria-hidden="true" />
+        </span>
         <div className="flex-1 min-w-0">
-          <p className={`text-sm font-bold inline-flex items-center gap-2 ${fullySetUp ? "text-emerald-900" : "text-white"}`}>
+          <p className="text-sm font-bold text-[#0f2a4a] inline-flex items-center gap-2">
             {fullySetUp
-              ? "Your org is fully set up"
-              : `Org setup ${signals.corePct}% complete`}
+              ? "Your organization profile is in great shape"
+              : "Improve your organization profile"}
             {!fullySetUp && coreItemsLeft > 0 && (
-              <span className="text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded bg-white/15 border border-white/15">
+              <span className="text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded-full text-gray-500 bg-gray-100 border border-gray-200">
                 {coreItemsLeft} step{coreItemsLeft === 1 ? "" : "s"} left
               </span>
             )}
+            {fullySetUp && (
+              <span className="text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded-full text-emerald-700 bg-emerald-100 border border-emerald-200">
+                {signals.corePct}%
+              </span>
+            )}
           </p>
-          <ProgressBar pct={signals.corePct} dark={!fullySetUp} />
+          <p className="text-xs text-gray-500 mt-0.5">
+            {fullySetUp
+              ? "Optional extras below can still elevate your page."
+              : "Complete these steps to improve discoverability."}
+          </p>
+          <ProgressBar pct={signals.corePct} done={fullySetUp} />
         </div>
-        <span className={fullySetUp ? "text-emerald-700/70" : "text-white/70"} aria-hidden="true">
+        <span className="text-gray-400" aria-hidden="true">
           {collapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
         </span>
       </button>
 
       {!collapsed && (
         <div className="px-5 pb-5 space-y-2">
-          {/* Core items */}
           <ChecklistItem
             done={signals.profileBasicsDone}
-            dark={!fullySetUp}
-            label="Profile basics"
+            label="Add profile basics"
             hint={
               signals.profileBasicsDone
-                ? "Logo, description, and website all set."
+                ? "Logo, description, and website are all set."
                 : `Add ${signals.profileMissing.join(", ")}.`
             }
             onClick={() => gotoTab("profile")}
           />
           <ChecklistItem
             done={signals.teamDone}
-            dark={!fullySetUp}
-            label="Team"
+            label="Invite team members"
             hint={
               signals.teamReason === "has_co_managers"
                 ? `${signals.managerCount} manager${signals.managerCount === 1 ? "" : "s"} on the team.`
                 : signals.teamReason === "solo_acknowledged"
-                  ? "You acknowledged managing solo."
-                  : "Invite a colleague or acknowledge managing solo."
+                  ? "You confirmed you're managing solo."
+                  : "Invite a colleague, or confirm you're managing solo."
             }
             onClick={() => gotoTab("team")}
             extra={
@@ -161,43 +170,38 @@ export default function OrgSetupChecklist({ slug, signals }: Props) {
                   type="button"
                   onClick={(e) => { e.stopPropagation(); acknowledgeSolo(); }}
                   disabled={acknowledging}
-                  className="inline-flex items-center gap-1 text-[11px] font-semibold rounded-md border border-white/30 bg-white/5 hover:bg-white/15 px-2 py-1 text-white disabled:opacity-60 shrink-0"
+                  className="inline-flex items-center gap-1 text-[11px] font-semibold rounded-md border border-gray-200 bg-white hover:bg-gray-50 px-2 py-1 text-gray-700 disabled:opacity-60 shrink-0"
                   title="Mark this org as managed solo so the Team item completes."
                 >
                   {acknowledging ? <Loader2 size={11} className="animate-spin" /> : <Users size={11} />}
-                  I&apos;m managing solo
+                  I&apos;m solo
                 </button>
               ) : null
             }
           />
           <ChecklistItem
             done={signals.eventsDone}
-            dark={!fullySetUp}
-            label="Events"
+            label="Publish events"
             hint={
               signals.eventsDone
                 ? `${signals.publishedEventsCount} published event${signals.publishedEventsCount === 1 ? "" : "s"}.`
-                : "Submit your first event or wait for one to be published."
+                : "Submit your first event or wait for one to be picked up."
             }
             onClick={() => gotoTab("events")}
           />
 
           {/* Optional bonus */}
-          <div className={fullySetUp ? "pt-2 mt-2 border-t border-emerald-200" : "pt-2 mt-2 border-t border-white/15"}>
-            <p className={
-              "text-[10px] uppercase tracking-wider font-semibold mb-1.5 " +
-              (fullySetUp ? "text-emerald-700/80" : "text-white/60")
-            }>
+          <div className="pt-2 mt-2 border-t border-gray-100">
+            <p className="text-[10px] uppercase tracking-wider font-semibold mb-1.5 text-gray-400">
               Optional
             </p>
             <ChecklistItem
               done={signals.seriesDone}
-              dark={!fullySetUp}
-              label="Recurring series"
+              label="Create recurring series"
               hint={
                 signals.seriesDone
                   ? `${signals.activeSeriesCount} active series.`
-                  : "Save a parent rule for repeating events. Bonus — not required to be set up."
+                  : "Save a parent rule for repeating events — bonus, not required."
               }
               onClick={() => gotoTab("series")}
               optional
@@ -205,10 +209,10 @@ export default function OrgSetupChecklist({ slug, signals }: Props) {
           </div>
 
           {error && (
-            <div className="mt-3 flex items-start gap-2 text-xs text-red-50 bg-red-900/30 border border-red-400/30 rounded-lg px-3 py-2">
+            <div className="mt-3 flex items-start gap-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
               <AlertCircle size={12} className="mt-0.5 shrink-0" />
               <span className="flex-1">{error}</span>
-              <button type="button" onClick={() => setError(null)} className="text-white/60 hover:text-white" aria-label="Dismiss">
+              <button type="button" onClick={() => setError(null)} className="text-red-500 hover:text-red-700" aria-label="Dismiss">
                 <X size={12} />
               </button>
             </div>
@@ -220,68 +224,57 @@ export default function OrgSetupChecklist({ slug, signals }: Props) {
 }
 
 function ChecklistItem({
-  done, label, hint, onClick, dark, optional, extra,
+  done, label, hint, onClick, optional, extra,
 }: {
   done: boolean;
   label: string;
   hint: string;
   onClick: () => void;
-  dark: boolean;
   optional?: boolean;
   extra?: React.ReactNode;
 }) {
-  // Inside the dark navy gradient: muted surfaces over a translucent
-  // white wash. Inside the emerald complete state: white surfaces.
-  const surfaceCls = dark
-    ? "bg-white/8 hover:bg-white/15 border border-white/10 hover:border-white/25"
-    : "bg-white border border-emerald-200 hover:border-emerald-300";
-  const labelCls = dark ? "text-white" : "text-emerald-900";
-  const hintCls = dark ? "text-white/70" : "text-emerald-800/80";
   const Icon = done ? CheckCircle2 : Circle;
-  const iconCls = done
-    ? (dark ? "text-emerald-300" : "text-emerald-600")
-    : (dark ? "text-white/40" : "text-emerald-700/30");
-
   return (
-    <div className={`group flex items-start gap-2.5 rounded-xl px-3 py-2.5 transition-colors ${surfaceCls}`}>
-      <Icon className={`w-4 h-4 mt-0.5 shrink-0 ${iconCls}`} aria-hidden="true" />
+    <div className="group flex items-start gap-3 rounded-xl px-3 py-2.5 border border-transparent hover:border-gray-200 hover:bg-gray-50/80 transition-colors">
+      <Icon
+        className={`w-4 h-4 mt-0.5 shrink-0 ${done ? "text-emerald-600" : "text-gray-300"}`}
+        aria-hidden="true"
+      />
       <button
         type="button"
         onClick={onClick}
         className="flex-1 min-w-0 text-left"
       >
         <div className="flex items-center gap-1.5">
-          <span className={`text-[13px] font-semibold ${labelCls}`}>{label}</span>
+          <span className={`text-[13px] font-semibold ${done ? "text-gray-700" : "text-[#0f2a4a]"}`}>
+            {label}
+          </span>
           {optional && (
-            <span className={
-              "text-[9px] uppercase tracking-wider font-semibold px-1 py-0.5 rounded " +
-              (dark ? "bg-white/10 text-white/70 border border-white/15" : "bg-emerald-100 text-emerald-800")
-            }>
-              bonus
+            <span className="text-[9px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 border border-gray-200">
+              optional
             </span>
           )}
         </div>
-        <div className={`text-[11px] mt-0.5 ${hintCls}`}>{hint}</div>
+        <div className="text-[11px] mt-0.5 text-gray-500">{hint}</div>
       </button>
       {extra}
       <ArrowRight
         size={11}
-        className={(dark ? "text-white/40 group-hover:text-white/80" : "text-emerald-600/50 group-hover:text-emerald-700") + " ml-auto mt-1 shrink-0"}
+        className="ml-auto mt-1 shrink-0 text-gray-300 group-hover:text-[#0f2a4a] transition-colors"
         aria-hidden="true"
       />
     </div>
   );
 }
 
-function ProgressBar({ pct, dark }: { pct: number; dark: boolean }) {
-  const trackCls = dark ? "bg-white/15" : "bg-emerald-100";
-  const fillCls = dark
-    ? "bg-gradient-to-r from-[#4ea8de] to-emerald-400"
-    : "bg-emerald-500";
+function ProgressBar({ pct, done }: { pct: number; done: boolean }) {
   return (
-    <div className={`mt-2 h-1.5 w-full rounded-full ${trackCls} overflow-hidden`}>
+    <div className="mt-2 h-1.5 w-full rounded-full bg-gray-100 overflow-hidden">
       <div
-        className={`h-full ${fillCls} transition-all duration-500`}
+        className={
+          "h-full transition-all duration-500 " +
+          (done ? "bg-emerald-500" : "bg-[#0f2a4a]")
+        }
         style={{ width: `${pct}%` }}
         aria-hidden="true"
       />

@@ -93,15 +93,16 @@ export default function ManageTabs({ slots, badges, defaultTab = "profile" }: Pr
 
   return (
     <>
-      {/* Tab nav. Horizontally-scrollable on mobile; centered pill row
-          with a fading right-edge mask cue on overflow. */}
+      {/* Tab nav. Underline-on-active for the more polished product-nav
+          feel. Horizontally-scrollable on mobile so the active tab is
+          always reachable without a drawer. */}
       <nav
         role="tablist"
         aria-label="Manage sections"
-        className="mb-6 -mx-4 sm:mx-0 sticky top-0 z-10 bg-gray-50/95 backdrop-blur supports-[backdrop-filter]:bg-gray-50/80 border-b border-gray-200/70"
+        className="mb-6 -mx-4 sm:mx-0 sticky top-0 z-10 bg-gray-50/95 backdrop-blur supports-[backdrop-filter]:bg-gray-50/85 border-b border-gray-200/70"
       >
         <div className="px-4 sm:px-0 overflow-x-auto scrollbar-none">
-          <div className="inline-flex items-center gap-1 py-3 min-w-full sm:min-w-0">
+          <div className="inline-flex items-center gap-1 min-w-full sm:min-w-0">
             {TAB_DEFS.map(({ id, label, Icon }) => {
               const isActive = active === id;
               const count =
@@ -118,23 +119,31 @@ export default function ManageTabs({ slots, badges, defaultTab = "profile" }: Pr
                   aria-controls={`manage-tab-${id}`}
                   onClick={() => pick(id)}
                   className={
-                    "shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-medium transition-colors " +
+                    "relative shrink-0 inline-flex items-center gap-2 px-3.5 py-3 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#4ea8de]/40 rounded-md " +
                     (isActive
-                      ? "bg-[#0f2a4a] text-white shadow-sm"
-                      : "text-gray-600 hover:text-[#0f2a4a] hover:bg-gray-100")
+                      ? "text-[#0f2a4a]"
+                      : "text-gray-500 hover:text-[#0f2a4a]")
                   }
                 >
-                  <Icon className="w-3.5 h-3.5" aria-hidden="true" />
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? "text-[#0f2a4a]" : "text-gray-400"}`} aria-hidden="true" />
                   <span>{label}</span>
                   {typeof count === "number" && count > 0 && (
                     <span
                       className={
-                        "ml-0.5 tabular-nums text-[11px] font-semibold " +
-                        (isActive ? "text-white/75" : "text-gray-400")
+                        "ml-0.5 inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full text-[10px] font-semibold tabular-nums px-1 " +
+                        (isActive
+                          ? "bg-[#0f2a4a] text-white"
+                          : "bg-gray-100 text-gray-500")
                       }
                     >
                       {count}
                     </span>
+                  )}
+                  {isActive && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute left-2 right-2 -bottom-px h-[2px] rounded-full bg-[#0f2a4a]"
+                    />
                   )}
                 </button>
               );

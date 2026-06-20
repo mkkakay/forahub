@@ -30,9 +30,9 @@ interface Initial {
   linkedin_url: string;
 }
 
-const labelClass = "block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5";
+const labelClass = "block text-[11px] font-semibold text-gray-600 uppercase tracking-wider mb-1.5";
 const inputClass =
-  "w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]/40 focus:border-[#4ea8de] transition-colors";
+  "w-full bg-white border border-gray-200/80 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400/90 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]/30 focus:border-[#4ea8de] transition-colors";
 
 function looksLikeHttpsUrl(v: string): boolean {
   const t = v.trim();
@@ -97,11 +97,18 @@ export default function ManageOrgForm({ slug, initial }: { slug: string; initial
     <div className="space-y-4">
       <form
         onSubmit={handleSubmit}
-        className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 md:p-6 space-y-6"
+        className="bg-white rounded-2xl border border-gray-200/80 shadow-[0_1px_2px_rgba(15,42,74,0.04)] p-5 md:p-7"
       >
-        <h2 className="text-lg font-bold text-[#0f2a4a]">Profile</h2>
+        <header className="mb-6">
+          <h2 className="text-lg font-bold text-[#0f2a4a]">Profile</h2>
+          <p className="text-xs text-gray-500 mt-1">
+            This information appears on your public organization page.
+          </p>
+        </header>
 
-        {/* Logo + name row */}
+        {/* ── 1. Brand ────────────────────────────────────────── */}
+        <SectionHeader title="Brand" subtitle="Logo and cover image." />
+
         <div id="field-logo" className="scroll-mt-24">
           <label className={labelClass}>Logo</label>
           <ImageField
@@ -109,29 +116,32 @@ export default function ManageOrgForm({ slug, initial }: { slug: string; initial
             kind="logo"
             value={form.logo_url}
             onChange={(v) => update("logo_url", v)}
-            previewClass="w-16 h-16 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center overflow-hidden shrink-0"
+            previewClass="w-20 h-20 rounded-xl bg-gray-50 border border-gray-200/80 flex items-center justify-center overflow-hidden shrink-0"
             previewMode="contain"
             placeholder="Paste an https://… URL, or upload an image."
           />
         </div>
 
-        {/* Cover image */}
-        <div id="field-cover" className="scroll-mt-24">
+        <div id="field-cover" className="scroll-mt-24 mt-5">
           <label className={labelClass}>Cover image</label>
+          <p className="text-[11px] text-gray-500 mb-1.5">Recommended: 1200 × 400px or larger, landscape.</p>
           <ImageField
             slug={slug}
             kind="cover"
             value={form.cover_image_url}
             onChange={(v) => update("cover_image_url", v)}
-            previewClass="w-32 h-16 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center overflow-hidden shrink-0"
+            previewClass="w-32 h-16 rounded-xl bg-gray-50 border border-gray-200/80 flex items-center justify-center overflow-hidden shrink-0"
             previewMode="cover"
-            placeholder="1200×400+ banner. Paste an https://… URL or upload."
+            placeholder="Paste an https://… URL, or upload an image."
           />
         </div>
 
+        {/* ── 2. Basic information ────────────────────────────── */}
+        <SectionHeader title="Basic information" subtitle="What appears on your public page." />
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div id="field-name" className="scroll-mt-24">
-            <label className={labelClass}>Display name <span className="text-red-500">*</span></label>
+            <label className={labelClass}>Display name <span className="text-rose-500" aria-label="required">*</span></label>
             <input
               value={form.name}
               onChange={e => update("name", e.target.value)}
@@ -152,7 +162,7 @@ export default function ManageOrgForm({ slug, initial }: { slug: string; initial
           </div>
         </div>
 
-        <div id="field-description" className="scroll-mt-24">
+        <div id="field-description" className="scroll-mt-24 mt-5">
           <label className={labelClass}>Description</label>
           <textarea
             value={form.description}
@@ -164,6 +174,9 @@ export default function ManageOrgForm({ slug, initial }: { slug: string; initial
           />
           <p className="text-[11px] text-gray-400 mt-1">{form.description.length}/600</p>
         </div>
+
+        {/* ── 3. Online presence ──────────────────────────────── */}
+        <SectionHeader title="Online presence" subtitle="Where people can find you elsewhere." />
 
         <div id="field-website" className="scroll-mt-24">
           <label className={labelClass}>Website</label>
@@ -218,7 +231,7 @@ export default function ManageOrgForm({ slug, initial }: { slug: string; initial
           </div>
         )}
 
-        <div className="flex items-center justify-end gap-3">
+        <div className="flex items-center justify-end gap-3 mt-7 pt-5 border-t border-gray-100">
           {saved && (
             <span className="text-xs text-emerald-700 inline-flex items-center gap-1">
               <CheckCircle2 className="w-3.5 h-3.5" /> Saved
@@ -227,13 +240,22 @@ export default function ManageOrgForm({ slug, initial }: { slug: string; initial
           <button
             type="submit"
             disabled={saving}
-            className="inline-flex items-center gap-1.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-300 disabled:to-gray-300 text-white font-semibold px-5 py-2.5 rounded-xl text-sm shadow-md transition-all"
+            className="inline-flex items-center gap-1.5 bg-[#0f2a4a] hover:bg-[#1a3f6e] disabled:bg-gray-300 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors"
           >
             {saving ? <Loader2 size={14} className="animate-spin" /> : null}
             {saving ? "Saving…" : "Save changes"}
           </button>
         </div>
       </form>
+    </div>
+  );
+}
+
+function SectionHeader({ title, subtitle }: { title: string; subtitle: string }) {
+  return (
+    <div className="mt-6 mb-4 pt-5 first:mt-0 first:pt-0 first:border-t-0 border-t border-gray-100">
+      <h3 className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">{title}</h3>
+      <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>
     </div>
   );
 }
