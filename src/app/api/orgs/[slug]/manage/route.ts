@@ -48,11 +48,26 @@ export async function PATCH(req: NextRequest, ctx: { params: { slug: string } })
   if ("twitter_url" in body) patch.twitter_url = trimOrNull(body.twitter_url, 300);
   if ("linkedin_url" in body) patch.linkedin_url = trimOrNull(body.linkedin_url, 300);
 
+  // "Managing solo" acknowledgement — the org-setup checklist's Team
+  // item completes when a manager has additional teammates OR when this
+  // timestamp is set. `true` stamps now; `false` clears it (lets a
+  // future UI un-acknowledge if a manager hires teammates and wants the
+  // org to read as "team" instead of "solo+ack").
+  if ("solo_acknowledged" in body) {
+    const v = body.solo_acknowledged;
+    if (v === true) patch.solo_acknowledged_at = new Date().toISOString();
+    else if (v === false) patch.solo_acknowledged_at = null;
+  }
+
   // PATCH is a partial update — `name` is only required when it's actually
   // being touched. A patch that only changes social URLs must succeed even
   // if "name" isn't in the body.
   if ("name" in body && !patch.name) {
     return NextResponse.json({ error: "name required" }, { status: 400 });
+  }
+
+  if (Object.keys(patch).length === 0) {
+    return NextResponse.json({ error: "no_editable_fields" }, { status: 400 });
   }
 
   const { error } = await adminSupabase

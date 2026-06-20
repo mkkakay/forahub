@@ -66,6 +66,22 @@ export default function ManageTabs({ slots, badges, defaultTab = "profile" }: Pr
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sp]);
 
+  // External components (e.g. the page-level OrgSetupChecklist) switch
+  // tabs by dispatching a window CustomEvent. Avoids a Next router
+  // navigation + re-render just to jump between sections we already
+  // have mounted.
+  useEffect(() => {
+    function handler(e: Event) {
+      const detail = (e as CustomEvent).detail;
+      if (typeof detail !== "string") return;
+      const next = safeTab(detail, defaultTab);
+      pick(next);
+    }
+    window.addEventListener("forahub:tab-change", handler);
+    return () => window.removeEventListener("forahub:tab-change", handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultTab]);
+
   function pick(id: TabId) {
     setActive(id);
     if (typeof window === "undefined") return;

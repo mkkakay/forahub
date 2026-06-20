@@ -1,8 +1,9 @@
 "use client";
 
-// Org profile form + a completeness nudge that lives at the top of the
-// same component. Both halves share state so the nudge updates as the
-// manager types — no round-trip required.
+// Profile-tab form. The per-field completeness nudge that used to live
+// at the top of this component was replaced by the page-level
+// OrgSetupChecklist — which measures profile + team + events together
+// rather than only profile fields. This file is the form only.
 //
 // Cover/logo image support: each field accepts EITHER a pasted URL
 // (validated as http/https + image-y extension hint, live previewed) OR
@@ -11,11 +12,10 @@
 // bucket the /admin event-banner uploader uses, so we have one
 // storage convention to operate.
 
-import { useMemo, useState, useRef } from "react";
+import { useState, useRef } from "react";
 import {
   Loader2, CheckCircle2, AlertCircle, X, Link as LinkIcon, AtSign,
-  Briefcase, Globe, Image as ImageIcon, Upload, ExternalLink,
-  Sparkles, ChevronDown, ChevronUp,
+  Briefcase, Globe, Image as ImageIcon, Upload,
 } from "lucide-react";
 import { parseApiResponse } from "@/lib/admin/fetchJson";
 
@@ -34,29 +34,6 @@ const labelClass = "block text-xs font-semibold text-gray-600 uppercase tracking
 const inputClass =
   "w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]/40 focus:border-[#4ea8de] transition-colors";
 
-// Field weights used to compute the completeness %. Required fields
-// weigh more so a manager who only adds the name reads "10%", not "50%".
-// Weights are tuned so a full profile reads exactly 100%.
-const FIELD_WEIGHTS: Array<{
-  key: keyof Initial;
-  weight: number;
-  label: string;
-  anchor: string;
-  hint: string;
-}> = [
-  { key: "name",            weight: 5,  label: "Display name",  anchor: "field-name",     hint: "Required" },
-  { key: "logo_url",        weight: 18, label: "Logo",          anchor: "field-logo",     hint: "Square mark or wordmark" },
-  { key: "cover_image_url", weight: 18, label: "Cover image",   anchor: "field-cover",    hint: "1200×400+ banner" },
-  { key: "description",     weight: 18, label: "Description",   anchor: "field-description", hint: "One short paragraph" },
-  { key: "website_url",     weight: 15, label: "Website",       anchor: "field-website",  hint: "Your homepage URL" },
-  { key: "twitter_url",     weight: 13, label: "Twitter / X",   anchor: "field-twitter",  hint: "Profile URL" },
-  { key: "linkedin_url",    weight: 13, label: "LinkedIn",      anchor: "field-linkedin", hint: "Company page URL" },
-];
-
-function valuePresent(v: string | null | undefined): boolean {
-  return typeof v === "string" && v.trim().length > 0;
-}
-
 function looksLikeHttpsUrl(v: string): boolean {
   const t = v.trim();
   if (!t) return false;
@@ -71,23 +48,11 @@ export default function ManageOrgForm({ slug, initial }: { slug: string; initial
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [nudgeCollapsed, setNudgeCollapsed] = useState(false);
 
   function update<K extends keyof Initial>(key: K, value: string) {
     setForm(f => ({ ...f, [key]: value }));
     setSaved(false);
   }
-
-  const completeness = useMemo(() => {
-    const total = FIELD_WEIGHTS.reduce((s, f) => s + f.weight, 0);
-    const filled = FIELD_WEIGHTS.reduce(
-      (s, f) => s + (valuePresent(form[f.key] as string) ? f.weight : 0),
-      0,
-    );
-    const pct = Math.round((filled / total) * 100);
-    const missing = FIELD_WEIGHTS.filter(f => !valuePresent(form[f.key] as string));
-    return { pct, missing };
-  }, [form]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -130,13 +95,6 @@ export default function ManageOrgForm({ slug, initial }: { slug: string; initial
 
   return (
     <div className="space-y-4">
-      <CompletenessNudge
-        pct={completeness.pct}
-        missing={completeness.missing}
-        collapsed={nudgeCollapsed}
-        onToggleCollapsed={() => setNudgeCollapsed(v => !v)}
-      />
-
       <form
         onSubmit={handleSubmit}
         className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 md:p-6 space-y-6"
@@ -276,92 +234,6 @@ export default function ManageOrgForm({ slug, initial }: { slug: string; initial
           </button>
         </div>
       </form>
-    </div>
-  );
-}
-
-// ─── Completeness nudge ──────────────────────────────────────────────
-
-function CompletenessNudge({
-  pct, missing, collapsed, onToggleCollapsed,
-}: {
-  pct: number;
-  missing: { key: string; label: string; anchor: string; hint: string }[];
-  collapsed: boolean;
-  onToggleCollapsed: () => void;
-}) {
-  const isComplete = pct === 100;
-  return (
-    <section className={`rounded-2xl border shadow-sm overflow-hidden ${
-      isComplete
-        ? "bg-emerald-50 border-emerald-200"
-        : "bg-gradient-to-br from-[#0f2a4a] via-[#1a3f6e] to-[#1f4d83] border-blue-900/20"
-    }`}>
-      <button
-        type="button"
-        onClick={onToggleCollapsed}
-        className={`w-full flex items-center gap-3 px-5 py-4 text-left ${isComplete ? "" : "text-white"}`}
-        aria-expanded={!collapsed}
-      >
-        <Sparkles size={16} className={isComplete ? "text-emerald-700" : "text-[#bfe1ff]"} />
-        <div className="flex-1 min-w-0">
-          <p className={`text-sm font-bold inline-flex items-center gap-2 ${isComplete ? "text-emerald-900" : "text-white"}`}>
-            {isComplete
-              ? "Your profile is complete — nice."
-              : `Profile ${pct}% complete`}
-            {!isComplete && (
-              <span className="text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded bg-white/15 border border-white/15">
-                {missing.length} field{missing.length === 1 ? "" : "s"} left
-              </span>
-            )}
-          </p>
-          <ProgressBar pct={pct} dark={!isComplete} />
-        </div>
-        {!isComplete && (
-          <span className="shrink-0 text-white/70" aria-hidden="true">
-            {collapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
-          </span>
-        )}
-      </button>
-      {!isComplete && !collapsed && (
-        <div className="px-5 pb-5">
-          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {missing.map(f => (
-              <li key={f.key}>
-                <a
-                  href={`#${f.anchor}`}
-                  className="group flex items-start gap-2 bg-white/8 hover:bg-white/15 border border-white/10 hover:border-white/25 rounded-xl px-3 py-2.5 transition-colors"
-                >
-                  <span className="mt-0.5 w-5 h-5 rounded-full bg-white/10 border border-white/20 inline-flex items-center justify-center text-[10px] font-bold text-white/80 shrink-0">
-                    +
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-[13px] font-semibold text-white">{f.label}</span>
-                    <span className="block text-[11px] text-white/70">{f.hint}</span>
-                  </span>
-                  <ExternalLink size={11} className="ml-auto mt-1 text-white/40 group-hover:text-white/80 shrink-0" />
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </section>
-  );
-}
-
-function ProgressBar({ pct, dark }: { pct: number; dark: boolean }) {
-  const trackCls = dark ? "bg-white/15" : "bg-emerald-100";
-  const fillCls = dark
-    ? "bg-gradient-to-r from-[#4ea8de] to-emerald-400"
-    : "bg-emerald-500";
-  return (
-    <div className={`mt-2 h-1.5 w-full rounded-full ${trackCls} overflow-hidden`}>
-      <div
-        className={`h-full ${fillCls} transition-all duration-500`}
-        style={{ width: `${pct}%` }}
-        aria-hidden="true"
-      />
     </div>
   );
 }

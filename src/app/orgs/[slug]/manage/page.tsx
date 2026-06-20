@@ -21,6 +21,7 @@ import EventsPanel, { type EventView } from "./EventsPanel";
 import SeriesPanel from "./SeriesPanel";
 import AnalyticsPanel from "./AnalyticsPanel";
 import ManageTabs from "./ManageTabs";
+import OrgSetupChecklist, { type OrgSetupSignals } from "./OrgSetupChecklist";
 
 export const dynamic = "force-dynamic";
 
@@ -38,6 +39,7 @@ interface OrgRow {
   is_claimed: boolean | null;
   is_verified: boolean | null;
   claimed_at: string | null;
+  solo_acknowledged_at: string | null;
 }
 
 export default async function ManageOrgPage({
@@ -57,7 +59,7 @@ export default async function ManageOrgPage({
 
   const { data, error } = await adminSupabase
     .from("organizations_directory")
-    .select("slug, name, short_name, description, domain, logo_url, cover_image_url, website_url, twitter_url, linkedin_url, is_claimed, is_verified, claimed_at")
+    .select("slug, name, short_name, description, domain, logo_url, cover_image_url, website_url, twitter_url, linkedin_url, is_claimed, is_verified, claimed_at, solo_acknowledged_at")
     .eq("slug", params.slug)
     .maybeSingle();
 
@@ -116,12 +118,64 @@ export default async function ManageOrgPage({
     loadOrgAnalytics({ orgSlug: org.slug, windowDays: 90 }),
   ]);
 
-  // Series count is a separate cheap query — used for the tab badge.
-  const { count: seriesCount } = await adminSupabase
-    .from("event_series")
-    .select("id", { count: "exact", head: true })
-    .eq("org_slug", org.slug)
-    .eq("status", "active");
+  // Series count + published-event count are cheap head-only queries
+  // used by the tab badges AND the org-setup checklist signals.
+  const [
+    { count: seriesCount },
+    { count: publishedEventsCount },
+  ] = await Promise.all([
+    adminSupabase
+      .from("event_series")
+      .select("id", { count: "exact", head: true })
+      .eq("org_slug", org.slug)
+      .eq("status", "active"),
+    adminSupabase
+      .from("events")
+      .select("id", { count: "exact", head: true })
+      .eq("org_slug", org.slug)
+      .eq("status", "published"),
+  ]);
+
+  // ── Org-setup checklist signals (computed server-side, passed to the
+  // client component as plain booleans + counts). Three core items make
+  // up the percentage:
+  //   - Profile basics: logo + description + website all present
+  //   - Team: ≥2 managers OR solo acknowledged
+  //   - Events: ≥1 published event
+  // Plus an optional bonus item (recurring series). The percentage is
+  // ONLY over the three core items so an org with no series can hit 100.
+  const profileMissing: ("logo" | "description" | "website")[] = [];
+  if (!org.logo_url?.trim()) profileMissing.push("logo");
+  if (!org.description?.trim()) profileMissing.push("description");
+  if (!org.website_url?.trim()) profileMissing.push("website");
+  const profileBasicsDone = profileMissing.length === 0;
+
+  const hasCoManagers = managerRows.length > 1;
+  const soloAck = !!org.solo_acknowledged_at;
+  const teamDone = hasCoManagers || soloAck;
+  const teamReason: OrgSetupSignals["teamReason"] =
+    hasCoManagers ? "has_co_managers" :
+    soloAck       ? "solo_acknowledged" :
+    "incomplete";
+
+  const eventsDone = (publishedEventsCount ?? 0) > 0;
+  const seriesDone = (seriesCount ?? 0) > 0;
+
+  const coreDoneCount = [profileBasicsDone, teamDone, eventsDone].filter(Boolean).length;
+  const corePct = Math.round((coreDoneCount / 3) * 100);
+
+  const orgSetupSignals: OrgSetupSignals = {
+    profileBasicsDone,
+    profileMissing,
+    teamDone,
+    teamReason,
+    managerCount: managerRows.length,
+    eventsDone,
+    publishedEventsCount: publishedEventsCount ?? 0,
+    seriesDone,
+    activeSeriesCount: seriesCount ?? 0,
+    corePct,
+  };
 
   const founderId = managerRows[0]?.id ?? null;
   const viewerSeat = managerRows.find(m => m.user_id === userId) ?? null;
@@ -243,6 +297,11 @@ export default async function ManageOrgPage({
             Welcome to the team. You can edit the org profile and invite colleagues.
           </div>
         )}
+
+        {/* Org-wide setup checklist — sits above the tabs so it's
+            visible from every section. Server-side signals; the
+            component just renders + dispatches tab-change events. */}
+        <OrgSetupChecklist slug={org.slug} signals={orgSetupSignals} />
 
         {/* Tabs — replaces the previous long single-scroll layout. The
             child component is wrapped in Suspense because it reads
