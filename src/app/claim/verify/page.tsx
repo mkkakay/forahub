@@ -90,10 +90,17 @@ interface VerificationApproved {
   outcome: "approved";
   orgSlug: string;
 }
+interface VerificationNeedsSignin {
+  ok: true;
+  outcome: "needs_signin";
+  /** Where to send the user after they sign in — back here to retry the
+   *  same token. Set by the caller; we don't expose the raw token in the
+   *  return value. */
+}
 
 async function performVerification(
   token: string,
-): Promise<VerificationApproved | VerificationQueued | VerificationFailure> {
+): Promise<VerificationApproved | VerificationQueued | VerificationNeedsSignin | VerificationFailure> {
   const { data, error } = await adminSupabase
     .from("org_claims")
     .select("id, org_slug, user_email, status, token_expires_at, verification_path")
@@ -117,7 +124,16 @@ async function performVerification(
     const { data: u } = await serverSb.auth.getUser();
     userId = u.user?.id ?? null;
   } catch {
-    // Anonymous verification is fine; the claim still binds by email.
+    // Anonymous read of the session — userId stays null; handled below.
+  }
+
+  // Domain-match verifications grant ownership immediately by writing
+  // claimed_by_user_id on the org row. If we let that complete with a NULL
+  // userId, the manage page (which gates on claimed_by_user_id === auth.uid())
+  // will permanently lock the legitimate owner out — exactly what happened
+  // to the WHO row. Force sign-in before granting.
+  if (claim.verification_path === "domain_match" && !userId) {
+    return { ok: true, outcome: "needs_signin" };
   }
 
   const nowIso = new Date().toISOString();
@@ -180,6 +196,13 @@ export default async function ClaimVerifyPage({
   if (result.ok) {
     if (result.outcome === "approved") {
       redirect(`/orgs/${result.orgSlug}/manage?claimed=1`);
+    }
+    if (result.outcome === "needs_signin") {
+      // Bounce through sign-in so the verification can complete with a real
+      // auth.uid(). The same token is re-used; performVerification will
+      // re-enter with userId populated and grant ownership.
+      const next = `/claim/verify?token=${encodeURIComponent(searchParams.token!.trim())}`;
+      redirect(`/auth/signin?next=${encodeURIComponent(next)}`);
     }
     // outcome === "queued": email was just confirmed, but the claim sits in
     // the admin review queue. Don't redirect to the manage page — show a

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { renderClaimVerificationEmail } from "@/lib/email/claimVerification";
 import { isFreeMailDomain } from "@/lib/email/freeMailDomains";
 
@@ -15,6 +16,8 @@ interface OrgRow {
   name: string;
   domain: string | null;
   is_claimed: boolean | null;
+  is_verified: boolean | null;
+  claimed_by_user_id: string | null;
 }
 
 interface ClaimRow {
@@ -100,14 +103,48 @@ export async function POST(req: NextRequest) {
 
   const { data: orgData, error: orgErr } = await adminSupabase
     .from("organizations_directory")
-    .select("slug, name, domain, is_claimed")
+    .select("slug, name, domain, is_claimed, is_verified, claimed_by_user_id")
     .eq("slug", orgSlug)
     .maybeSingle();
   if (orgErr) return NextResponse.json({ error: orgErr.message }, { status: 500 });
   const org = orgData as OrgRow | null;
   if (!org) return NextResponse.json({ error: "org_not_found" }, { status: 404 });
 
+  // Resolve the signed-in user from the session cookie. Ownership is judged
+  // against organizations_directory.claimed_by_user_id — the SAME criterion
+  // /orgs/[slug]/manage uses (manage/page.tsx). Whenever this route says
+  // "already_owned_by_you", the manage page MUST grant access; if they ever
+  // diverge again, both pages will silently disagree like they did for WHO.
+  let currentUserId: string | null = null;
+  try {
+    const sb = createServerSupabaseClient();
+    const { data: u } = await sb.auth.getUser();
+    currentUserId = u.user?.id ?? null;
+  } catch {
+    // Anonymous request — currentUserId stays null, falls through to
+    // "already_claimed" rather than spuriously claiming ownership.
+  }
+
   if (org.is_claimed) {
+    // Authoritative ownership check: the org's claimed_by_user_id matches the
+    // current auth.uid(). Pure email match is no longer accepted — that's
+    // exactly the path that produced the /claim ↔ /manage contradiction.
+    if (
+      currentUserId &&
+      org.is_verified &&
+      org.claimed_by_user_id &&
+      org.claimed_by_user_id === currentUserId
+    ) {
+      return NextResponse.json(
+        {
+          error: "already_owned_by_you",
+          own_org: true,
+          org_slug: org.slug,
+          message: `You already manage ${org.name}.`,
+        },
+        { status: 409 }
+      );
+    }
     const { data: existing } = await adminSupabase
       .from("org_claims")
       .select("user_email")
@@ -116,22 +153,6 @@ export async function POST(req: NextRequest) {
       .limit(1)
       .maybeSingle();
     const ownerEmail = existing ? (existing as ClaimRow).user_email.trim().toLowerCase() : null;
-    // `email` is already normalized higher up (trimmed + lowercased on
-    // line ~89). If the submitter matches the verified owner, surface a
-    // clear "you already own this" message + an own_org flag so the client
-    // can route them to sign-in / manage UI instead of showing a masked
-    // address back to them.
-    if (ownerEmail && ownerEmail === email) {
-      return NextResponse.json(
-        {
-          error: "already_owned_by_you",
-          own_org: true,
-          org_slug: org.slug,
-          message: `You already own ${org.name}. Sign in to manage it.`,
-        },
-        { status: 409 }
-      );
-    }
     const masked = ownerEmail ? maskEmail(ownerEmail) : "***";
     return NextResponse.json(
       {
