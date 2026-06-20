@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase/client";
 import Link from "next/link";
 import { Calendar, Globe, Star, Bookmark, Trophy, ArrowRight, Sparkles, Target, Award, Palette } from "lucide-react";
 import ClientPageHeader from "@/components/ClientPageHeader";
+import WelcomeOnboardingBanner from "@/components/WelcomeOnboardingBanner";
 
 const SDG_COLORS: Record<number, string> = {
   1:"#E5243B",2:"#DDA63A",3:"#4C9F38",4:"#C5192D",5:"#FF3A21",
@@ -117,6 +118,10 @@ export default function DashboardPage() {
       />
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        {/* First-sign-in welcome — self-dismisses via localStorage so
+            returning users don't see it again. */}
+        <WelcomeOnboardingBanner />
+
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
