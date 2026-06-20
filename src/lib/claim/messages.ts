@@ -46,9 +46,12 @@ const MAP: Record<string, (ctx: { orgSlug?: string | null }) => ClaimMessage> = 
       ? { label: "Manage organization", href: `/orgs/${orgSlug}/manage` }
       : undefined,
   }),
+  // Legacy code — the multi-manager model no longer rejects same-org
+  // colleagues, but cached responses or older clients may still surface it.
+  // Render as info, not an error.
   already_claimed: () => ({
     kind: "info",
-    text: "This organization has already been claimed. If you think this is a mistake, contact hello@forahub.org.",
+    text: "This organization already has managers. Verify your work email to join them as a co-manager.",
   }),
 
   // ── Review-queue routing (server now silently routes these; historical

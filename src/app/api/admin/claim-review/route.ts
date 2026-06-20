@@ -11,6 +11,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
+import { addOrgManager } from "@/lib/orgs/managers";
 import { renderClaimDeniedEmail } from "@/lib/email/claimDenied";
 
 export const runtime = "nodejs";
@@ -191,9 +192,25 @@ export async function PATCH(req: NextRequest) {
     });
   }
 
-  // Approve flow — both variants grant ownership; the difference is the
-  // verified badge.
+  // Approve flow — both variants grant a manager seat; the difference is
+  // whether the org-level verified badge fires (or stays at "claimed").
   const grantBadge = action === "approve";
+
+  // We need a Supabase auth user to seat. The verify route now requires
+  // sign-in before completing email confirmation, so user_id should always
+  // be present on a pending_admin_review claim. Refuse if it isn't — the
+  // claimant must re-verify while signed in.
+  if (!claimRow.user_id) {
+    return NextResponse.json(
+      {
+        error: "claim_missing_user_id",
+        message:
+          "This claim has no linked Supabase auth user. Ask the claimant to sign in and re-verify before approving.",
+      },
+      { status: 409 },
+    );
+  }
+
   const claimUpdate = await adminSupabase
     .from("org_claims")
     .update({
@@ -209,13 +226,23 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: claimUpdate.error.message }, { status: 500 });
   }
 
+  const seat = await addOrgManager({
+    orgSlug: claimRow.org_slug,
+    userId: claimRow.user_id,
+    email: claimRow.user_email,
+    verifiedAt: nowIso,
+    addedVia: "admin_review",
+  });
+  if (!seat) {
+    return NextResponse.json({ error: "manager_seat_failed" }, { status: 500 });
+  }
+
   const orgUpdate = await adminSupabase
     .from("organizations_directory")
     .update({
       is_claimed: true,
       is_verified: grantBadge,
       claimed_at: nowIso,
-      claimed_by_user_id: claimRow.user_id ?? null,
     })
     .eq("slug", claimRow.org_slug);
   if (orgUpdate.error) {

@@ -329,7 +329,7 @@ export default function ClaimPage() {
             </div>
             <h2 className="text-xl font-bold text-[#0f2a4a]">You already manage {picked.name}</h2>
             <p className="text-sm text-gray-600 mt-2">
-              Sign in with <span className="font-semibold">{email}</span> if you&apos;re not already, then head to the manage page.
+              You&apos;re signed in as a verified manager. Open the manage page to update the org profile.
             </p>
             <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link

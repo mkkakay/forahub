@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { isOrgManager } from "@/lib/orgs/managers";
 import { renderClaimVerificationEmail } from "@/lib/email/claimVerification";
 import { isFreeMailDomain } from "@/lib/email/freeMailDomains";
 
@@ -15,13 +16,6 @@ interface OrgRow {
   slug: string;
   name: string;
   domain: string | null;
-  is_claimed: boolean | null;
-  is_verified: boolean | null;
-  claimed_by_user_id: string | null;
-}
-
-interface ClaimRow {
-  user_email: string;
 }
 
 function extractDomain(email: string): string | null {
@@ -33,13 +27,6 @@ function extractDomain(email: string): string | null {
 function normalizeOrgDomain(domain: string | null): string | null {
   if (!domain) return null;
   return domain.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/.*$/, "");
-}
-
-function maskEmail(email: string): string {
-  const [local, domain] = email.split("@");
-  if (!local || !domain) return "***";
-  const head = local.slice(0, Math.min(3, local.length));
-  return `${head}***@${domain}`;
 }
 
 async function sendVerificationEmail(opts: {
@@ -103,63 +90,37 @@ export async function POST(req: NextRequest) {
 
   const { data: orgData, error: orgErr } = await adminSupabase
     .from("organizations_directory")
-    .select("slug, name, domain, is_claimed, is_verified, claimed_by_user_id")
+    .select("slug, name, domain")
     .eq("slug", orgSlug)
     .maybeSingle();
   if (orgErr) return NextResponse.json({ error: orgErr.message }, { status: 500 });
   const org = orgData as OrgRow | null;
   if (!org) return NextResponse.json({ error: "org_not_found" }, { status: 404 });
 
-  // Resolve the signed-in user from the session cookie. Ownership is judged
-  // against organizations_directory.claimed_by_user_id — the SAME criterion
-  // /orgs/[slug]/manage uses (manage/page.tsx). Whenever this route says
-  // "already_owned_by_you", the manage page MUST grant access; if they ever
-  // diverge again, both pages will silently disagree like they did for WHO.
+  // Resolve the signed-in user from the session cookie. The only reason this
+  // route returns "already_owned_by_you" is if the current user is already a
+  // manager of this org — the SAME predicate the manage page gates on. There
+  // is no "already_claimed" path: an org has many managers, so a same-org
+  // colleague should always be allowed through the verification flow below
+  // and join as an additional manager.
   let currentUserId: string | null = null;
   try {
     const sb = createServerSupabaseClient();
     const { data: u } = await sb.auth.getUser();
     currentUserId = u.user?.id ?? null;
   } catch {
-    // Anonymous request — currentUserId stays null, falls through to
-    // "already_claimed" rather than spuriously claiming ownership.
+    // Anonymous request — currentUserId stays null, no short-circuit.
   }
 
-  if (org.is_claimed) {
-    // Authoritative ownership check: the org's claimed_by_user_id matches the
-    // current auth.uid(). Pure email match is no longer accepted — that's
-    // exactly the path that produced the /claim ↔ /manage contradiction.
-    if (
-      currentUserId &&
-      org.is_verified &&
-      org.claimed_by_user_id &&
-      org.claimed_by_user_id === currentUserId
-    ) {
-      return NextResponse.json(
-        {
-          error: "already_owned_by_you",
-          own_org: true,
-          org_slug: org.slug,
-          message: `You already manage ${org.name}.`,
-        },
-        { status: 409 }
-      );
-    }
-    const { data: existing } = await adminSupabase
-      .from("org_claims")
-      .select("user_email")
-      .eq("org_slug", org.slug)
-      .eq("status", "verified")
-      .limit(1)
-      .maybeSingle();
-    const ownerEmail = existing ? (existing as ClaimRow).user_email.trim().toLowerCase() : null;
-    const masked = ownerEmail ? maskEmail(ownerEmail) : "***";
+  if (currentUserId && (await isOrgManager(org.slug, currentUserId))) {
     return NextResponse.json(
       {
-        error: "already_claimed",
-        message: `This organization is already claimed by ${masked}. If you believe this is an error, contact support.`,
+        error: "already_owned_by_you",
+        own_org: true,
+        org_slug: org.slug,
+        message: `You already manage ${org.name}.`,
       },
-      { status: 409 }
+      { status: 409 },
     );
   }
 

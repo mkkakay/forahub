@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { isOrgManager } from "@/lib/orgs/managers";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-interface OrgRow {
-  claimed_by_user_id: string | null;
-  is_claimed: boolean | null;
-}
 
 const MAX_TEXT = 600;
 const MAX_NAME = 120;
@@ -24,16 +20,7 @@ async function authorize(slug: string): Promise<{ ok: true } | { ok: false; stat
   const { data: u } = await sb.auth.getUser();
   const userId = u.user?.id ?? null;
   if (!userId) return { ok: false, status: 401, error: "not_signed_in" };
-
-  const { data, error } = await adminSupabase
-    .from("organizations_directory")
-    .select("claimed_by_user_id, is_claimed")
-    .eq("slug", slug)
-    .maybeSingle();
-  if (error) return { ok: false, status: 500, error: error.message };
-  const org = data as OrgRow | null;
-  if (!org) return { ok: false, status: 404, error: "org_not_found" };
-  if (!org.is_claimed || org.claimed_by_user_id !== userId) {
+  if (!(await isOrgManager(slug, userId))) {
     return { ok: false, status: 403, error: "not_authorized" };
   }
   return { ok: true };

@@ -4,6 +4,7 @@ import { AlertCircle, ArrowLeft, Clock, CheckCircle2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { addOrgManager } from "@/lib/orgs/managers";
 import ResendForm from "./ResendForm";
 
 export const dynamic = "force-dynamic";
@@ -127,12 +128,11 @@ async function performVerification(
     // Anonymous read of the session — userId stays null; handled below.
   }
 
-  // Domain-match verifications grant ownership immediately by writing
-  // claimed_by_user_id on the org row. If we let that complete with a NULL
-  // userId, the manage page (which gates on claimed_by_user_id === auth.uid())
-  // will permanently lock the legitimate owner out — exactly what happened
-  // to the WHO row. Force sign-in before granting.
-  if (claim.verification_path === "domain_match" && !userId) {
+  // Both verification paths bind ownership to a Supabase auth user (either
+  // an immediate org_managers seat, or — for admin_review — a queued claim
+  // the admin will turn into an org_managers seat). Either way, a NULL
+  // user_id leaves the seat unassignable; force sign-in first.
+  if (!userId) {
     return { ok: true, outcome: "needs_signin" };
   }
 
@@ -154,7 +154,10 @@ async function performVerification(
     return { ok: true, outcome: "queued", orgSlug: claim.org_slug };
   }
 
-  // Default / explicit domain_match path: instant grant.
+  // Default / explicit domain_match path: instant grant. Adds a row to
+  // org_managers (idempotent — a colleague who re-verifies just no-ops) and
+  // marks the claim row verified. Sets is_claimed/is_verified at the org
+  // level for the badge; further managers don't change those.
   const { error: claimErr } = await adminSupabase
     .from("org_claims")
     .update({
@@ -166,13 +169,21 @@ async function performVerification(
     .eq("id", claim.id);
   if (claimErr) return { ok: false, reason: "update_failed", context };
 
+  const seat = await addOrgManager({
+    orgSlug: claim.org_slug,
+    userId,
+    email: claim.user_email,
+    verifiedAt: nowIso,
+    addedVia: "domain_match",
+  });
+  if (!seat) return { ok: false, reason: "org_update_failed", context };
+
   const { error: orgErr } = await adminSupabase
     .from("organizations_directory")
     .update({
       is_claimed: true,
       is_verified: true,
       claimed_at: nowIso,
-      claimed_by_user_id: userId,
     })
     .eq("slug", claim.org_slug);
   if (orgErr) return { ok: false, reason: "org_update_failed", context };

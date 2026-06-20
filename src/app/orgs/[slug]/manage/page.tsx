@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BadgeCheck, ArrowLeft, Lock } from "lucide-react";
+import { BadgeCheck, ArrowLeft, Lock, Users } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { isOrgManager, listOrgManagers } from "@/lib/orgs/managers";
 import ManageOrgForm from "./ManageOrgForm";
 
 export const dynamic = "force-dynamic";
@@ -20,12 +21,6 @@ interface OrgRow {
   linkedin_url: string | null;
   is_claimed: boolean | null;
   is_verified: boolean | null;
-  claimed_by_user_id: string | null;
-  claimed_at: string | null;
-}
-
-interface ClaimRow {
-  user_email: string;
   claimed_at: string | null;
 }
 
@@ -53,7 +48,7 @@ export default async function ManageOrgPage({
 
   const { data, error } = await adminSupabase
     .from("organizations_directory")
-    .select("slug, name, short_name, description, domain, logo_url, website_url, twitter_url, linkedin_url, is_claimed, is_verified, claimed_by_user_id, claimed_at")
+    .select("slug, name, short_name, description, domain, logo_url, website_url, twitter_url, linkedin_url, is_claimed, is_verified, claimed_at")
     .eq("slug", params.slug)
     .maybeSingle();
 
@@ -62,7 +57,10 @@ export default async function ManageOrgPage({
   }
   const org = data as OrgRow;
 
-  if (!org.is_claimed || org.claimed_by_user_id !== userId) {
+  // Authoritative access check: a seat in org_managers for (slug, auth.uid()).
+  // Same predicate the /claim short-circuit uses (isOrgManager), so the two
+  // pages can never disagree.
+  if (!(await isOrgManager(org.slug, userId!))) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
@@ -73,7 +71,7 @@ export default async function ManageOrgPage({
             </div>
             <h1 className="text-2xl font-bold text-[#0f2a4a]">You don&apos;t have access to manage this org</h1>
             <p className="text-sm text-gray-600 mt-2">
-              Only the verified claimant can edit <span className="font-semibold">{org.name}</span>.
+              Only verified managers can edit <span className="font-semibold">{org.name}</span>. If you&apos;re a colleague, claim it with your work email.
             </p>
             <div className="mt-6">
               <Link
@@ -89,15 +87,7 @@ export default async function ManageOrgPage({
     );
   }
 
-  const { data: claimData } = await adminSupabase
-    .from("org_claims")
-    .select("user_email, claimed_at")
-    .eq("org_slug", org.slug)
-    .eq("status", "verified")
-    .order("claimed_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  const claim = (claimData as ClaimRow | null) ?? null;
+  const managers = await listOrgManagers(org.slug);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -109,7 +99,7 @@ export default async function ManageOrgPage({
             <BadgeCheck className="w-7 h-7 text-emerald-600" aria-label="Verified organization" />
           </h1>
           <p className="text-base text-gray-600 mt-2">
-            You&apos;re the verified claimant. Update your org&apos;s profile below.
+            You&apos;re a verified manager. Update your org&apos;s profile below.
           </p>
         </header>
 
@@ -133,34 +123,54 @@ export default async function ManageOrgPage({
         />
 
         <section className="mt-8 bg-white rounded-2xl border border-gray-200 shadow-sm p-5 md:p-6">
-          <h2 className="text-lg font-bold text-[#0f2a4a]">Verification status</h2>
-          <dl className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+          <h2 className="text-lg font-bold text-[#0f2a4a] inline-flex items-center gap-2">
+            <Users className="w-4 h-4 text-[#0f2a4a]" /> Managers
+            <span className="text-xs font-semibold text-gray-500 tabular-nums">({managers.length})</span>
+          </h2>
+          <p className="text-xs text-gray-500 mt-1">
+            Anyone with a verified <span className="font-semibold">{org.domain ? `@${org.domain}` : "matching work-email"}</span> can join as a co-manager from the claim page.
+          </p>
+          <ul className="mt-3 divide-y divide-gray-100 border border-gray-100 rounded-xl overflow-hidden">
+            {managers.map(m => (
+              <li key={m.id} className="flex items-center justify-between gap-3 px-3 py-2.5 text-sm">
+                <div className="min-w-0">
+                  <div className="text-gray-800 truncate">{m.email || "(unknown email)"}</div>
+                  <div className="text-[11px] text-gray-500">
+                    {m.added_via === "domain_match"
+                      ? "Verified via work-email domain match"
+                      : m.added_via === "admin_review"
+                      ? "Verified via admin review"
+                      : "Verified manager"}
+                    {m.verified_at && (
+                      <> · {new Date(m.verified_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</>
+                    )}
+                  </div>
+                </div>
+                <span className="shrink-0 text-[10px] uppercase tracking-wider font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-1.5 py-0.5">
+                  {m.role}
+                </span>
+              </li>
+            ))}
+            {managers.length === 0 && (
+              <li className="px-3 py-3 text-sm text-gray-500">No managers on file.</li>
+            )}
+          </ul>
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
             <div>
-              <dt className="text-xs font-semibold uppercase tracking-wider text-gray-500">Status</dt>
+              <dt className="text-xs font-semibold uppercase tracking-wider text-gray-500">Org status</dt>
               <dd className="text-emerald-700 font-semibold inline-flex items-center gap-1.5 mt-1">
-                <BadgeCheck className="w-4 h-4" /> Verified
+                <BadgeCheck className="w-4 h-4" /> {org.is_verified ? "Verified" : "Claimed"}
               </dd>
             </div>
-            <div className="min-w-0">
-              <dt className="text-xs font-semibold uppercase tracking-wider text-gray-500">Verified by</dt>
-              <dd className="text-gray-800 mt-1 truncate">{claim?.user_email ?? "—"}</dd>
-            </div>
             <div>
-              <dt className="text-xs font-semibold uppercase tracking-wider text-gray-500">Verified at</dt>
+              <dt className="text-xs font-semibold uppercase tracking-wider text-gray-500">First verified</dt>
               <dd className="text-gray-800 mt-1">
-                {claim?.claimed_at
-                  ? new Date(claim.claimed_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-                  : org.claimed_at
+                {org.claimed_at
                   ? new Date(org.claimed_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
                   : "—"}
               </dd>
             </div>
-          </dl>
-          {org.domain && (
-            <p className="text-xs text-gray-500 mt-3">
-              Verified email domain on file: <span className="font-semibold">@{org.domain}</span>
-            </p>
-          )}
+          </div>
         </section>
 
         <section className="mt-8">

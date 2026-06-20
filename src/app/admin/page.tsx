@@ -17,6 +17,7 @@ import TrustLogosPanel from '@/components/admin/TrustLogosPanel'
 import DirectoryPanel from './DirectoryPanel'
 import OrgImportPanel from './OrgImportPanel'
 import ClaimReviewPanel from './ClaimReviewPanel'
+import OrgManagersPanel from './OrgManagersPanel'
 
 export const dynamic = 'force-dynamic'
 
@@ -261,6 +262,11 @@ export default async function AdminDashboard() {
       {/* Claim review queue */}
       <div className="mt-6">
         <ClaimReviewPanel adminSecret={process.env.ADMIN_SECRET ?? ''} />
+      </div>
+
+      {/* Verified org managers (multi-manager model) */}
+      <div className="mt-6">
+        <OrgManagersPanel adminSecret={process.env.ADMIN_SECRET ?? ''} />
       </div>
 
       {/* Regions section */}
