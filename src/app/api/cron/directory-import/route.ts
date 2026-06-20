@@ -18,6 +18,7 @@ import { adminSupabase } from "@/lib/supabase/admin";
 import { fetchRorPage } from "@/lib/orgs/rorImport";
 import { fetchIatiBulk } from "@/lib/orgs/iatiImport";
 import { upsertImportedOrg } from "@/lib/orgs/upsertImported";
+import { rollSeriesHorizons } from "@/lib/series/rollHorizons";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -195,13 +196,21 @@ export async function GET(req: NextRequest) {
   const startedAt = Date.now();
   const ror = await runRorIncremental(startedAt);
   const iati = await tryIati();
+  // Roll forward every active series's horizon. Idempotent — the
+  // (series_id, occurrence_date) unique constraint means already-
+  // materialized rows silently no-op. Bounded by maxDuration (300s); we
+  // hand it the cron's hard deadline so it stops cleanly mid-loop if we're
+  // running tight on time.
+  const seriesDeadline = startedAt + 280_000; // 20s headroom under Vercel's 300s.
+  const series = await rollSeriesHorizons(seriesDeadline);
   const elapsedMs = Date.now() - startedAt;
   return NextResponse.json({
-    ok: ror.ok, // ROR is the cron's primary purpose; IATI is best-effort.
+    ok: ror.ok, // ROR is the cron's primary purpose; IATI + series are best-effort.
     ran_at: new Date(startedAt).toISOString(),
     elapsed_ms: elapsedMs,
     ror,
     iati,
+    series,
   });
 }
 

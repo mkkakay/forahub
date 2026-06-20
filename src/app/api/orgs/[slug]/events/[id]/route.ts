@@ -59,6 +59,10 @@ const MATERIAL_FIELDS = new Set<string>([
 
 interface PatchBody {
   [k: string]: unknown;
+  /** Set to true to cancel just this occurrence (hides from manage list,
+   *  flips status='cancelled'). Implies is_exception=true so future
+   *  series rewrites can't un-cancel it. */
+  is_cancelled?: boolean;
 }
 
 function trimOrNull(v: unknown, max: number): string | null {
@@ -82,10 +86,12 @@ export async function PATCH(req: NextRequest, ctx: { params: { slug: string; id:
   catch { return NextResponse.json({ error: "invalid_json" }, { status: 400 }); }
 
   // Load the current row so we can (a) confirm it belongs to this org and
-  // (b) diff material fields against the patch.
+  // (b) diff material fields against the patch. We also pull series_id so
+  // an edit to a series occurrence promotes that row to is_exception=true,
+  // shielding it from future "edit-all-future" series rewrites.
   const { data: existingRow, error: exErr } = await adminSupabase
     .from("events")
-    .select("id, org_slug, status, title, description, organization, registration_url, online_url, source_url")
+    .select("id, org_slug, status, title, description, organization, registration_url, online_url, source_url, series_id, is_exception")
     .eq("id", ctx.params.id)
     .maybeSingle();
   if (exErr) return NextResponse.json({ error: exErr.message }, { status: 500 });
@@ -136,9 +142,31 @@ export async function PATCH(req: NextRequest, ctx: { params: { slug: string; id:
     }
   }
 
+  // Single-occurrence cancel. Accepted only when this row IS a series
+  // occurrence — a non-series event uses admin delete instead. Flipping
+  // is_cancelled also flips is_exception so a future "edit all future"
+  // on the series can't un-cancel it.
+  const cancelRequested = body.is_cancelled === true;
+  if (cancelRequested) {
+    if (!existing.series_id) {
+      return NextResponse.json({ error: "not_a_series_occurrence" }, { status: 400 });
+    }
+    patch.is_cancelled = true;
+    patch.status = "cancelled";
+  }
+
   if (Object.keys(patch).length === 0) {
     return NextResponse.json({ error: "no_editable_fields" }, { status: 400 });
   }
+
+  // Series-occurrence exception flip. ANY edit to a series occurrence (other
+  // than a cancel-only no-content patch) promotes the row to is_exception
+  // = true so subsequent "edit all future" series rewrites leave it alone.
+  // We don't flip this on a server-side update path (e.g. cron rollover)
+  // because those paths don't go through this endpoint.
+  const isOccurrenceEdit = !!existing.series_id;
+  const becameException = isOccurrenceEdit && !existing.is_exception;
+  if (becameException) patch.is_exception = true;
 
   // Edit-recheck flag. Only triggers when the row is currently published —
   // pending rows are about to be reviewed anyway; admin-takendown rows
@@ -160,5 +188,7 @@ export async function PATCH(req: NextRequest, ctx: { params: { slug: string; id:
     success: true,
     needs_recheck: !!flagRecheck,
     material_fields_changed: changedMaterial,
+    became_exception: becameException,
+    cancelled: cancelRequested,
   });
 }

@@ -10,6 +10,7 @@ import { AUTOPUBLISH_CAP_PER_24H, AUTOPUBLISH_WINDOW_HOURS } from "@/lib/orgs/au
 import ManageOrgForm from "./ManageOrgForm";
 import TeamPanel, { type ManagerView, type InviteView } from "./TeamPanel";
 import EventsPanel, { type EventView } from "./EventsPanel";
+import SeriesPanel from "./SeriesPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -28,12 +29,10 @@ interface OrgRow {
   claimed_at: string | null;
 }
 
-// "Team accounts" + "Event management" were removed — both now ship as live
-// panels above. The remaining cards still describe features genuinely on
-// the roadmap; if you ship one, drop it from here.
+// "Team accounts", "Event management", and "Recurring events" all ship as
+// live panels now. The remaining card is genuinely on the roadmap.
 const LOCKED_FEATURES = [
   { title: "Analytics", body: "See views, saves, and registration clicks per event." },
-  { title: "Recurring events", body: "Set up monthly webinars or annual conferences with one entry." },
 ];
 
 export default async function ManageOrgPage({
@@ -202,6 +201,13 @@ export default async function ManageOrgPage({
           autoPublishedInWindow={autoPublishedInWindow}
           autoPublishCap={AUTOPUBLISH_CAP_PER_24H}
           autoPublishWindowHours={AUTOPUBLISH_WINDOW_HOURS}
+        />
+
+        <SeriesPanel
+          slug={org.slug}
+          orgName={org.name}
+          orgDomain={org.domain}
+          defaultOrganization={org.name}
         />
 
         <section className="mt-6 bg-white rounded-2xl border border-gray-200 shadow-sm p-5 md:p-6 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">

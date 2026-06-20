@@ -34,22 +34,31 @@ export async function evaluateAutoPublish({ orgSlug, userId }: EvalArgs): Promis
     return { outcome: "not_granted", manager };
   }
 
-  // Rolling-window cap. Per-org (not per-manager) — a compromised single
-  // seat shouldn't be able to silently spam the org's pipeline even if
-  // every other seat is dormant.
+  // Rolling-window cap. Per-org (not per-manager). Counts BOTH individual
+  // event submissions AND series creations — both are "trust acts" by the
+  // manager; the cap exists to contain volume from a compromised account.
+  // Cron-driven horizon rollovers do NOT count (the series creation already
+  // paid its slot at creation time).
   const sinceIso = new Date(Date.now() - AUTOPUBLISH_WINDOW_HOURS * 3600 * 1000).toISOString();
-  const { count, error: cntErr } = await adminSupabase
-    .from("events")
-    .select("id", { count: "exact", head: true })
-    .eq("org_slug", orgSlug)
-    .gte("auto_published_at", sinceIso);
-  if (cntErr) {
+  const [eventsRes, seriesRes] = await Promise.all([
+    adminSupabase
+      .from("events")
+      .select("id", { count: "exact", head: true })
+      .eq("org_slug", orgSlug)
+      .gte("auto_published_at", sinceIso),
+    adminSupabase
+      .from("event_series")
+      .select("id", { count: "exact", head: true })
+      .eq("org_slug", orgSlug)
+      .gte("auto_published_at", sinceIso),
+  ]);
+  if (eventsRes.error) {
     // Soft-fail safe: if the count query errors, treat it as "cap not hit"
     // rather than blocking legitimate submissions. The downstream submit
     // path still records auto_published_at so the cap self-heals next call.
     return { outcome: "publish", manager };
   }
-  const recent = count ?? 0;
+  const recent = (eventsRes.count ?? 0) + (seriesRes.count ?? 0);
   if (recent >= AUTOPUBLISH_CAP_PER_24H) {
     return {
       outcome: "cap_hit",
