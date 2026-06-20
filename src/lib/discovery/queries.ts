@@ -113,6 +113,41 @@ export interface TrustOrgRow {
   logo_url: string | null;
 }
 
+/** Hand-curated featured organizations — joins
+ *  organization_overrides.is_featured=true to organizations_directory and
+ *  returns only rows with a real logo URL. This is the canonical source
+ *  for marketing surfaces (marquee, hero strip, claim flow) that need
+ *  recognizable institutional logos rather than a random sample of the
+ *  full ~10k directory (which is dominated by bulk-imported ROR/IATI
+ *  rows with NO logos). Today this returns ~17 rows: WHO, UNICEF, World
+ *  Bank, Gates, Gavi, MSF, Oxfam, etc. */
+export async function getFeaturedOrgLogos(limit = 24): Promise<TrustOrgRow[]> {
+  const { data } = await adminSupabase
+    .from("organization_overrides")
+    .select(`
+      slug,
+      display_order,
+      organizations_directory!inner ( name, logo_url )
+    `)
+    .eq("is_featured", true)
+    .order("display_order", { ascending: true, nullsFirst: false })
+    .limit(limit);
+
+  const rows = (data as Array<{
+    slug: string;
+    display_order: number | null;
+    organizations_directory: { name: string; logo_url: string | null } | null;
+  }> | null) ?? [];
+
+  return rows
+    .filter(r => !!r.organizations_directory?.logo_url?.trim())
+    .map(r => ({
+      slug: r.slug,
+      name: r.organizations_directory!.name,
+      logo_url: r.organizations_directory!.logo_url,
+    }));
+}
+
 /** Real orgs from the directory, picked for the trust strip. We prefer
  *  rows with a real logo URL so the strip never renders a broken image.
  *  Order is opportunistic — name-alpha within tier 1, falling back to

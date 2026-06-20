@@ -13,11 +13,11 @@ import {
 import Navbar from "@/components/Navbar";
 import SubmitMetricsStrip from "@/components/discovery/SubmitMetricsStrip";
 import RecentEvents from "@/components/discovery/RecentEvents";
-import TrustStrip from "@/components/discovery/TrustStrip";
+import OrganizationLogoMarquee from "@/components/discovery/OrganizationLogoMarquee";
 import {
   getDirectoryMetrics,
   getRecentEvents,
-  getTrustStripOrgs,
+  getFeaturedOrgLogos,
   roundedDownLabel,
 } from "@/lib/discovery/queries";
 
@@ -53,10 +53,10 @@ const ACCENTS = {
 export default async function SubmitChooserPage() {
   // Resolve all real-data signals in parallel — single page load, no
   // request waterfalls.
-  const [metrics, recentEvents, trustOrgs] = await Promise.all([
+  const [metrics, recentEvents, marqueeOrgs] = await Promise.all([
     getDirectoryMetrics(),
     getRecentEvents(5),
-    getTrustStripOrgs(8),
+    getFeaturedOrgLogos(),
   ]);
 
   // Per-card stat — ONLY rendered for the manage-org card and ONLY
@@ -170,10 +170,10 @@ export default async function SubmitChooserPage() {
             </section>
           )}
 
-          {/* ── TRUST STRIP ──────────────────────────────────── */}
-          {trustOrgs.length > 0 && (
+          {/* ── ORG LOGO MARQUEE ─────────────────────────────── */}
+          {marqueeOrgs.length >= 8 && (
             <section>
-              <TrustStrip orgs={trustOrgs} />
+              <OrganizationLogoMarquee orgs={marqueeOrgs} />
             </section>
           )}
 
