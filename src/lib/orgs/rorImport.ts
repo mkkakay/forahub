@@ -114,7 +114,7 @@ export async function fetchRorPage(
   const params = new URLSearchParams({ page: page.toString() });
   if (opts.advancedQuery) params.set("query.advanced", opts.advancedQuery);
   const res = await fetch(`${ROR_API}?${params.toString()}`, {
-    headers: { Accept: "application/json", "User-Agent": "forahub-org-importer (hello@forahub.org)" },
+    headers: { Accept: "application/json", "User-Agent": "forahub-org-importer (admin@forahub.org)" },
   });
   if (!res.ok) {
     throw new Error(`ROR API HTTP ${res.status} on page ${page}`);

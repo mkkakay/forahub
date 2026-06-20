@@ -60,7 +60,7 @@ async function sendDenialEmail(opts: {
       Authorization: `Bearer ${resendKey}`,
     },
     body: JSON.stringify({
-      from: "ForaHub <hello@forahub.org>",
+      from: "ForaHub <admin@forahub.org>",
       to: opts.to,
       subject,
       html,

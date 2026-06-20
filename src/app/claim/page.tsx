@@ -29,6 +29,7 @@ import type { OrgSuggestion } from "@/app/submit/_components/orgTypes";
 import { parseApiResponse } from "@/lib/admin/fetchJson";
 import { supabase } from "@/lib/supabase/client";
 import { resolveClaimMessage, CLAIM_GENERIC_ERROR, type ClaimMessage } from "@/lib/claim/messages";
+import OAuthButtons from "@/components/auth/OAuthButtons";
 
 type Step = "pick" | "decide" | "queued" | "already_owned";
 
@@ -294,7 +295,7 @@ function ClaimInner() {
                 <AlertCircle size={14} className="mt-0.5 shrink-0 text-amber-600" />
                 <span>
                   We don&apos;t have a verified domain on file for this organization, so we can&apos;t auto-grant manager access yet. Email{" "}
-                  <a href="mailto:hello@forahub.org" className="font-semibold underline">hello@forahub.org</a> and we&apos;ll help.
+                  <a href="mailto:admin@forahub.org" className="font-semibold underline">admin@forahub.org</a> and we&apos;ll help.
                 </span>
               </div>
             )}
@@ -341,7 +342,7 @@ function ClaimInner() {
             </p>
             <p className="text-xs text-gray-500 mt-3">
               Need to add context? Reply to your signup confirmation email or write to{" "}
-              <a href="mailto:hello@forahub.org" className="text-blue-700 hover:underline font-medium">hello@forahub.org</a>.
+              <a href="mailto:admin@forahub.org" className="text-blue-700 hover:underline font-medium">admin@forahub.org</a>.
             </p>
             <button
               type="button"
@@ -438,24 +439,28 @@ function SignInPrompt({ orgName, orgDomain, next }: { orgName: string; orgDomain
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold text-[#0f2a4a]">Sign in to claim {orgName}</p>
             <p className="text-xs text-gray-700 mt-0.5">
-              Use your <span className="font-mono">@{orgDomain}</span> work email. Your account verification is the only email we&apos;ll send — claiming the org happens automatically as soon as you&apos;re signed in.
+              Most users sign in with Google or Microsoft — it&apos;s instant, no email confirmation. Use your <span className="font-mono">@{orgDomain}</span> work account and claiming happens automatically.
             </p>
           </div>
         </div>
       </div>
 
-      <Link
-        href={`/auth/signup?next=${nextParam}`}
-        className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-5 py-3 rounded-xl text-sm shadow-md transition-all"
-      >
-        Create your work account →
-      </Link>
-      <p className="text-xs text-center text-gray-500">
-        Already have an account?{" "}
-        <Link href={`/auth/signin?next=${nextParam}`} className="text-blue-700 hover:underline font-semibold">
-          Sign in
-        </Link>
-      </p>
+      <OAuthButtons next={next} />
+
+      <div className="border-t border-gray-100 pt-3 text-xs text-center text-gray-500 space-y-1.5">
+        <p>
+          Prefer email?{" "}
+          <Link href={`/auth/signup?next=${nextParam}`} className="text-blue-700 hover:underline font-semibold">
+            Sign up with email
+          </Link>
+        </p>
+        <p>
+          Already have an account?{" "}
+          <Link href={`/auth/signin?next=${nextParam}`} className="text-blue-700 hover:underline font-semibold">
+            Sign in
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }

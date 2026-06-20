@@ -95,7 +95,7 @@ export async function fetchIatiBulk(force = false): Promise<IatiBulkResult> {
   const res = await fetch(IATI_BULK_URL, {
     headers: {
       Accept: "application/json",
-      "User-Agent": "forahub-org-importer (hello@forahub.org)",
+      "User-Agent": "forahub-org-importer (admin@forahub.org)",
     },
   });
   if (!res.ok) {

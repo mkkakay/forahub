@@ -69,7 +69,7 @@ export function renderClaimVerificationEmail(opts: ClaimVerificationEmailOpts): 
     "",
     "If you didn't request this, you can safely ignore this email.",
     "",
-    "Questions? Contact hello@forahub.org.",
+    "Questions? Contact admin@forahub.org.",
     "",
     "— The ForaHub team",
   ].join("\n");
@@ -168,7 +168,7 @@ export function renderClaimVerificationEmail(opts: ClaimVerificationEmailOpts): 
                 If you didn't request this, you can safely ignore this email.
               </p>
               <p style="margin:0 0 6px 0;font-size:12px;line-height:1.55;color:${MUTED};">
-                Questions? Contact <a href="mailto:hello@forahub.org" style="color:${ACCENT};text-decoration:underline;">hello@forahub.org</a>.
+                Questions? Contact <a href="mailto:admin@forahub.org" style="color:${ACCENT};text-decoration:underline;">admin@forahub.org</a>.
               </p>
               <p style="margin:12px 0 0 0;font-size:11px;line-height:1.55;color:${MUTED};">
                 ForaHub · Global Development Events

@@ -59,17 +59,17 @@ const ERROR_COPY: Record<string, ErrorCopy> = {
   update_failed: {
     variant: "generic",
     title: "We couldn't complete the verification",
-    body: "Something went wrong on our side. Please try again, or email hello@forahub.org if it keeps failing.",
+    body: "Something went wrong on our side. Please try again, or email admin@forahub.org if it keeps failing.",
   },
   org_update_failed: {
     variant: "generic",
     title: "We couldn't finish the claim",
-    body: "We verified your email but couldn't update the organization record. Please contact hello@forahub.org so we can fix it.",
+    body: "We verified your email but couldn't update the organization record. Please contact admin@forahub.org so we can fix it.",
   },
   lookup_failed: {
     variant: "generic",
     title: "We couldn't read your claim",
-    body: "Please try again in a moment. If the problem persists, email hello@forahub.org.",
+    body: "Please try again in a moment. If the problem persists, email admin@forahub.org.",
   },
 };
 
@@ -241,8 +241,8 @@ function renderQueued() {
           </p>
           <p className="text-xs text-gray-500 mt-4">
             Need to share more context? Reply to the verification email or write to{" "}
-            <a href="mailto:hello@forahub.org" className="text-blue-700 hover:underline font-medium">
-              hello@forahub.org
+            <a href="mailto:admin@forahub.org" className="text-blue-700 hover:underline font-medium">
+              admin@forahub.org
             </a>
             .
           </p>
@@ -267,7 +267,7 @@ function renderError(
   const copy = ERROR_COPY[reason] ?? {
     variant: "generic" as const,
     title: "We couldn't verify this link",
-    body: "Please try starting the claim again, or contact hello@forahub.org.",
+    body: "Please try starting the claim again, or contact admin@forahub.org.",
   };
   const isUsed = copy.variant === "used";
   const canResend = !!context && (copy.variant === "expired" || copy.variant === "invalid");

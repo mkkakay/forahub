@@ -74,7 +74,7 @@ export default async function DataSourcesPage() {
           <h2 className="text-xl font-bold text-[#0f2a4a] dark:text-white mb-3">Open Data Partners</h2>
           <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
             Our organization directory blends our own curation with open public-domain datasets. We credit each source per its license terms. If you spot a missed attribution, write to{" "}
-            <a href="mailto:hello@forahub.org" className="text-[#4ea8de] hover:underline">hello@forahub.org</a>.
+            <a href="mailto:admin@forahub.org" className="text-[#4ea8de] hover:underline">admin@forahub.org</a>.
           </p>
           <div className="space-y-3">
             <div className="bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-[#334155] rounded-xl p-4">

@@ -46,7 +46,7 @@ export function renderClaimDeniedEmail(opts: ClaimDeniedEmailOpts): { subject: s
     "Reason:",
     opts.reason,
     "",
-    "If you believe this was a mistake, or if you can share more evidence of your affiliation, just reply to this email or write to hello@forahub.org and we'll take another look.",
+    "If you believe this was a mistake, or if you can share more evidence of your affiliation, just reply to this email or write to admin@forahub.org and we'll take another look.",
     "",
     "Thanks again for your interest in ForaHub.",
     "",
@@ -98,7 +98,7 @@ export function renderClaimDeniedEmail(opts: ClaimDeniedEmailOpts): { subject: s
             </table>
             <p style="margin:0 0 14px 0;font-size:14px;line-height:1.55;color:${TEXT};">
               If you believe this was a mistake — or if you can share more evidence of your affiliation — just reply to this email, or write to
-              <a href="mailto:hello@forahub.org" style="color:${ACCENT};text-decoration:underline;">hello@forahub.org</a>
+              <a href="mailto:admin@forahub.org" style="color:${ACCENT};text-decoration:underline;">admin@forahub.org</a>
               and we&apos;ll take another look.
             </p>
           </td>

@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
       Authorization: `Bearer ${resendKey}`,
     },
     body: JSON.stringify({
-      from: "ForaHub <hello@forahub.org>",
+      from: "ForaHub <admin@forahub.org>",
       to: email,
       subject: "Welcome to ForaHub — your 7-day Pro trial has started",
       html: `

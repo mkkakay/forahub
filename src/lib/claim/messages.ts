@@ -25,7 +25,7 @@ export interface ClaimMessage {
 
 const GENERIC_ERROR: ClaimMessage = {
   kind: "error",
-  text: "Something went wrong. Please try again, or contact hello@forahub.org.",
+  text: "Something went wrong. Please try again, or contact admin@forahub.org.",
 };
 
 const REVIEW_ROUTING: ClaimMessage = {
@@ -77,15 +77,15 @@ const MAP: Record<string, (ctx: { orgSlug?: string | null }) => ClaimMessage> = 
   // ── Real errors ─────────────────────────────────────────────────────────
   seat_failed: () => ({
     kind: "error",
-    text: "We couldn't grant manager access. Please try again, or email hello@forahub.org if it keeps failing.",
+    text: "We couldn't grant manager access. Please try again, or email admin@forahub.org if it keeps failing.",
   }),
   email_send_failed: () => ({
     kind: "error",
-    text: "We couldn't send the verification email. Please try again in a few minutes, or contact hello@forahub.org if it keeps failing.",
+    text: "We couldn't send the verification email. Please try again in a few minutes, or contact admin@forahub.org if it keeps failing.",
   }),
   org_not_found: () => ({
     kind: "error",
-    text: "We couldn't find that organization. Please pick another from the list or contact hello@forahub.org.",
+    text: "We couldn't find that organization. Please pick another from the list or contact admin@forahub.org.",
   }),
   invalid_json: () => GENERIC_ERROR,
 
