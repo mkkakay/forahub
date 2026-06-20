@@ -133,27 +133,57 @@ export default async function AboutPage() {
         <section>
           <h2 className="text-2xl font-bold text-[#0f2a4a] dark:text-white mb-1">What People Are Saying</h2>
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-5">Illustrative feedback from our pre-launch community.</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {TESTIMONIALS.map(({ quote, name, role, city, initials, avatarBg }) => (
-              <div
-                key={name}
-                className="bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-[#334155] rounded-xl p-5 flex flex-col"
-              >
-                <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed">
-                  &ldquo;{quote}&rdquo;
-                </p>
-                <div className="mt-4 flex items-center gap-3">
-                  <div className={`w-9 h-9 rounded-full ${avatarBg} text-white text-xs font-semibold flex items-center justify-center shrink-0`}>
-                    {initials}
+          <div className="about-marquee">
+            <div className="about-marquee-track">
+              {[0, 1].map(copy =>
+                TESTIMONIALS.map(({ quote, name, role, city, initials, avatarBg }) => (
+                  <div
+                    key={`${copy}-${name}`}
+                    aria-hidden={copy === 1 ? true : undefined}
+                    className="shrink-0 w-80 min-h-[240px] bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-[#334155] rounded-xl p-5 flex flex-col justify-between"
+                  >
+                    <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed">
+                      &ldquo;{quote}&rdquo;
+                    </p>
+                    <div className="mt-4 flex items-center gap-3">
+                      <div className={`w-9 h-9 rounded-full ${avatarBg} text-white text-xs font-semibold flex items-center justify-center shrink-0`}>
+                        {initials}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-sm font-semibold text-[#0f2a4a] dark:text-white truncate">{name}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 truncate">{role}, {city}</div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <div className="text-sm font-semibold text-[#0f2a4a] dark:text-white truncate">{name}</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 truncate">{role}, {city}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
+                ))
+              )}
+            </div>
           </div>
+          <style>{`
+            .about-marquee {
+              overflow-x: hidden;
+              -webkit-mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
+                      mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
+            }
+            .about-marquee-track {
+              display: flex;
+              gap: 1.5rem;
+              width: max-content;
+              animation: about-marquee-scroll 50s linear infinite;
+              will-change: transform;
+            }
+            .about-marquee:hover .about-marquee-track {
+              animation-play-state: paused;
+            }
+            @keyframes about-marquee-scroll {
+              0%   { transform: translate3d(0, 0, 0); }
+              100% { transform: translate3d(-50%, 0, 0); }
+            }
+            @media (prefers-reduced-motion: reduce) {
+              .about-marquee { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
+              .about-marquee-track { animation: none; }
+            }
+          `}</style>
         </section>
 
         <section>
