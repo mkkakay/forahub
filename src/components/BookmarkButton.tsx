@@ -5,6 +5,7 @@ import { Bookmark } from "lucide-react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
 import { useSubscription } from "@/context/SubscriptionContext";
+import { trackAction } from "@/lib/analytics/track";
 
 interface BookmarkButtonProps {
   eventId: string;
@@ -57,9 +58,11 @@ export default function BookmarkButton({ eventId, initialSaved, userId, onToggle
     onToggle?.(nextSaved);
 
     if (nextSaved) {
-      await supabase.from("saved_events").insert({ user_id: userId, event_id: eventId });
+      const { error } = await supabase.from("saved_events").insert({ user_id: userId, event_id: eventId });
+      if (!error) trackAction({ eventId, action: "save" });
     } else {
-      await supabase.from("saved_events").delete().eq("user_id", userId).eq("event_id", eventId);
+      const { error } = await supabase.from("saved_events").delete().eq("user_id", userId).eq("event_id", eventId);
+      if (!error) trackAction({ eventId, action: "unsave" });
     }
 
     setLoading(false);

@@ -3,6 +3,7 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import PageHeader from "@/components/PageHeader";
 import { getPageBanner } from "@/lib/pageBanners";
+import AnalyticsDeleteAction from "@/components/AnalyticsDeleteAction";
 
 export const metadata: Metadata = {
   title: "Data Deletion Instructions",
@@ -74,6 +75,20 @@ export default async function DataDeletionPage() {
             </p>
           </section>
         ))}
+
+        <section id="analytics">
+          <h2 className="text-lg font-bold text-[#0f2a4a] dark:text-white mb-2">
+            7. Analytics logs
+          </h2>
+          <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-sm mb-3">
+            If you previously opted in to event analytics, you can erase every analytics row recorded under your account immediately — without deleting your whole ForaHub account. The button below scopes the delete to your <code>user_id</code> server-side and is irreversible.
+          </p>
+          <AnalyticsDeleteAction />
+          <p className="text-xs text-gray-500 mt-3">
+            Raw analytics rows also auto-delete after 14 months. To stop new logs from being recorded going forward, visit{" "}
+            <Link href="/profile#privacy" className="text-[#4ea8de] hover:underline">Profile &rarr; Privacy preferences</Link>.
+          </p>
+        </section>
         <p className="text-sm text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-[#334155] pt-6">
           Questions about a deletion request? Email{" "}
           <a

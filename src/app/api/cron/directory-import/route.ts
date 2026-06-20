@@ -19,6 +19,7 @@ import { fetchRorPage } from "@/lib/orgs/rorImport";
 import { fetchIatiBulk } from "@/lib/orgs/iatiImport";
 import { upsertImportedOrg } from "@/lib/orgs/upsertImported";
 import { rollSeriesHorizons } from "@/lib/series/rollHorizons";
+import { pruneOldAnalytics } from "@/lib/analytics/prune";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -203,14 +204,19 @@ export async function GET(req: NextRequest) {
   // running tight on time.
   const seriesDeadline = startedAt + 280_000; // 20s headroom under Vercel's 300s.
   const series = await rollSeriesHorizons(seriesDeadline);
+  // Prune expired raw analytics rows. Fast — single DELETE indexed on
+  // occurred_at. Runs last so a long-running ROR/IATI step doesn't
+  // starve it.
+  const analytics_prune = await pruneOldAnalytics();
   const elapsedMs = Date.now() - startedAt;
   return NextResponse.json({
-    ok: ror.ok, // ROR is the cron's primary purpose; IATI + series are best-effort.
+    ok: ror.ok, // ROR is the cron's primary purpose; everything else is best-effort.
     ran_at: new Date(startedAt).toISOString(),
     elapsed_ms: elapsedMs,
     ror,
     iati,
     series,
+    analytics_prune,
   });
 }
 

@@ -50,6 +50,30 @@ export default async function PrivacyPage() {
           <h2 className="text-lg font-bold text-[#0f2a4a] dark:text-white mb-2">4. Cookies</h2>
           <p>We use essential cookies for authentication and functionality. With your consent, we use analytics cookies to improve the Service. You can manage cookie preferences via our consent banner. Declining non-essential cookies will not affect core functionality.</p>
         </section>
+
+        <section id="analytics">
+          <h2 className="text-lg font-bold text-[#0f2a4a] dark:text-white mb-2">4a. Event Analytics</h2>
+          <p className="mb-2">
+            <strong>What we log.</strong> If — and only if — you opt in via the consent banner or your profile settings, we record three actions on individual events: <em>view</em> (when you open an event page), <em>save</em> / <em>unsave</em> (when you bookmark or remove a bookmark), and <em>registration click</em> (when you click the &ldquo;Register&rdquo; link to the external site). For each action we store: which event, which series (if any), the action name, your account identifier or a short-lived per-tab anonymous identifier, the referring site&apos;s host (not the full URL), and the timestamp.
+          </p>
+          <p className="mb-2">
+            <strong>What we do NOT log.</strong> No IP address. No precise location. No browser fingerprint. No cross-site tracking. No durable anonymous identifier — the anonymous id is generated per browser tab in <code>sessionStorage</code> and is destroyed when the tab closes.
+          </p>
+          <p className="mb-2">
+            <strong>Lawful basis.</strong> Consent (Art. 6(1)(a) GDPR). Logging is off until you explicitly opt in. If your browser sends a Do-Not-Track or Global Privacy Control signal, we treat that as an opt-out automatically and the in-app toggle is locked off.
+          </p>
+          <p className="mb-2">
+            <strong>Retention.</strong> Raw analytics rows are auto-deleted after 14 months. You can also request immediate deletion of all your analytics rows at any time via{" "}
+            <a href="/data-deletion#analytics" className="text-[#4ea8de] hover:underline">Data deletion &rarr; Analytics logs</a>.
+          </p>
+          <p className="mb-2">
+            <strong>Who can see what.</strong> Organization managers can see <em>aggregate</em> counts (views, saves, registration clicks) and a daily trend for their own org&apos;s events. They cannot see who viewed or saved any individual event &mdash; the dashboard query explicitly excludes user identifiers, and we never expose them to the client.
+          </p>
+          <p className="mb-2">
+            <strong>Your rights.</strong> Access, export, and erasure of analytics data. Change your consent any time at{" "}
+            <a href="/profile#privacy" className="text-[#4ea8de] hover:underline">Profile &rarr; Privacy preferences</a>.
+          </p>
+        </section>
         <section>
           <h2 className="text-lg font-bold text-[#0f2a4a] dark:text-white mb-2">5. Your Rights</h2>
           <p>Under GDPR and CCPA, you have the right to:</p>

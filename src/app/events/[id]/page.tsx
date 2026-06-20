@@ -1,9 +1,11 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
-import { MapPin, Calendar, Building2, ExternalLink, ArrowLeft, Share2, Clock } from "lucide-react";
+import { MapPin, Calendar, Building2, ArrowLeft, Share2, Clock } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import EventDetailActions from "./EventDetailActions";
+import AnalyticsViewTracker from "@/components/AnalyticsViewTracker";
+import RegistrationLink from "@/components/RegistrationLink";
 import type { Database } from "@/lib/supabase/types";
 import { getCategory } from "@/lib/categories";
 
@@ -79,6 +81,9 @@ export default async function EventDetailPage({ params }: { params: { id: string
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#0f172a]">
+      {/* Fire a consent-gated view event once per session. No-op when
+          consent isn't granted — see lib/analytics/track.ts. */}
+      <AnalyticsViewTracker eventId={typedEvent.id} />
       <Navbar />
 
       {/* Hero */}
@@ -235,15 +240,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
             {/* Register CTA — top of sidebar (hidden for past events) */}
             {typedEvent.registration_url && !isPast && (
               <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-[#334155] shadow-sm p-5">
-                <a
-                  href={typedEvent.registration_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full bg-[#4ea8de] hover:bg-[#3a95cc] text-white font-bold px-5 py-3.5 rounded-xl transition-colors text-base shadow-sm hover:shadow-md"
-                >
-                  Register Now
-                  <ExternalLink size={16} />
-                </a>
+                <RegistrationLink eventId={typedEvent.id} href={typedEvent.registration_url} />
                 {daysUntil !== null && daysUntil > 0 && (
                   <p className="text-center text-xs text-red-500 dark:text-red-400 mt-2 font-medium">
                     Registration closes in {daysUntil} day{daysUntil !== 1 ? "s" : ""}

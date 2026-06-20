@@ -11,6 +11,8 @@ import ManageOrgForm from "./ManageOrgForm";
 import TeamPanel, { type ManagerView, type InviteView } from "./TeamPanel";
 import EventsPanel, { type EventView } from "./EventsPanel";
 import SeriesPanel from "./SeriesPanel";
+import AnalyticsPanel from "./AnalyticsPanel";
+import { loadOrgAnalytics } from "@/lib/analytics/aggregate";
 
 export const dynamic = "force-dynamic";
 
@@ -29,11 +31,10 @@ interface OrgRow {
   claimed_at: string | null;
 }
 
-// "Team accounts", "Event management", and "Recurring events" all ship as
-// live panels now. The remaining card is genuinely on the roadmap.
-const LOCKED_FEATURES = [
-  { title: "Analytics", body: "See views, saves, and registration clicks per event." },
-];
+// Every "Coming soon" feature now ships as a live panel. Add new tiles
+// here if you have something to tease — otherwise this can stay empty
+// and the "Coming soon" section just won't render.
+const LOCKED_FEATURES: { title: string; body: string }[] = [];
 
 export default async function ManageOrgPage({
   params,
@@ -94,7 +95,7 @@ export default async function ManageOrgPage({
   // Rolling-window cap counter — used by EventsPanel to show "X of N
   // instant-publishes used today" when capacity is low.
   const sinceIso = new Date(Date.now() - AUTOPUBLISH_WINDOW_HOURS * 3600 * 1000).toISOString();
-  const [managerRows, inviteRows, eventsRes, autoPublishedCountRes] = await Promise.all([
+  const [managerRows, inviteRows, eventsRes, autoPublishedCountRes, analytics30, analytics90] = await Promise.all([
     listOrgManagers(org.slug),
     listPendingInvites(org.slug),
     adminSupabase
@@ -108,6 +109,8 @@ export default async function ManageOrgPage({
       .select("id", { count: "exact", head: true })
       .eq("org_slug", org.slug)
       .gte("auto_published_at", sinceIso),
+    loadOrgAnalytics({ orgSlug: org.slug, windowDays: 30 }),
+    loadOrgAnalytics({ orgSlug: org.slug, windowDays: 90 }),
   ]);
 
   // Annotate each manager with founder/self flags so the TeamPanel can
@@ -210,6 +213,13 @@ export default async function ManageOrgPage({
           defaultOrganization={org.name}
         />
 
+        <AnalyticsPanel
+          slug={org.slug}
+          orgName={org.name}
+          summary30={analytics30}
+          summary90={analytics90}
+        />
+
         <section className="mt-6 bg-white rounded-2xl border border-gray-200 shadow-sm p-5 md:p-6 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
           <div>
             <dt className="text-xs font-semibold uppercase tracking-wider text-gray-500">Org status</dt>
@@ -227,20 +237,22 @@ export default async function ManageOrgPage({
           </div>
         </section>
 
-        <section className="mt-8">
-          <h2 className="text-lg font-bold text-[#0f2a4a] mb-3">Coming soon</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {LOCKED_FEATURES.map(f => (
-              <div key={f.title} className="bg-white rounded-2xl border border-dashed border-gray-300 p-4 flex items-start gap-3">
-                <Lock className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
-                <div>
-                  <p className="text-sm font-semibold text-[#0f2a4a]">{f.title}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{f.body}</p>
+        {LOCKED_FEATURES.length > 0 && (
+          <section className="mt-8">
+            <h2 className="text-lg font-bold text-[#0f2a4a] mb-3">Coming soon</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {LOCKED_FEATURES.map(f => (
+                <div key={f.title} className="bg-white rounded-2xl border border-dashed border-gray-300 p-4 flex items-start gap-3">
+                  <Lock className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-[#0f2a4a]">{f.title}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{f.body}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </section>
+              ))}
+            </div>
+          </section>
+        )}
       </main>
     </div>
   );

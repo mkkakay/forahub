@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
+import PrivacyPreferencesCard from "@/components/PrivacyPreferencesCard";
 import { useSubscription } from "@/context/SubscriptionContext";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
@@ -182,6 +183,9 @@ export default function ProfilePage() {
             </div>
           </div>
         )}
+
+        {/* Privacy preferences — sitewide consent toggle */}
+        <PrivacyPreferencesCard />
 
         {/* Quick links */}
         <div className="grid grid-cols-2 gap-3">
