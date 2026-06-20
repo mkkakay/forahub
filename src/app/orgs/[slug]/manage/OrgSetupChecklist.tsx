@@ -116,8 +116,8 @@ export default function OrgSetupChecklist({ slug, signals }: Props) {
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-[#0f2a4a] inline-flex items-center gap-2">
             {fullySetUp
-              ? "Your organization profile is in great shape"
-              : "Improve your organization profile"}
+              ? "Your organization is well set up"
+              : "Improve discoverability"}
             {!fullySetUp && coreItemsLeft > 0 && (
               <span className="text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded-full text-gray-500 bg-gray-100 border border-gray-200">
                 {coreItemsLeft} step{coreItemsLeft === 1 ? "" : "s"} left
@@ -125,14 +125,14 @@ export default function OrgSetupChecklist({ slug, signals }: Props) {
             )}
             {fullySetUp && (
               <span className="text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded-full text-emerald-700 bg-emerald-100 border border-emerald-200">
-                {signals.corePct}%
+                Complete
               </span>
             )}
           </p>
           <p className="text-xs text-gray-500 mt-0.5">
             {fullySetUp
-              ? "Optional extras below can still elevate your page."
-              : "Complete these steps to improve discoverability."}
+              ? "Optional extras below can still strengthen your page."
+              : "A complete profile reaches more of the right audience."}
           </p>
           <ProgressBar pct={signals.corePct} done={fullySetUp} />
         </div>
@@ -145,10 +145,10 @@ export default function OrgSetupChecklist({ slug, signals }: Props) {
         <div className="px-5 pb-5 space-y-2">
           <ChecklistItem
             done={signals.profileBasicsDone}
-            label="Add profile basics"
+            label="Complete your profile"
             hint={
               signals.profileBasicsDone
-                ? "Logo, description, and website are all set."
+                ? "Logo, description, and website on file."
                 : `Add ${signals.profileMissing.join(", ")}.`
             }
             onClick={() => gotoTab("profile")}
@@ -181,11 +181,11 @@ export default function OrgSetupChecklist({ slug, signals }: Props) {
           />
           <ChecklistItem
             done={signals.eventsDone}
-            label="Publish events"
+            label="Publish upcoming events"
             hint={
               signals.eventsDone
                 ? `${signals.publishedEventsCount} published event${signals.publishedEventsCount === 1 ? "" : "s"}.`
-                : "Submit your first event or wait for one to be picked up."
+                : "Submit your first event so people can discover it."
             }
             onClick={() => gotoTab("events")}
           />
@@ -197,11 +197,11 @@ export default function OrgSetupChecklist({ slug, signals }: Props) {
             </p>
             <ChecklistItem
               done={signals.seriesDone}
-              label="Create recurring series"
+              label="Create a recurring series"
               hint={
                 signals.seriesDone
                   ? `${signals.activeSeriesCount} active series.`
-                  : "Save a parent rule for repeating events — bonus, not required."
+                  : "Save a parent rule for repeating events — optional, not counted."
               }
               onClick={() => gotoTab("series")}
               optional
