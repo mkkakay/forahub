@@ -108,8 +108,8 @@ export default async function AboutPage() {
             <Link href="/contact" className="inline-flex items-center justify-center gap-2 bg-[#4ea8de] text-white text-sm font-semibold px-4 py-2.5 rounded-lg hover:bg-[#3a95cc] transition-colors">
               Contact Us
             </Link>
-            <a href="mailto:mo@forahub.org" className="inline-flex items-center justify-center gap-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-              mo@forahub.org
+            <a href="mailto:admin@forahub.org" className="inline-flex items-center justify-center gap-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+              admin@forahub.org
             </a>
           </div>
         </section>
