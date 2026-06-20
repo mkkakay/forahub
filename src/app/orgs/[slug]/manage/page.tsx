@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BadgeCheck, ArrowLeft, Lock, Users } from "lucide-react";
+import { BadgeCheck, ArrowLeft, Lock } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { isOrgManager, listOrgManagers } from "@/lib/orgs/managers";
+import { listPendingInvites } from "@/lib/orgs/invites";
 import ManageOrgForm from "./ManageOrgForm";
+import TeamPanel, { type ManagerView, type InviteView } from "./TeamPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -24,11 +26,13 @@ interface OrgRow {
   claimed_at: string | null;
 }
 
+// "Team accounts" was removed from this list — it's now the live TeamPanel
+// above. The remaining cards still describe features genuinely on the
+// roadmap; if you ship one, drop it from here.
 const LOCKED_FEATURES = [
   { title: "Event management", body: "Auto-publish events from your team without admin review." },
   { title: "Analytics", body: "See views, saves, and registration clicks per event." },
   { title: "Recurring events", body: "Set up monthly webinars or annual conferences with one entry." },
-  { title: "Team accounts", body: "Invite colleagues to manage events under your verified org." },
 ];
 
 export default async function ManageOrgPage({
@@ -36,7 +40,7 @@ export default async function ManageOrgPage({
   searchParams,
 }: {
   params: { slug: string };
-  searchParams: { claimed?: string };
+  searchParams: { claimed?: string; invited?: string };
 }) {
   const sb = createServerSupabaseClient();
   const { data: u } = await sb.auth.getUser();
@@ -87,7 +91,36 @@ export default async function ManageOrgPage({
     );
   }
 
-  const managers = await listOrgManagers(org.slug);
+  const [managerRows, inviteRows] = await Promise.all([
+    listOrgManagers(org.slug),
+    listPendingInvites(org.slug),
+  ]);
+
+  // Annotate each manager with founder/self flags so the TeamPanel can
+  // disable the right buttons without re-running the same predicate
+  // client-side. Founder = earliest added_at (managerRows is already
+  // ordered ascending by listOrgManagers).
+  const founderId = managerRows[0]?.id ?? null;
+  const managersForPanel: ManagerView[] = managerRows.map(m => ({
+    id: m.id,
+    user_id: m.user_id,
+    email: m.email,
+    role: m.role,
+    added_at: m.added_at,
+    verified_at: m.verified_at,
+    added_via: m.added_via,
+    is_founder: m.id === founderId,
+    is_self: m.user_id === userId,
+  }));
+  const invitesForPanel: InviteView[] = inviteRows.map(i => ({
+    id: i.id,
+    invited_email: i.invited_email,
+    invited_by_email: i.invited_by_email,
+    note: i.note,
+    status: i.status,
+    expires_at: i.expires_at,
+    created_at: i.created_at,
+  }));
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -108,6 +141,11 @@ export default async function ManageOrgPage({
             Claim verified. Your verified badge is now live across ForaHub.
           </div>
         )}
+        {searchParams.invited === "1" && (
+          <div className="mb-6 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl px-4 py-3 text-sm">
+            Welcome to the team. You can update the org profile below and invite colleagues from the Team section.
+          </div>
+        )}
 
         <ManageOrgForm
           slug={org.slug}
@@ -122,54 +160,28 @@ export default async function ManageOrgPage({
           }}
         />
 
-        <section className="mt-8 bg-white rounded-2xl border border-gray-200 shadow-sm p-5 md:p-6">
-          <h2 className="text-lg font-bold text-[#0f2a4a] inline-flex items-center gap-2">
-            <Users className="w-4 h-4 text-[#0f2a4a]" /> Managers
-            <span className="text-xs font-semibold text-gray-500 tabular-nums">({managers.length})</span>
-          </h2>
-          <p className="text-xs text-gray-500 mt-1">
-            Anyone with a verified <span className="font-semibold">{org.domain ? `@${org.domain}` : "matching work-email"}</span> can join as a co-manager from the claim page.
-          </p>
-          <ul className="mt-3 divide-y divide-gray-100 border border-gray-100 rounded-xl overflow-hidden">
-            {managers.map(m => (
-              <li key={m.id} className="flex items-center justify-between gap-3 px-3 py-2.5 text-sm">
-                <div className="min-w-0">
-                  <div className="text-gray-800 truncate">{m.email || "(unknown email)"}</div>
-                  <div className="text-[11px] text-gray-500">
-                    {m.added_via === "domain_match"
-                      ? "Verified via work-email domain match"
-                      : m.added_via === "admin_review"
-                      ? "Verified via admin review"
-                      : "Verified manager"}
-                    {m.verified_at && (
-                      <> · {new Date(m.verified_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</>
-                    )}
-                  </div>
-                </div>
-                <span className="shrink-0 text-[10px] uppercase tracking-wider font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-1.5 py-0.5">
-                  {m.role}
-                </span>
-              </li>
-            ))}
-            {managers.length === 0 && (
-              <li className="px-3 py-3 text-sm text-gray-500">No managers on file.</li>
-            )}
-          </ul>
-          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-            <div>
-              <dt className="text-xs font-semibold uppercase tracking-wider text-gray-500">Org status</dt>
-              <dd className="text-emerald-700 font-semibold inline-flex items-center gap-1.5 mt-1">
-                <BadgeCheck className="w-4 h-4" /> {org.is_verified ? "Verified" : "Claimed"}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-xs font-semibold uppercase tracking-wider text-gray-500">First verified</dt>
-              <dd className="text-gray-800 mt-1">
-                {org.claimed_at
-                  ? new Date(org.claimed_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-                  : "—"}
-              </dd>
-            </div>
+        <TeamPanel
+          slug={org.slug}
+          orgName={org.name}
+          orgDomain={org.domain}
+          managers={managersForPanel}
+          invites={invitesForPanel}
+        />
+
+        <section className="mt-6 bg-white rounded-2xl border border-gray-200 shadow-sm p-5 md:p-6 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+          <div>
+            <dt className="text-xs font-semibold uppercase tracking-wider text-gray-500">Org status</dt>
+            <dd className="text-emerald-700 font-semibold inline-flex items-center gap-1.5 mt-1">
+              <BadgeCheck className="w-4 h-4" /> {org.is_verified ? "Verified" : "Claimed"}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs font-semibold uppercase tracking-wider text-gray-500">First verified</dt>
+            <dd className="text-gray-800 mt-1">
+              {org.claimed_at
+                ? new Date(org.claimed_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+                : "—"}
+            </dd>
           </div>
         </section>
 
