@@ -62,7 +62,23 @@ const MAP: Record<string, (ctx: { orgSlug?: string | null }) => ClaimMessage> = 
   free_mail_domain: () => REVIEW_ROUTING,
   routed_to_review: () => REVIEW_ROUTING,
 
+  // ── Account-first signin gate ───────────────────────────────────────────
+  // The /claim UI prevents this from reaching the user under normal flow,
+  // but the API still returns it when a request slips through without a
+  // verified session.
+  signin_required: ({ orgSlug }) => ({
+    kind: "info",
+    text: "Sign in with your work email to claim this organization.",
+    cta: orgSlug
+      ? { label: "Sign in", href: `/auth/signin?next=${encodeURIComponent(`/claim?org=${orgSlug}`)}` }
+      : { label: "Sign in", href: "/auth/signin" },
+  }),
+
   // ── Real errors ─────────────────────────────────────────────────────────
+  seat_failed: () => ({
+    kind: "error",
+    text: "We couldn't grant manager access. Please try again, or email hello@forahub.org if it keeps failing.",
+  }),
   email_send_failed: () => ({
     kind: "error",
     text: "We couldn't send the verification email. Please try again in a few minutes, or contact hello@forahub.org if it keeps failing.",

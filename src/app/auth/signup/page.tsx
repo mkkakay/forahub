@@ -1,26 +1,52 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Mail } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 
+// Only same-origin path redirects survive validation; everything else is
+// dropped so ?next=https://attacker.example can't ride the auth flow.
+function safeNext(raw: string | null): string | null {
+  if (!raw) return null;
+  if (!raw.startsWith("/") || raw.startsWith("//")) return null;
+  return raw;
+}
+
 export default function SignupPage() {
+  // Suspense wraps useSearchParams so the page survives static prerendering.
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
+      <SignupInner />
+    </Suspense>
+  );
+}
+
+function SignupInner() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = safeNext(searchParams.get("next"));
+  const signinHref = next ? `/auth/signin?next=${encodeURIComponent(next)}` : "/auth/signin";
 
   const [oauthLoading, setOauthLoading] = useState<"google" | "azure" | "facebook" | null>(null);
+
+  function oauthRedirectTo(): string {
+    return next
+      ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`
+      : `${window.location.origin}/auth/callback`;
+  }
 
   async function handleGoogleOAuth() {
     setOauthLoading("google");
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: oauthRedirectTo() },
     });
     if (error) {
       setError(error.message);
@@ -34,7 +60,7 @@ export default function SignupPage() {
       provider: "azure",
       options: {
         scopes: "email",
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: oauthRedirectTo(),
       },
     });
     if (error) {
@@ -47,7 +73,7 @@ export default function SignupPage() {
     setOauthLoading("facebook");
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "facebook",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: oauthRedirectTo() },
     });
     if (error) {
       setError(error.message);
@@ -60,7 +86,17 @@ export default function SignupPage() {
     setError(null);
     setLoading(true);
 
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    // If the user arrived from /claim?org=…, ask Supabase to bounce the
+    // confirmation link straight back to /claim so they land on the
+    // claim-now button instead of the home page.
+    const emailRedirectTo = next
+      ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`
+      : undefined;
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      ...(emailRedirectTo ? { options: { emailRedirectTo } } : {}),
+    });
 
     if (error) {
       setError(error.message);
@@ -76,7 +112,7 @@ export default function SignupPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       }).catch(() => {});
-      router.push("/onboarding");
+      router.push(next ?? "/onboarding");
       router.refresh();
     } else {
       setConfirmed(true);
@@ -133,7 +169,7 @@ export default function SignupPage() {
           <h1 className="text-2xl font-bold text-[#0f2a4a] mb-1">Create an account</h1>
           <p className="text-gray-500 text-sm mb-6">
             Already have an account?{" "}
-            <Link href="/auth/signin" className="text-[#4ea8de] hover:underline font-medium">
+            <Link href={signinHref} className="text-[#4ea8de] hover:underline font-medium">
               Sign in
             </Link>
           </p>
