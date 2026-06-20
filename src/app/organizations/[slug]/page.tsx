@@ -15,7 +15,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import {
-  BadgeCheck, Calendar, MapPin, Globe, Linkedin, ChevronLeft, Building2,
+  BadgeCheck, Calendar, MapPin, Globe, Briefcase, ChevronLeft, Building2,
   ExternalLink, ShieldCheck,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -352,7 +352,7 @@ function SocialPills({
   // and there's no risk of a free-mail domain (those won't be on org rows).
   if (!website && domain) pills.push({ label: domain, href: `https://${domain}`, Icon: Globe });
   if (twitter) pills.push({ label: "X", href: twitter, Icon: XIcon as unknown as typeof Globe });
-  if (linkedin) pills.push({ label: "LinkedIn", href: linkedin, Icon: Linkedin });
+  if (linkedin) pills.push({ label: "LinkedIn", href: linkedin, Icon: Briefcase });
   if (pills.length === 0) return null;
 
   return (
