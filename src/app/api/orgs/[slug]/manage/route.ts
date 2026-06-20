@@ -43,11 +43,15 @@ export async function PATCH(req: NextRequest, ctx: { params: { slug: string } })
   if ("short_name" in body) patch.short_name = trimOrNull(body.short_name, MAX_NAME);
   if ("description" in body) patch.description = trimOrNull(body.description, MAX_TEXT);
   if ("logo_url" in body) patch.logo_url = trimOrNull(body.logo_url, 600);
+  if ("cover_image_url" in body) patch.cover_image_url = trimOrNull(body.cover_image_url, 600);
   if ("website_url" in body) patch.website_url = trimOrNull(body.website_url, 300);
   if ("twitter_url" in body) patch.twitter_url = trimOrNull(body.twitter_url, 300);
   if ("linkedin_url" in body) patch.linkedin_url = trimOrNull(body.linkedin_url, 300);
 
-  if (!patch.name) {
+  // PATCH is a partial update — `name` is only required when it's actually
+  // being touched. A patch that only changes social URLs must succeed even
+  // if "name" isn't in the body.
+  if ("name" in body && !patch.name) {
     return NextResponse.json({ error: "name required" }, { status: 400 });
   }
 

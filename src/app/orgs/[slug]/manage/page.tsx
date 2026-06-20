@@ -23,6 +23,7 @@ interface OrgRow {
   description: string | null;
   domain: string | null;
   logo_url: string | null;
+  cover_image_url: string | null;
   website_url: string | null;
   twitter_url: string | null;
   linkedin_url: string | null;
@@ -53,7 +54,7 @@ export default async function ManageOrgPage({
 
   const { data, error } = await adminSupabase
     .from("organizations_directory")
-    .select("slug, name, short_name, description, domain, logo_url, website_url, twitter_url, linkedin_url, is_claimed, is_verified, claimed_at")
+    .select("slug, name, short_name, description, domain, logo_url, cover_image_url, website_url, twitter_url, linkedin_url, is_claimed, is_verified, claimed_at")
     .eq("slug", params.slug)
     .maybeSingle();
 
@@ -180,6 +181,7 @@ export default async function ManageOrgPage({
             short_name: org.short_name ?? "",
             description: org.description ?? "",
             logo_url: org.logo_url ?? "",
+            cover_image_url: org.cover_image_url ?? "",
             website_url: org.website_url ?? "",
             twitter_url: org.twitter_url ?? "",
             linkedin_url: org.linkedin_url ?? "",
