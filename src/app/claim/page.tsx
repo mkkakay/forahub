@@ -2,14 +2,16 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
-  BadgeCheck, Building2, Mail, ArrowRight, Loader2, AlertCircle, CheckCircle2, X, User, Sparkles, Info,
+  BadgeCheck, Building2, Mail, ArrowRight, Loader2, AlertCircle, CheckCircle2, X, User, Sparkles, Info, Zap, LogIn,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import OrgCombobox from "@/app/submit/_components/OrgCombobox";
 import type { OrgSuggestion } from "@/app/submit/_components/orgTypes";
 import { parseApiResponse } from "@/lib/admin/fetchJson";
 import { supabase } from "@/lib/supabase/client";
+import { isFreeMailDomain } from "@/lib/email/freeMailDomains";
 import { resolveClaimMessage, CLAIM_GENERIC_ERROR, type ClaimMessage } from "@/lib/claim/messages";
 
 type Step = "pick" | "email" | "submitted" | "already_owned";
@@ -21,14 +23,31 @@ interface RequestResponse {
   error?: string;
   message?: string;
   org_domain?: string;
-  verification_path?: "domain_match" | "admin_review";
-  /** Present when the server returns already_owned_by_you so we can build
-   *  the Manage CTA without re-deriving the slug. */
+  verification_path?: "domain_match" | "admin_review" | "oauth_session";
+  /** Present when the server returns already_owned_by_you OR an instant
+   *  grant — both flows surface a Manage CTA. */
   org_slug?: string;
   own_org?: boolean;
+  /** Server signals instant=true when the signed-in user's verified auth
+   *  email already qualifies for this org (one-step path). */
+  instant?: boolean;
+  manage_url?: string;
+}
+
+function emailDomainOf(email: string | null): string | null {
+  if (!email) return null;
+  const at = email.lastIndexOf("@");
+  if (at < 0 || at === email.length - 1) return null;
+  return email.slice(at + 1).trim().toLowerCase();
+}
+
+function normalizeOrgDomain(domain: string | null | undefined): string | null {
+  if (!domain) return null;
+  return domain.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/.*$/, "");
 }
 
 export default function ClaimPage() {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [picked, setPicked] = useState<OrgSuggestion | null>(null);
   const [email, setEmail] = useState("");
@@ -37,6 +56,12 @@ export default function ClaimPage() {
   // current session (OAuth user_metadata or the profiles row). In that case
   // we skip the "Your name" form field and pass the captured name through.
   const [signedInName, setSignedInName] = useState<string | null>(null);
+  // Auth email + verified state drive the one-step instant-grant UI: if the
+  // signed-in account already has a verified qualifying email, the form is
+  // replaced with a single "Claim instantly" button.
+  const [signedInEmail, setSignedInEmail] = useState<string | null>(null);
+  const [signedInEmailVerified, setSignedInEmailVerified] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
   const [step, setStep] = useState<Step>("pick");
   const [submitting, setSubmitting] = useState(false);
   // `feedback` carries the resolved ClaimMessage — never a raw error code.
@@ -48,18 +73,22 @@ export default function ClaimPage() {
   const [verificationPath, setVerificationPath] = useState<"domain_match" | "admin_review" | null>(null);
   const [ownedOrgSlug, setOwnedOrgSlug] = useState<string | null>(null);
 
-  // Pull the signed-in user's name once on mount. Priority:
-  // 1) auth.users.user_metadata.name / full_name (set by Google/MS/Facebook OAuth)
-  // 2) public.profiles.full_name (email/password signups can fill this later).
-  // If none of these are present, treat the user as "not signed in for name"
-  // and render the Your-name field so we still capture it.
+  // Pull the signed-in user's identity once on mount. We capture:
+  // - email + email_confirmed_at: drives the instant-grant button (same
+  //   predicate the server uses; matches feel snappier if the UI agrees).
+  // - display name: from user_metadata (OAuth) or profiles.full_name. If
+  //   neither is set we render the "Your name" field as before.
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
         const { data: u } = await supabase.auth.getUser();
         const user = u.user;
-        if (!user) return;
+        if (!user) { if (!cancelled) setAuthReady(true); return; }
+        if (!cancelled) {
+          setSignedInEmail(user.email ?? null);
+          setSignedInEmailVerified(!!user.email_confirmed_at);
+        }
         const meta = (user.user_metadata ?? {}) as Record<string, unknown>;
         const fromMeta = (typeof meta.name === "string" && meta.name.trim()) ||
                          (typeof meta.full_name === "string" && meta.full_name.trim()) ||
@@ -74,6 +103,8 @@ export default function ClaimPage() {
         if (fromProfile && !cancelled) setSignedInName(fromProfile);
       } catch {
         // Anonymous browse — fine, the form will ask for the name.
+      } finally {
+        if (!cancelled) setAuthReady(true);
       }
     })();
     return () => { cancelled = true; };
@@ -97,16 +128,27 @@ export default function ClaimPage() {
     setOwnedOrgSlug(null);
   }
 
-  async function submitRequest(e: React.FormEvent) {
-    e.preventDefault();
+  /** Submit a claim request. `opts.useAuthEmail` flips the request into the
+   *  one-step instant-grant path: we send the auth email (and skip the form
+   *  validation that requires a typed-in email + name). The server
+   *  authoritatively decides whether the grant is instant; this is just a
+   *  fast path for the UI. */
+  async function submitRequest(opts: { useAuthEmail?: boolean } = {}, e?: React.FormEvent) {
+    if (e) e.preventDefault();
     if (!picked) return;
     setFeedback(null);
-    if (!email.trim() || !email.includes("@")) {
-      setFeedback({ kind: "error", text: "Please enter a valid email address." });
-      return;
+
+    const submittedEmail = opts.useAuthEmail
+      ? (signedInEmail ?? "").trim()
+      : email.trim();
+    if (!opts.useAuthEmail) {
+      if (!submittedEmail || !submittedEmail.includes("@")) {
+        setFeedback({ kind: "error", text: "Please enter a valid email address." });
+        return;
+      }
     }
     const finalName = signedInName ?? name.trim();
-    if (!signedInName && finalName.length < 2) {
+    if (!opts.useAuthEmail && !signedInName && finalName.length < 2) {
       setFeedback({
         kind: "error",
         text: "Please enter your name so the verification email reads cleanly.",
@@ -118,18 +160,17 @@ export default function ClaimPage() {
       const res = await fetch("/api/orgs/request-claim", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ org_slug: picked.slug, email: email.trim(), name: finalName }),
+        body: JSON.stringify({
+          org_slug: picked.slug,
+          email: submittedEmail,
+          name: finalName,
+        }),
       });
       const parsed = await parseApiResponse<RequestResponse>(res);
       if (!parsed.ok) {
-        // Map the raw code to friendly copy — never let raw "already_owned_by_you"
-        // / "already_claimed" / etc. underscore strings reach the UI.
         const code = parsed.error;
         const orgSlugCtx = picked?.slug ?? null;
         const msg = resolveClaimMessage(code, { orgSlug: orgSlugCtx });
-        // The "you already own this" case is a POSITIVE outcome — promote it
-        // to its own step with a Manage CTA rather than rendering as a red
-        // error on the form.
         if (code === "already_owned_by_you") {
           setOwnedOrgSlug(orgSlugCtx);
           setStep("already_owned");
@@ -138,9 +179,17 @@ export default function ClaimPage() {
         setFeedback(msg);
         return;
       }
+      // One-step grant: the signed-in user's verified email qualifies; the
+      // server already seated them. Go straight to /manage.
+      if (parsed.data.instant && (parsed.data.manage_url || parsed.data.org_slug)) {
+        const target = parsed.data.manage_url ?? `/orgs/${parsed.data.org_slug}/manage`;
+        router.push(target);
+        return;
+      }
       setEmailSent(!!parsed.data.email_sent);
       setDevUrl(parsed.data.dev_verify_url ?? null);
-      setVerificationPath(parsed.data.verification_path ?? null);
+      const path = parsed.data.verification_path;
+      setVerificationPath(path === "domain_match" || path === "admin_review" ? path : null);
       setStep("submitted");
     } catch {
       // Network-level failure: fall back to the generic friendly sentence
@@ -151,7 +200,20 @@ export default function ClaimPage() {
     }
   }
 
-  const orgDomain = picked?.domain?.trim() || null;
+  const orgDomain = normalizeOrgDomain(picked?.domain);
+  const authDomain = emailDomainOf(signedInEmail);
+  // Does the signed-in account's verified email qualify for this org? The
+  // server is the authority — this is just to swap the UI between the
+  // "Claim instantly" panel and the email-verification form.
+  const oneStepEligible = !!(
+    picked &&
+    orgDomain &&
+    signedInEmail &&
+    signedInEmailVerified &&
+    authDomain &&
+    authDomain === orgDomain &&
+    !isFreeMailDomain(authDomain)
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -213,7 +275,78 @@ export default function ClaimPage() {
               </div>
             )}
 
-            <form onSubmit={submitRequest} className="mt-5 space-y-3">
+            {/* One-step instant-grant panel: the signed-in account already
+                holds a verified email at the org's domain (OAuth or
+                confirmed signup), so a second verification email would just
+                re-prove a fact Supabase already knows. */}
+            {oneStepEligible && orgDomain && (
+              <div className="mt-5 bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <div className="shrink-0 w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center">
+                    <Zap className="w-4 h-4 text-emerald-700" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-emerald-900">One-step claim available</p>
+                    <p className="text-xs text-emerald-800 mt-0.5">
+                      You&apos;re signed in as <span className="font-semibold break-all">{signedInEmail}</span> — that&apos;s a verified <span className="font-mono">@{orgDomain}</span> address, so no second email is needed.
+                    </p>
+                  </div>
+                </div>
+                {feedback && (
+                  <div className="mt-3">
+                    <FeedbackPill feedback={feedback} onDismiss={() => setFeedback(null)} />
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => submitRequest({ useAuthEmail: true })}
+                  disabled={submitting}
+                  className="mt-4 w-full inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 text-white font-semibold px-5 py-3 rounded-xl text-sm shadow-md transition-all"
+                >
+                  {submitting ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} />}
+                  {submitting ? "Granting…" : `Claim ${picked.name} now`}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSignedInEmailVerified(false) /* lets the user fall through to the email form if they want a different work email */}
+                  className="mt-2 w-full text-xs text-emerald-700 hover:text-emerald-900"
+                >
+                  Use a different work email instead
+                </button>
+              </div>
+            )}
+
+            {/* Sign-in nudge for the anonymous case — Google = zero extra
+                emails, email-signup = the single Supabase confirmation. */}
+            {authReady && !signedInEmail && orgDomain && !oneStepEligible && (
+              <div className="mt-5 bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <div className="shrink-0 w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center">
+                    <LogIn className="w-4 h-4 text-blue-700" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-[#0f2a4a]">Skip the extra email</p>
+                    <p className="text-xs text-gray-700 mt-0.5">
+                      Sign in with your <span className="font-mono">@{orgDomain}</span> work email and we&apos;ll grant manager access in one step — no second verification needed.
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  href={`/auth/signin?next=${encodeURIComponent(`/claim`)}`}
+                  className="mt-4 inline-flex items-center justify-center gap-2 w-full bg-[#0f2a4a] hover:bg-[#1a3f6e] text-white font-semibold px-5 py-2.5 rounded-xl text-sm"
+                >
+                  <LogIn size={14} /> Sign in to claim instantly
+                </Link>
+                <p className="mt-2 text-[11px] text-gray-500 text-center">
+                  Or keep going with email verification below.
+                </p>
+              </div>
+            )}
+
+            <form
+              onSubmit={(e) => submitRequest({}, e)}
+              className={`mt-5 space-y-3 ${oneStepEligible ? "hidden" : ""}`}
+            >
               {signedInName ? (
                 <p className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2">
                   Signed in as <span className="font-semibold">{signedInName}</span>. We&apos;ll use this on your claim.
@@ -281,16 +414,17 @@ export default function ClaimPage() {
             <div className="mx-auto w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mb-4">
               <CheckCircle2 size={28} className="text-green-600" />
             </div>
-            <h2 className="text-xl font-bold text-[#0f2a4a]">Check your inbox at {email}</h2>
-            {verificationPath === "admin_review" ? (
+            <h2 className="text-xl font-bold text-[#0f2a4a]">We&apos;ve sent a verification link to {email}</h2>
+            <p className="text-sm text-gray-600 mt-2">
+              It usually arrives within a minute, but some corporate email systems can take a few minutes to deliver the first message from a new sender.
+            </p>
+            {verificationPath === "admin_review" && (
               <p className="text-sm text-gray-600 mt-2">
-                After you click the verify link, we&apos;ll review your request and follow up by email — usually within 2 business days.
+                After you click the link, we&apos;ll review your request and follow up by email — usually within 2 business days.
               </p>
-            ) : (
-              <p className="text-sm text-gray-600 mt-2">Link expires in 1 hour.</p>
             )}
             <p className="text-xs text-gray-500 mt-3">
-              Didn&apos;t receive it? Check spam, or try again in 5 minutes.
+              The link is valid for 1 hour. If it doesn&apos;t show up, check your spam folder — and ask your IT team to allow mail from <span className="font-mono">hello@forahub.org</span> if your inbox filters it.
             </p>
 
             {/* Belt-and-suspenders: the server already withholds dev_verify_url

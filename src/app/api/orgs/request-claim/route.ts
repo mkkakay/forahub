@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { isOrgManager } from "@/lib/orgs/managers";
+import { addOrgManager, isOrgManager } from "@/lib/orgs/managers";
 import { renderClaimVerificationEmail } from "@/lib/email/claimVerification";
 import { isFreeMailDomain } from "@/lib/email/freeMailDomains";
 
@@ -97,17 +97,19 @@ export async function POST(req: NextRequest) {
   const org = orgData as OrgRow | null;
   if (!org) return NextResponse.json({ error: "org_not_found" }, { status: 404 });
 
-  // Resolve the signed-in user from the session cookie. The only reason this
-  // route returns "already_owned_by_you" is if the current user is already a
-  // manager of this org — the SAME predicate the manage page gates on. There
-  // is no "already_claimed" path: an org has many managers, so a same-org
-  // colleague should always be allowed through the verification flow below
-  // and join as an additional manager.
+  // Resolve the signed-in user from the session cookie. We pull email +
+  // email_confirmed_at as well: the instant-grant path below trusts a verified
+  // Supabase auth email as proof of mailbox control, so we can skip the
+  // second (claim-side) verification email entirely.
   let currentUserId: string | null = null;
+  let currentUserEmail: string | null = null;
+  let currentUserEmailVerified = false;
   try {
     const sb = createServerSupabaseClient();
     const { data: u } = await sb.auth.getUser();
     currentUserId = u.user?.id ?? null;
+    currentUserEmail = u.user?.email ?? null;
+    currentUserEmailVerified = !!u.user?.email_confirmed_at;
   } catch {
     // Anonymous request — currentUserId stays null, no short-circuit.
   }
@@ -124,17 +126,88 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const orgDomain = normalizeOrgDomain(org.domain);
+
+  // ── One-step instant-grant path ─────────────────────────────────────────
+  // If the signed-in user's *verified* Supabase auth email already qualifies
+  // for this org (same domain, non-free-mail), Supabase already proved they
+  // control that mailbox at sign-in time (OAuth provider, or email-signup
+  // confirmation). Sending a second claim-verification email just to land
+  // back at the same fact is pure friction — grant the seat now.
+  if (
+    currentUserId &&
+    currentUserEmail &&
+    currentUserEmailVerified &&
+    orgDomain
+  ) {
+    const authDomain = extractDomain(currentUserEmail);
+    if (
+      authDomain &&
+      authDomain === orgDomain &&
+      !isFreeMailDomain(authDomain)
+    ) {
+      const nowIso = new Date().toISOString();
+      const seat = await addOrgManager({
+        orgSlug: org.slug,
+        userId: currentUserId,
+        email: currentUserEmail,
+        verifiedAt: nowIso,
+        addedVia: "oauth_session",
+      });
+      if (seat) {
+        // Audit-trail row in org_claims so the admin review history and
+        // /manage's "verified via" labels stay coherent — the seat itself
+        // is the source of truth for access.
+        await adminSupabase
+          .from("org_claims")
+          .upsert(
+            {
+              org_slug: org.slug,
+              user_email: currentUserEmail,
+              user_id: currentUserId,
+              claimant_name: claimantName,
+              status: "verified",
+              verification_path: "oauth_session",
+              verification_token: null,
+              token_expires_at: null,
+              claimed_at: nowIso,
+            },
+            { onConflict: "org_slug,user_email" },
+          );
+        await adminSupabase
+          .from("organizations_directory")
+          .update({
+            is_claimed: true,
+            is_verified: true,
+            claimed_at: nowIso,
+          })
+          .eq("slug", org.slug);
+        return NextResponse.json({
+          success: true,
+          instant: true,
+          email_sent: false,
+          verification_path: "oauth_session",
+          org_slug: org.slug,
+          manage_url: `/orgs/${org.slug}/manage`,
+          message: `You now manage ${org.name}.`,
+        });
+      }
+      // If the seat insert failed, fall through to the email-verification
+      // path rather than silently swallowing — better to ask the user to
+      // verify than to leave them confused.
+    }
+  }
+
   // Decide the verification path.
   //
   // AUTO ("domain_match") requires BOTH:
-  //   - the email's host equals the org's known domain on file, AND
+  //   - the submitted email's host equals the org's known domain on file, AND
   //   - that host is NOT on the free-mail / personal-provider list.
   //
   // Everything else — free-mail domains, custom-domain mismatch, or org with
   // no domain on file — falls to ADMIN REVIEW. Never hard-reject. The user
   // still email-verifies the address (proves ownership) but the row lands
   // in the queue at status='pending_admin_review' until a human approves.
-  const orgDomain = normalizeOrgDomain(org.domain);
   const emailDomain = extractDomain(email);
   const emailIsFreeMail = isFreeMailDomain(emailDomain);
   const verificationPath: VerificationPath =
