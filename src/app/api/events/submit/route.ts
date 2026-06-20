@@ -5,6 +5,7 @@ import { slugify } from "@/lib/organizations";
 import { geocodeLocation } from "@/lib/geo/geocode";
 import { classifyEventSync } from "@/lib/categories/classify";
 import { isCategoryKey, type CategoryKey, type CategorySource } from "@/lib/categories";
+import { evaluateAutoPublish } from "@/lib/orgs/autoPublish";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -129,17 +130,58 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Auto-approve eligibility ──────────────────────────────────────
+  //
+  // Three tiers, evaluated in order:
+  //
+  //   (1) Org-manager auto-publish (NEW). Requires a signed-in user whose
+  //       seat in org_managers covers this org slug AND the seat has
+  //       effective auto-publish (domain_match/oauth_session OR
+  //       can_autopublish=true granted by a domain-verified manager). The
+  //       evaluator also enforces the rolling-24h soft cap per org —
+  //       beyond N auto-publishes in 24h, submissions fall through to the
+  //       review queue with a friendly explanation.
+  //
+  //   (2) Legacy organization_overrides.is_verified flag. Still honoured
+  //       for the anonymous/public path so anything that already auto-
+  //       published before this feature continues to. NOTE: this is a
+  //       DIFFERENT field from organizations_directory.is_verified — the
+  //       badge UI reads the directory column; this gate reads overrides.
+  //
+  //   (3) Admin-submitter override. Admin user posts → auto-approve.
   const orgSlug = slugify(organization);
-  const { data: overrideRow } = await adminSupabase
-    .from("organization_overrides")
-    .select("is_verified")
-    .eq("slug", orgSlug)
-    .maybeSingle();
-  const orgVerified = !!(overrideRow as { is_verified?: boolean } | null)?.is_verified;
-
   const submitterIsAdmin = await isAdminUserId(submittedByUserId);
 
-  const autoApprove = orgVerified || submitterIsAdmin;
+  let autoApprove = false;
+  let autoBranch: "manager" | "legacy" | "admin" | null = null;
+  let capHit: { recent: number; cap: number; windowHours: number } | null = null;
+  let autoPublishedByUserId: string | null = null;
+
+  if (submittedByUserId) {
+    const eva = await evaluateAutoPublish({ orgSlug, userId: submittedByUserId });
+    if (eva.outcome === "publish") {
+      autoApprove = true;
+      autoBranch = "manager";
+      autoPublishedByUserId = submittedByUserId;
+    } else if (eva.outcome === "cap_hit") {
+      // The signed-in user is allowed to auto-publish in principle, but the
+      // org has already burned its rolling-24h budget. Route to review and
+      // surface the cap context to the client so the UI copy is honest.
+      capHit = { recent: eva.recent, cap: eva.cap, windowHours: eva.windowHours };
+    }
+    // not_granted / not_a_manager → fall through to the legacy / admin gates.
+  }
+
+  if (!autoApprove) {
+    const { data: overrideRow } = await adminSupabase
+      .from("organization_overrides")
+      .select("is_verified")
+      .eq("slug", orgSlug)
+      .maybeSingle();
+    const legacyVerified = !!(overrideRow as { is_verified?: boolean } | null)?.is_verified;
+    if (legacyVerified) { autoApprove = true; autoBranch = "legacy"; }
+    else if (submitterIsAdmin) { autoApprove = true; autoBranch = "admin"; }
+  }
+
   const submissionStatus = autoApprove ? "approved" : "pending";
 
   // sdg_goals is an int[]; convert single primary_sdg → array.
@@ -205,6 +247,10 @@ export async function POST(req: NextRequest) {
     title,
     description,
     organization,
+    // Stable slug so the manage-page Events panel and the 24h-cap query can
+    // count this row against the org. Populated for ALL signed-in submissions
+    // (not just auto-publish) so the panel shows pending review rows too.
+    org_slug: orgSlug,
     start_date: startParsed.toISOString(),
     end_date: endParsed ? endParsed.toISOString() : null,
     registration_deadline: regDeadline ? regDeadline.toISOString() : null,
@@ -237,6 +283,11 @@ export async function POST(req: NextRequest) {
     submitted_by_user_id: submittedByUserId,
     submitter_email: submitterEmail,
     submitted_at: new Date().toISOString(),
+    // Auto-publish audit. Only set when the NEW manager branch is the
+    // reason for the auto-approve — the legacy and admin branches don't
+    // count against the 24h cap so they leave these NULL.
+    auto_published_at: autoBranch === "manager" ? new Date().toISOString() : null,
+    auto_published_by_user_id: autoBranch === "manager" ? autoPublishedByUserId : null,
     is_featured: false,
     category,
     category_secondary: categorySecondary.length > 0 ? categorySecondary : null,
@@ -279,15 +330,21 @@ export async function POST(req: NextRequest) {
   }
 
   const message = autoApprove
-    ? orgVerified
-      ? `${organization} is a verified organization — your event is live now.`
-      : "Approved automatically (admin submission) — your event is live."
-    : "Submitted for review. Our team will publish within 24 hours and email you when it's approved.";
+    ? autoBranch === "manager"
+      ? `You're a verified manager of ${organization} — your event is live now.`
+      : autoBranch === "legacy"
+        ? `${organization} is a verified organization — your event is live now.`
+        : "Approved automatically (admin submission) — your event is live."
+    : capHit
+      ? `Your event was submitted and will appear after a quick review. ${organization} has hit its ${capHit.cap}-event-per-${capHit.windowHours}h soft cap, so further auto-publishes are paused until tomorrow.`
+      : "Submitted for review. Our team will publish within 24 hours and email you when it's approved.";
 
   return NextResponse.json({
     event_id: data.id,
     status: data.submission_status,
     auto_approved: autoApprove,
+    auto_branch: autoBranch,
+    cap_hit: capHit ? { ...capHit } : null,
     message,
   });
 }

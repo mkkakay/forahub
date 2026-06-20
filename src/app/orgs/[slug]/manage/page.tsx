@@ -4,10 +4,12 @@ import { BadgeCheck, ArrowLeft, Lock } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { isOrgManager, listOrgManagers } from "@/lib/orgs/managers";
+import { isOrgManager, isDomainVerified, effectiveAutoPublish, listOrgManagers } from "@/lib/orgs/managers";
 import { listPendingInvites } from "@/lib/orgs/invites";
+import { AUTOPUBLISH_CAP_PER_24H, AUTOPUBLISH_WINDOW_HOURS } from "@/lib/orgs/autoPublish";
 import ManageOrgForm from "./ManageOrgForm";
 import TeamPanel, { type ManagerView, type InviteView } from "./TeamPanel";
+import EventsPanel, { type EventView } from "./EventsPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -26,11 +28,10 @@ interface OrgRow {
   claimed_at: string | null;
 }
 
-// "Team accounts" was removed from this list — it's now the live TeamPanel
-// above. The remaining cards still describe features genuinely on the
-// roadmap; if you ship one, drop it from here.
+// "Team accounts" + "Event management" were removed — both now ship as live
+// panels above. The remaining cards still describe features genuinely on
+// the roadmap; if you ship one, drop it from here.
 const LOCKED_FEATURES = [
-  { title: "Event management", body: "Auto-publish events from your team without admin review." },
   { title: "Analytics", body: "See views, saves, and registration clicks per event." },
   { title: "Recurring events", body: "Set up monthly webinars or annual conferences with one entry." },
 ];
@@ -91,9 +92,23 @@ export default async function ManageOrgPage({
     );
   }
 
-  const [managerRows, inviteRows] = await Promise.all([
+  // Rolling-window cap counter — used by EventsPanel to show "X of N
+  // instant-publishes used today" when capacity is low.
+  const sinceIso = new Date(Date.now() - AUTOPUBLISH_WINDOW_HOURS * 3600 * 1000).toISOString();
+  const [managerRows, inviteRows, eventsRes, autoPublishedCountRes] = await Promise.all([
     listOrgManagers(org.slug),
     listPendingInvites(org.slug),
+    adminSupabase
+      .from("events")
+      .select("id, title, start_date, end_date, location, format, status, submission_status, source_type, submission_source, auto_published_at, needs_recheck, needs_recheck_at, needs_recheck_reason, submitted_at, created_at")
+      .eq("org_slug", org.slug)
+      .order("start_date", { ascending: false })
+      .limit(50),
+    adminSupabase
+      .from("events")
+      .select("id", { count: "exact", head: true })
+      .eq("org_slug", org.slug)
+      .gte("auto_published_at", sinceIso),
   ]);
 
   // Annotate each manager with founder/self flags so the TeamPanel can
@@ -101,6 +116,10 @@ export default async function ManageOrgPage({
   // client-side. Founder = earliest added_at (managerRows is already
   // ordered ascending by listOrgManagers).
   const founderId = managerRows[0]?.id ?? null;
+  const viewerSeat = managerRows.find(m => m.user_id === userId) ?? null;
+  const viewerIsDomainVerified = !!viewerSeat && isDomainVerified(viewerSeat.added_via);
+  const viewerCanAutoPublish = !!viewerSeat && effectiveAutoPublish(viewerSeat);
+
   const managersForPanel: ManagerView[] = managerRows.map(m => ({
     id: m.id,
     user_id: m.user_id,
@@ -111,6 +130,9 @@ export default async function ManageOrgPage({
     added_via: m.added_via,
     is_founder: m.id === founderId,
     is_self: m.user_id === userId,
+    can_autopublish: m.can_autopublish,
+    autopublish_granted_at: m.autopublish_granted_at,
+    is_trusted: isDomainVerified(m.added_via),
   }));
   const invitesForPanel: InviteView[] = inviteRows.map(i => ({
     id: i.id,
@@ -121,6 +143,8 @@ export default async function ManageOrgPage({
     expires_at: i.expires_at,
     created_at: i.created_at,
   }));
+  const eventsForPanel: EventView[] = ((eventsRes.data ?? []) as EventView[]);
+  const autoPublishedInWindow = autoPublishedCountRes.count ?? 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -166,6 +190,18 @@ export default async function ManageOrgPage({
           orgDomain={org.domain}
           managers={managersForPanel}
           invites={invitesForPanel}
+          viewerIsDomainVerified={viewerIsDomainVerified}
+        />
+
+        <EventsPanel
+          slug={org.slug}
+          orgName={org.name}
+          events={eventsForPanel}
+          viewerCanAutoPublish={viewerCanAutoPublish}
+          viewerAddedVia={viewerSeat?.added_via ?? null}
+          autoPublishedInWindow={autoPublishedInWindow}
+          autoPublishCap={AUTOPUBLISH_CAP_PER_24H}
+          autoPublishWindowHours={AUTOPUBLISH_WINDOW_HOURS}
         />
 
         <section className="mt-6 bg-white rounded-2xl border border-gray-200 shadow-sm p-5 md:p-6 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">

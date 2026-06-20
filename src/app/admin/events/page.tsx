@@ -18,7 +18,7 @@ export default async function AdminEventsPage({
 
   let query = adminSupabase
     .from('events')
-    .select('id,title,organization,start_date,end_date,event_type,format,status,confidence_score,quality_score,source_id,is_featured,sdg_goals,location,registration_url,description,is_side_event,region,cost_type,language', { count: 'exact' })
+    .select('id,title,organization,start_date,end_date,event_type,format,status,confidence_score,quality_score,source_id,is_featured,sdg_goals,location,registration_url,description,is_side_event,region,cost_type,language,needs_recheck,needs_recheck_reason', { count: 'exact' })
     .order('start_date', { ascending: true })
     .range(from, to)
 

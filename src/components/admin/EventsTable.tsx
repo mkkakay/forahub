@@ -14,6 +14,7 @@ type EventRow = {
   location: string | null; registration_url: string | null
   description: string | null; is_side_event: boolean; region: string | null
   cost_type: string | null; language: string; end_date: string | null
+  needs_recheck?: boolean | null; needs_recheck_reason?: string | null
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -261,7 +262,19 @@ export default function EventsTable({
                     {new Date(ev.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}
                   </td>
                   <td className="px-4 py-3 text-blue-400 text-xs">{ev.event_type}</td>
-                  <td className="px-4 py-3"><StatusBadge status={ev.status} /></td>
+                  <td className="px-4 py-3">
+                    <div className="inline-flex items-center gap-1.5">
+                      <StatusBadge status={ev.status} />
+                      {ev.needs_recheck && (
+                        <span
+                          title={ev.needs_recheck_reason ?? "Manager edited a material field after publishing — review the diff"}
+                          className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border bg-amber-400/10 text-amber-300 border-amber-400/30"
+                        >
+                          recheck
+                        </span>
+                      )}
+                    </div>
+                  </td>
                   <td className="px-4 py-3 whitespace-nowrap">
                     <ScoreDot score={ev.confidence_score} /> <span className="text-blue-700 text-xs">/</span> <ScoreDot score={ev.quality_score} />
                   </td>

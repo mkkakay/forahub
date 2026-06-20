@@ -9,6 +9,22 @@ export interface OrgManagerRow {
   added_at: string;
   verified_at: string | null;
   added_via: string | null;
+  can_autopublish: boolean;
+  autopublish_granted_by: string | null;
+  autopublish_granted_at: string | null;
+}
+
+/** Domain-verified seats are the "trusted" tier — they implicitly hold
+ *  can_autopublish whether the flag is set or not, and they're the only
+ *  callers who can grant the flag to other seats. */
+export function isDomainVerified(addedVia: string | null | undefined): boolean {
+  return addedVia === "domain_match" || addedVia === "oauth_session";
+}
+
+/** Effective autopublish — used by the submit branch. Domain-verified
+ *  seats always pass; everyone else passes only if the flag was granted. */
+export function effectiveAutoPublish(row: { added_via: string | null; can_autopublish: boolean }): boolean {
+  return isDomainVerified(row.added_via) || !!row.can_autopublish;
 }
 
 /** True iff the user holds a manager seat on this org. The /claim flow,
@@ -57,7 +73,7 @@ export async function addOrgManager(opts: {
 export async function listOrgManagers(orgSlug: string): Promise<OrgManagerRow[]> {
   const { data, error } = await adminSupabase
     .from("org_managers")
-    .select("id, org_slug, user_id, email, role, added_at, verified_at, added_via")
+    .select("id, org_slug, user_id, email, role, added_at, verified_at, added_via, can_autopublish, autopublish_granted_by, autopublish_granted_at")
     .eq("org_slug", orgSlug)
     .order("added_at", { ascending: true });
   if (error) return [];

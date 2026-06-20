@@ -10,7 +10,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Users, Mail, AlertCircle, CheckCircle2, X, Loader2, Trash2,
-  Send, RefreshCw, Crown, ShieldCheck, UserPlus, Clock, Info,
+  Send, RefreshCw, Crown, ShieldCheck, UserPlus, Clock, Info, Zap,
 } from "lucide-react";
 
 export interface ManagerView {
@@ -23,6 +23,12 @@ export interface ManagerView {
   added_via: string | null;
   is_founder: boolean;
   is_self: boolean;
+  can_autopublish: boolean;
+  autopublish_granted_at: string | null;
+  /** True iff added_via is a "trusted" tier — the toggle is hidden for
+   *  these seats because they always autopublish by virtue of how they
+   *  joined. */
+  is_trusted: boolean;
 }
 
 export interface InviteView {
@@ -41,6 +47,10 @@ interface Props {
   orgDomain: string | null;
   managers: ManagerView[];
   invites: InviteView[];
+  /** True iff the signed-in viewer is a domain-verified manager — only
+   *  these callers see the autopublish toggle on other seats. The server
+   *  re-checks regardless. */
+  viewerIsDomainVerified: boolean;
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -48,6 +58,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const ERROR_COPY: Record<string, string> = {
   signin_required: "You're signed out. Refresh and sign in again to manage the team.",
   not_a_manager: "Only verified managers of this org can do that.",
+  not_domain_verified: "Only managers with a verified work-email can change instant-publish access.",
   invalid_email: "That doesn't look like a valid email address.",
   already_a_manager: "That email is already on the team.",
   last_manager: "An org needs at least one manager. You can't remove the last seat.",
@@ -55,6 +66,8 @@ const ERROR_COPY: Record<string, string> = {
   invite_not_found: "We couldn't find that invitation — it may have been revoked already.",
   invite_not_pending: "That invitation has already been accepted or revoked.",
   invite_expired: "That invitation has expired.",
+  manager_not_found: "We couldn't find that team member.",
+  can_autopublish_required: "Pick on or off and try again.",
   org_not_found: "We couldn't find this organization.",
   email_send_failed: "Invitation saved, but the email didn't send. Try resending in a few minutes.",
 };
@@ -188,6 +201,30 @@ export default function TeamPanel(props: Props) {
     }
   }
 
+  async function toggleAutoPublish(m: ManagerView, next: boolean) {
+    setActingId(m.id);
+    try {
+      const res = await fetch(`/api/orgs/${props.slug}/team/managers/${m.id}/autopublish`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ can_autopublish: next }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        flash("error", friendly(json?.error));
+        return;
+      }
+      setManagers(prev => prev.map(p => p.id === m.id ? { ...p, can_autopublish: next, autopublish_granted_at: next ? new Date().toISOString() : null } : p));
+      flash("ok", next
+        ? `${m.email} can now publish events instantly.`
+        : `${m.email} will route through review going forward.`);
+    } catch {
+      flash("error", "Something went wrong. Please try again.");
+    } finally {
+      setActingId(null);
+    }
+  }
+
   async function removeManager(m: ManagerView) {
     setActingId(m.id);
     try {
@@ -272,12 +309,38 @@ export default function TeamPanel(props: Props) {
                         </span>
                       )}
                     </div>
-                    <div className="text-[11px] text-gray-500 mt-0.5 inline-flex items-center gap-1.5">
+                    <div className="text-[11px] text-gray-500 mt-0.5 inline-flex items-center gap-1.5 flex-wrap">
                       <span className={`inline-flex items-center gap-1 border rounded px-1.5 py-0.5 ${via.cls}`}>
                         <ViaIcon className="w-2.5 h-2.5" /> {via.label}
                       </span>
                       <span>· joined {fmtDate(m.verified_at ?? m.added_at)}</span>
+                      {(m.is_trusted || m.can_autopublish) && (
+                        <span className="inline-flex items-center gap-1 border border-emerald-200 bg-emerald-50 text-emerald-700 rounded px-1.5 py-0.5">
+                          <Zap className="w-2.5 h-2.5" /> Instant publish
+                        </span>
+                      )}
                     </div>
+                    {/* Per-seat instant-publish toggle. Only renders for
+                        domain-verified viewers and only for non-trusted
+                        target seats — the server re-checks both. */}
+                    {props.viewerIsDomainVerified && !m.is_trusted && (
+                      <div className="mt-2 inline-flex items-center gap-2">
+                        <label className="inline-flex items-center gap-2 text-[11px] text-gray-600 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={m.can_autopublish}
+                            disabled={actingId === m.id}
+                            onChange={(e) => toggleAutoPublish(m, e.target.checked)}
+                            className="w-3.5 h-3.5 accent-emerald-600"
+                          />
+                          Allow instant publishing
+                        </label>
+                        {actingId === m.id && <Loader2 size={10} className="animate-spin text-gray-400" />}
+                        {m.can_autopublish && m.autopublish_granted_at && (
+                          <span className="text-[10px] text-gray-400">granted {fmtDate(m.autopublish_granted_at)}</span>
+                        )}
+                      </div>
+                    )}
                   </div>
                   {removeConfirmId === m.id ? (
                     <div className="shrink-0 inline-flex items-center gap-2">
