@@ -41,7 +41,9 @@ export type HeroImageRow = {
 
 const SLIDES: SlideData[] = [
   {
-    bg: "/images/hero/un-hlpf.jpg",
+    // LCP-critical: pre-converted to WebP (518kB jpg → 245kB webp @1920w).
+    // Next/Image still emits responsive variants via /_next/image.
+    bg: "/images/hero/un-hlpf-1920.webp",
     badge: { text: "SDG 17 Partnerships", color: "#19486A" },
     org: "UN DESA",
     headline: "SDG High Level Political Forum",

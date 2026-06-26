@@ -27,9 +27,10 @@ const SLIDE_QUERIES = [
   "sustainable development goals earth climate forest community action", // SDG Goals
 ];
 
-// Local fallbacks (already downloaded) if Pexels is unavailable
+// Local fallbacks (already downloaded) if Pexels is unavailable.
+// Slide 0 is LCP — serve the pre-converted WebP at 1920w (245kB vs 518kB).
 const SLIDE_FALLBACKS = [
-  "/images/hero/un-hlpf.jpg",
+  "/images/hero/un-hlpf-1920.webp",
   "/images/hero/global-events.jpg",
   "/images/hero/ai-assistant.jpg",
   "/images/hero/global-regions.jpg",

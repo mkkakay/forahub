@@ -114,9 +114,12 @@ export default function Navbar() {
             <div ref={langRef} className="relative hidden sm:block">
               <button
                 onClick={() => setLangOpen(!langOpen)}
+                aria-label={`Change language (current: ${LANGUAGES[lang].label})`}
+                aria-haspopup="menu"
+                aria-expanded={langOpen}
                 className="flex items-center gap-1.5 p-2 rounded-md text-gray-300 hover:text-white hover:bg-white/10 transition-colors text-sm"
               >
-                <Globe size={16} />
+                <Globe size={16} aria-hidden="true" />
                 <span className="hidden lg:inline text-xs">{LANGUAGES[lang].label}</span>
               </button>
               {langOpen && (
@@ -141,6 +144,7 @@ export default function Navbar() {
               onClick={cycleTheme}
               className="hidden sm:flex p-2 rounded-md text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
               title={`Theme: ${theme}`}
+              aria-label={`Switch theme (current: ${theme})`}
             >
               <ThemeIcon />
             </button>

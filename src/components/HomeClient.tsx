@@ -207,7 +207,7 @@ function FeaturedOrgCard({ org }: { org: FeaturedOrg }) {
       </div>
       {/* Body */}
       <div className="p-4 flex flex-col flex-1">
-        <p className="text-sm font-bold text-[#0f2a4a] dark:text-white group-hover:text-[#4ea8de] transition-colors inline-flex items-center gap-1">
+        <p className="text-sm font-bold text-[#0f2a4a] dark:text-white group-hover:text-blue-700 dark:group-hover:text-[#4ea8de] transition-colors inline-flex items-center gap-1">
           {org.short}
           {org.is_claimed && org.is_verified && (
             <span title="Verified organization" className="inline-flex">
@@ -216,7 +216,7 @@ function FeaturedOrgCard({ org }: { org: FeaturedOrg }) {
           )}
         </p>
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2 flex-1">{org.name}</p>
-        <span className="mt-3 block w-full py-2 rounded-lg text-sm font-semibold text-center border border-[#4ea8de]/40 text-[#4ea8de] group-hover:bg-[#4ea8de] group-hover:text-white transition-colors">
+        <span className="mt-3 block w-full py-2 rounded-lg text-sm font-semibold text-center border border-blue-700/40 dark:border-[#4ea8de]/40 text-blue-700 dark:text-[#4ea8de] group-hover:bg-blue-700 dark:group-hover:bg-[#4ea8de] group-hover:text-white transition-colors">
           {t(lang, "calendar.follow")}
         </span>
       </div>
@@ -400,7 +400,7 @@ export function EventCard({ event }: { event: EventPreview }) {
               </span>
             )}
           </div>
-          <h3 className="text-[#0f2a4a] dark:text-white font-semibold text-base leading-snug group-hover:text-[#4ea8de] transition-colors line-clamp-2">
+          <h3 className="text-[#0f2a4a] dark:text-white font-semibold text-base leading-snug group-hover:text-blue-700 dark:group-hover:text-[#4ea8de] transition-colors line-clamp-2">
             {event.title}
           </h3>
           <div className="flex flex-col gap-1.5 text-xs text-gray-500 dark:text-gray-400 mt-auto">
@@ -533,7 +533,7 @@ export default function HomeClient({
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-0 border-t border-gray-100 dark:border-[#334155]">
         <div className="flex items-baseline justify-between mb-2">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">{t(lang, "events.upcoming")}</h2>
-          <Link href="/events" className="text-[#4ea8de] hover:text-[#3a95cc] text-sm font-medium flex items-center gap-1 transition-colors">
+          <Link href="/events" className="text-blue-700 hover:text-blue-900 dark:text-[#4ea8de] dark:hover:text-[#3a95cc] text-sm font-medium flex items-center gap-1 transition-colors">
             {t(lang, "events.viewall")} <ArrowRight size={14} />
           </Link>
         </div>
@@ -554,7 +554,7 @@ export default function HomeClient({
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-0 border-t border-gray-100 dark:border-[#334155]">
           <div className="flex items-baseline justify-between mb-2">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Past Events</h2>
-            <Link href="/events?filter=past" className="text-[#4ea8de] hover:text-[#3a95cc] text-sm font-medium flex items-center gap-1 transition-colors">
+            <Link href="/events?filter=past" className="text-blue-700 hover:text-blue-900 dark:text-[#4ea8de] dark:hover:text-[#3a95cc] text-sm font-medium flex items-center gap-1 transition-colors">
               View All <ArrowRight size={14} />
             </Link>
           </div>
@@ -579,7 +579,7 @@ export default function HomeClient({
               <h2 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">{t(lang, "calendar.featured")}</h2>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{t(lang, "calendar.subtitle")}</p>
             </div>
-            <Link href="/events" className="text-sm text-[#4ea8de] hover:underline flex items-center gap-1 font-medium shrink-0 ml-4">
+            <Link href="/events" className="text-sm text-blue-700 dark:text-[#4ea8de] hover:underline flex items-center gap-1 font-medium shrink-0 ml-4">
               View All <ChevronRight size={14} />
             </Link>
           </div>
@@ -610,7 +610,7 @@ export default function HomeClient({
               <h2 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Browse by SDG Category</h2>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Explore events aligned with the UN 2030 Agenda</p>
             </div>
-            <Link href="/events" className="text-sm text-[#4ea8de] hover:underline flex items-center gap-1 font-medium shrink-0 ml-4 mt-1">
+            <Link href="/events" className="text-sm text-blue-700 dark:text-[#4ea8de] hover:underline flex items-center gap-1 font-medium shrink-0 ml-4 mt-1">
               View All <ChevronRight size={14} />
             </Link>
           </div>
@@ -635,7 +635,7 @@ export default function HomeClient({
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-baseline justify-between mb-3">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{t(lang, "region.explore")}</h2>
-            <Link href="/events" className="text-sm text-[#4ea8de] hover:underline flex items-center gap-1 font-medium">
+            <Link href="/events" className="text-sm text-blue-700 dark:text-[#4ea8de] hover:underline flex items-center gap-1 font-medium">
               View All <ChevronRight size={14} />
             </Link>
           </div>
