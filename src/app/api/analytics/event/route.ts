@@ -23,6 +23,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -119,7 +120,7 @@ export async function POST(req: NextRequest) {
       anonymous_id: logAnonId,
       referrer: safeReferrer(body.referrer),
     });
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "analytics/event", 500);
 
   return new NextResponse(null, { status: 204 });
 }

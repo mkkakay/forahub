@@ -63,11 +63,16 @@ function SignupInner() {
     }
 
     if (data.session) {
+      // Fire-and-forget: failure here doesn't block onboarding, but it
+      // shouldn't be silent — at least log so a regression in the welcome
+      // email pipeline shows up in the dev console / Sentry.
       fetch("/api/send-welcome", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
-      }).catch(() => {});
+      }).catch((err) => {
+        console.warn("[signup] welcome email request failed:", err);
+      });
       router.push(next ?? "/onboarding");
       router.refresh();
     } else {

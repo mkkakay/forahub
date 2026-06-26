@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { safeEqual } from "@/lib/security/timing";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -42,7 +43,7 @@ export async function GET(req: NextRequest) {
     `)
     .order("added_at", { ascending: false });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "admin/managers", 500);
 
   const rows: ManagerRow[] = ((data ?? []) as Array<Record<string, unknown>>).map(r => {
     const orgRel = (r.organizations_directory ?? {}) as Record<string, unknown>;
@@ -73,7 +74,7 @@ export async function DELETE(req: NextRequest) {
   if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
 
   const { error } = await adminSupabase.from("org_managers").delete().eq("id", id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "admin/managers", 500);
 
   return NextResponse.json({ ok: true });
 }

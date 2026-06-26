@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { invalidatePageBannerCache } from "@/lib/pageBanners";
 import { safeEqual } from "@/lib/security/timing";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,7 +24,7 @@ export async function GET(req: NextRequest) {
     .from("page_banners")
     .select("id, page_key, image_url, overlay_level, is_active, variant, updated_at")
     .order("page_key", { ascending: true });
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "admin/page-banners", 500);
   // Admin panel should ALWAYS see the latest values — no CDN/edge cache.
   return new NextResponse(JSON.stringify({ data: data ?? [] }), {
     status: 200,
@@ -77,7 +78,7 @@ export async function PATCH(req: NextRequest) {
     .eq("page_key", pageKey)
     .select("id, page_key, image_url, overlay_level, is_active, variant, updated_at")
     .maybeSingle();
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "admin/page-banners", 500);
   if (!data) return NextResponse.json({ error: "page_key not found" }, { status: 404 });
 
   invalidatePageBannerCache();

@@ -17,6 +17,7 @@ import { adminSupabase } from "@/lib/supabase/admin";
 import { buildAnthropicClient, classifyEvent } from "@/lib/categories/classify";
 import type { CategorySource } from "@/lib/categories";
 import { safeEqual } from "@/lib/security/timing";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -60,8 +61,8 @@ export async function GET(req: NextRequest) {
         .is("category", null),
       adminSupabase.from("events").select("id", { count: "exact", head: true }),
     ]);
-    if (catErr) return NextResponse.json({ error: catErr.message }, { status: 500 });
-    if (srcErr) return NextResponse.json({ error: srcErr.message }, { status: 500 });
+    if (catErr) return sanitizeApiError(catErr, "admin/categorize-events", 500);
+    if (srcErr) return sanitizeApiError(srcErr, "admin/categorize-events", 500);
     const by_category: Record<string, number> = {};
     for (const r of catRows ?? []) {
       const c = (r as { category: string | null }).category;
@@ -93,7 +94,7 @@ export async function GET(req: NextRequest) {
       .lt("category_confidence", LOW_CONFIDENCE)
       .order("category_confidence", { ascending: true })
       .limit(50);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return sanitizeApiError(error, "admin/categorize-events", 500);
     return NextResponse.json({ events: data ?? [] });
   }
 
@@ -140,7 +141,7 @@ export async function PATCH(req: NextRequest) {
       category_classified_at: new Date().toISOString(),
     })
     .eq("id", eventId);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "admin/categorize-events", 500);
   return NextResponse.json({ ok: true });
 }
 
@@ -174,7 +175,7 @@ export async function POST(req: NextRequest) {
     .order("start_date", { ascending: false })
     .limit(BATCH_SIZE);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "admin/categorize-events", 500);
 
   const events = (data ?? []) as CandidateEvent[];
   const client = mode === "ai" ? buildAnthropicClient() : null;

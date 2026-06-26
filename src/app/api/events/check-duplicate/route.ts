@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -67,7 +68,7 @@ export async function POST(req: NextRequest) {
     .lte("start_date", windowEnd)
     .limit(200);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "events/check-duplicate", 500);
 
   const candidates = ((data ?? []) as (CandidateRow & { status: string | null; submission_status: string | null })[])
     .filter(c => c.status === "published" || c.submission_status === "approved");

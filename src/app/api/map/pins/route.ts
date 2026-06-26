@@ -14,6 +14,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { parseCategoryList } from "@/lib/categories";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -121,7 +122,7 @@ export async function GET(req: NextRequest) {
   }
 
   const { data, error } = await query.limit(PIN_CAP + 1);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "map/pins", 500);
 
   const rows = ((data ?? []) as PinRow[]).filter(r => r.latitude != null && r.longitude != null);
   const now = new Date();

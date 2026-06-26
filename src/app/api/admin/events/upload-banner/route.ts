@@ -8,6 +8,7 @@ import {
   type AllowedMime,
 } from "@/lib/admin/imageUpload";
 import { safeEqual } from "@/lib/security/timing";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest) {
     .select("id")
     .eq("id", eventId)
     .maybeSingle();
-  if (lookupError) return NextResponse.json({ error: lookupError.message }, { status: 500 });
+  if (lookupError) return sanitizeApiError(lookupError, "admin/events/upload-banner", 500);
   if (!existing) return NextResponse.json({ error: "Event not found" }, { status: 404 });
 
   const ext = EXT_BY_MIME[validation.mime];
@@ -65,7 +66,7 @@ export async function POST(req: NextRequest) {
     });
     publicUrl = result.publicUrl;
   } catch (err) {
-    return NextResponse.json({ error: err instanceof Error ? err.message : String(err) }, { status: 500 });
+    return sanitizeApiError(err, "admin/events/upload-banner", 500);
   }
 
   const updatePatch: Record<string, unknown> = {
@@ -81,7 +82,7 @@ export async function POST(req: NextRequest) {
 
   if (updateError) {
     await removeFromStorage(BUCKET, storagePath);
-    return NextResponse.json({ error: updateError.message }, { status: 500 });
+    return sanitizeApiError(updateError, "admin/events/upload-banner", 500);
   }
 
   return NextResponse.json({ banner_url: publicUrl, event_id: eventId });

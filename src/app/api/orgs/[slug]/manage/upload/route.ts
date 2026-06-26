@@ -22,6 +22,7 @@ import {
   EXT_BY_MIME,
   type AllowedMime,
 } from "@/lib/admin/imageUpload";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -62,7 +63,7 @@ export async function POST(req: NextRequest, ctx: { params: { slug: string } }) 
     .select("slug")
     .eq("slug", ctx.params.slug)
     .maybeSingle();
-  if (lookupErr) return NextResponse.json({ error: lookupErr.message }, { status: 500 });
+  if (lookupErr) return sanitizeApiError(lookupErr, "orgs/:slug/manage/upload", 500);
   if (!orgRow) return NextResponse.json({ error: "org_not_found" }, { status: 404 });
 
   const ext = EXT_BY_MIME[validation.mime];
@@ -78,9 +79,7 @@ export async function POST(req: NextRequest, ctx: { params: { slug: string } }) 
     });
     publicUrl = r.publicUrl;
   } catch (err) {
-    return NextResponse.json({
-      error: err instanceof Error ? err.message : String(err),
-    }, { status: 500 });
+    return sanitizeApiError(err, "orgs/:slug/manage/upload", 500);
   }
 
   const column = COLUMN_BY_KIND[kind];
@@ -90,7 +89,7 @@ export async function POST(req: NextRequest, ctx: { params: { slug: string } }) 
     .eq("slug", ctx.params.slug);
   if (updErr) {
     await removeFromStorage(BUCKET, storagePath);
-    return NextResponse.json({ error: updErr.message }, { status: 500 });
+    return sanitizeApiError(updErr, "orgs/:slug/manage/upload", 500);
   }
 
   return NextResponse.json({ success: true, kind, url: publicUrl });

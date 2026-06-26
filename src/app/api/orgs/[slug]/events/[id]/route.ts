@@ -17,6 +17,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { isOrgManager } from "@/lib/orgs/managers";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -94,7 +95,7 @@ export async function PATCH(req: NextRequest, ctx: { params: { slug: string; id:
     .select("id, org_slug, status, title, description, organization, registration_url, online_url, source_url, series_id, is_exception")
     .eq("id", ctx.params.id)
     .maybeSingle();
-  if (exErr) return NextResponse.json({ error: exErr.message }, { status: 500 });
+  if (exErr) return sanitizeApiError(exErr, "orgs/:slug/events/:id", 500);
   if (!existingRow) return NextResponse.json({ error: "event_not_found" }, { status: 404 });
   const existing = existingRow as Record<string, unknown> & { status: string };
   if (existing.org_slug !== ctx.params.slug) {
@@ -182,7 +183,7 @@ export async function PATCH(req: NextRequest, ctx: { params: { slug: string; id:
     .from("events")
     .update(patch)
     .eq("id", ctx.params.id);
-  if (updErr) return NextResponse.json({ error: updErr.message }, { status: 500 });
+  if (updErr) return sanitizeApiError(updErr, "orgs/:slug/events/:id", 500);
 
   return NextResponse.json({
     success: true,

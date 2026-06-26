@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { safeEqual } from "@/lib/security/timing";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,7 +24,7 @@ export async function GET(req: NextRequest) {
     .order("submitted_at", { ascending: false })
     .limit(100);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "admin/submissions", 500);
   return NextResponse.json({ data: data ?? [] });
 }
 
@@ -61,6 +62,6 @@ export async function PATCH(req: NextRequest) {
     .select("id, submission_status, status")
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "admin/submissions", 500);
   return NextResponse.json({ data });
 }

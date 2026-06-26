@@ -17,6 +17,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { isOrgManager } from "@/lib/orgs/managers";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -37,7 +38,7 @@ export async function DELETE(req: NextRequest, ctx: { params: { slug: string; id
     .select("id, user_id, email, added_at")
     .eq("org_slug", ctx.params.slug)
     .order("added_at", { ascending: true });
-  if (seatErr) return NextResponse.json({ error: seatErr.message }, { status: 500 });
+  if (seatErr) return sanitizeApiError(seatErr, "orgs/:slug/team/managers/:id", 500);
   const seats = (seatRows as Array<{ id: string; user_id: string; email: string; added_at: string }>) ?? [];
   if (seats.length === 0) {
     return NextResponse.json({ error: "manager_not_found" }, { status: 404 });
@@ -62,7 +63,7 @@ export async function DELETE(req: NextRequest, ctx: { params: { slug: string; id
     .from("org_managers")
     .delete()
     .eq("id", target.id);
-  if (delErr) return NextResponse.json({ error: delErr.message }, { status: 500 });
+  if (delErr) return sanitizeApiError(delErr, "orgs/:slug/team/managers/:id", 500);
 
   return NextResponse.json({
     success: true,

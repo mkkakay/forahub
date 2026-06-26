@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { isOrgManager } from "@/lib/orgs/managers";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,7 +26,7 @@ export async function GET(req: NextRequest, ctx: { params: { slug: string } }) {
     .eq("org_slug", ctx.params.slug)
     .order("start_date", { ascending: false })
     .limit(100);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "orgs/:slug/events", 500);
 
   return NextResponse.json({ events: data ?? [] });
 }

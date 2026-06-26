@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { isOrgManager } from "@/lib/orgs/managers";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -74,7 +75,7 @@ export async function PATCH(req: NextRequest, ctx: { params: { slug: string } })
     .from("organizations_directory")
     .update(patch)
     .eq("slug", slug);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "orgs/:slug/manage", 500);
 
   return NextResponse.json({ success: true });
 }

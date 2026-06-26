@@ -18,6 +18,7 @@ import {
   newInviteToken,
 } from "@/lib/orgs/invites";
 import { renderOrgInviteEmail } from "@/lib/email/orgInvite";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -155,7 +156,7 @@ export async function POST(req: NextRequest, ctx: { params: { slug: string } }) 
         invited_by_email: guard.userEmail,
       })
       .eq("id", pending.id);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return sanitizeApiError(error, "orgs/:slug/team/invites", 500);
     inviteId = pending.id;
   } else {
     const { data: inserted, error } = await adminSupabase
@@ -172,7 +173,7 @@ export async function POST(req: NextRequest, ctx: { params: { slug: string } }) 
       })
       .select("id")
       .single();
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return sanitizeApiError(error, "orgs/:slug/team/invites", 500);
     inviteId = (inserted as { id: string }).id;
   }
 

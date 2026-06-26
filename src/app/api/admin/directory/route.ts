@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { safeEqual } from "@/lib/security/timing";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -41,7 +42,7 @@ export async function GET(req: NextRequest) {
   }
 
   const { data, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "admin/directory", 500);
   return NextResponse.json({ data: data ?? [] });
 }
 
@@ -83,7 +84,7 @@ export async function PATCH(req: NextRequest) {
     .select()
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "admin/directory", 500);
   return NextResponse.json({ data });
 }
 
@@ -103,6 +104,6 @@ export async function DELETE(req: NextRequest) {
     .from("organizations_directory")
     .delete()
     .eq("id", id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "admin/directory", 500);
   return NextResponse.json({ ok: true });
 }

@@ -22,6 +22,7 @@ import { fetchRorPage } from "@/lib/orgs/rorImport";
 import { fetchIatiSlice } from "@/lib/orgs/iatiImport";
 import { upsertImportedOrg } from "@/lib/orgs/upsertImported";
 import { safeEqual } from "@/lib/security/timing";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 // IATI rows-per-call. The bulk file is ~2K rows total, so the admin
 // auto-loop drains in ~10 POSTs at 200 rows each, with the per-process
@@ -166,7 +167,7 @@ export async function POST(req: NextRequest) {
       .select("id")
       .single();
     if (createErr || !created) {
-      return NextResponse.json({ error: createErr?.message ?? "could not create job" }, { status: 500 });
+      return sanitizeApiError(createErr, "admin/import-orgs", 500);
     }
     jobId = created.id;
   }
@@ -230,7 +231,7 @@ export async function DELETE(req: NextRequest) {
     .from("organizations_directory")
     .delete({ count: "exact" })
     .eq("source", source);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "admin/import-orgs", 500);
   await adminSupabase
     .from("directory_import_jobs")
     .update({ status: "cancelled", finished_at: new Date().toISOString() })

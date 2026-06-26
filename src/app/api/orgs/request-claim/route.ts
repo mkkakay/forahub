@@ -22,6 +22,7 @@ import { adminSupabase } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { addOrgManager, isOrgManager } from "@/lib/orgs/managers";
 import { isFreeMailDomain } from "@/lib/email/freeMailDomains";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -78,7 +79,7 @@ export async function POST(req: NextRequest) {
     .select("slug, name, domain")
     .eq("slug", orgSlug)
     .maybeSingle();
-  if (orgErr) return NextResponse.json({ error: orgErr.message }, { status: 500 });
+  if (orgErr) return sanitizeApiError(orgErr, "orgs/request-claim", 500);
   const org = orgData as OrgRow | null;
   if (!org) return NextResponse.json({ error: "org_not_found" }, { status: 404 });
 
@@ -172,7 +173,7 @@ export async function POST(req: NextRequest) {
       },
       { onConflict: "org_slug,user_email" },
     );
-  if (upsertErr) return NextResponse.json({ error: upsertErr.message }, { status: 500 });
+  if (upsertErr) return sanitizeApiError(upsertErr, "orgs/request-claim", 500);
 
   return NextResponse.json({
     success: true,

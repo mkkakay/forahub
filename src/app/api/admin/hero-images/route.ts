@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { safeEqual } from "@/lib/security/timing";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -106,7 +107,7 @@ export async function GET(req: NextRequest) {
     .select("*")
     .order("display_order", { ascending: true });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "admin/hero-images", 500);
   return NextResponse.json({ data });
 }
 
@@ -135,10 +136,7 @@ async function persistImage({
     .upload(storage_path, buf, { contentType: mime, upsert: false });
 
   if (uploadError) {
-    return NextResponse.json(
-      { error: `Upload failed: ${uploadError.message}. Make sure the "${BUCKET}" bucket exists and is public.` },
-      { status: 500 }
-    );
+    return sanitizeApiError(uploadError, "admin/hero-images", 500);
   }
 
   const { data: urlData } = adminSupabase.storage.from(BUCKET).getPublicUrl(storage_path);
@@ -161,7 +159,7 @@ async function persistImage({
 
   if (insertError) {
     await adminSupabase.storage.from(BUCKET).remove([storage_path]);
-    return NextResponse.json({ error: insertError.message }, { status: 500 });
+    return sanitizeApiError(insertError, "admin/hero-images", 500);
   }
 
   return NextResponse.json({ data });
@@ -393,7 +391,7 @@ export async function PATCH(req: NextRequest) {
     .select()
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "admin/hero-images", 500);
   return NextResponse.json({ data });
 }
 
@@ -417,7 +415,7 @@ export async function DELETE(req: NextRequest) {
     .single();
 
   if (fetchError || !row) {
-    return NextResponse.json({ error: fetchError?.message ?? "Not found" }, { status: 404 });
+    return sanitizeApiError(fetchError, "admin/hero-images", 404);
   }
 
   const { error: storageError } = await adminSupabase.storage
@@ -433,6 +431,6 @@ export async function DELETE(req: NextRequest) {
     .delete()
     .eq("id", body.id);
 
-  if (dbError) return NextResponse.json({ error: dbError.message }, { status: 500 });
+  if (dbError) return sanitizeApiError(dbError, "admin/hero-images", 500);
   return NextResponse.json({ ok: true });
 }

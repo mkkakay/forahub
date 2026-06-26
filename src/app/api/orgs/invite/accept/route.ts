@@ -10,6 +10,7 @@ import { adminSupabase } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { addOrgManager, isOrgManager } from "@/lib/orgs/managers";
 import { findInviteByToken } from "@/lib/orgs/invites";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -83,7 +84,7 @@ export async function POST(req: NextRequest) {
       token: `accepted-${crypto.randomUUID()}`, // burn the token
     })
     .eq("id", invite.id);
-  if (markErr) return NextResponse.json({ error: markErr.message }, { status: 500 });
+  if (markErr) return sanitizeApiError(markErr, "orgs/invite/accept", 500);
 
   return NextResponse.json({
     success: true,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { slugify } from "@/lib/organizations";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -71,6 +72,6 @@ export async function POST(req: NextRequest) {
     .select("id, slug, name, short_name, org_type, region, tier, logo_url")
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "orgs/submit", 500);
   return NextResponse.json({ data, created: true });
 }

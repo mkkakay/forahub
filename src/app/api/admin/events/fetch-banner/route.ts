@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { fetchEventBannerDetailed } from "@/lib/events/fetchEventBanner";
 import { safeEqual } from "@/lib/security/timing";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -42,7 +43,7 @@ export async function POST(req: NextRequest) {
     .select("id, title, organization, registration_url, sdg_goals")
     .eq("id", eventId)
     .maybeSingle();
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "admin/events/fetch-banner", 500);
   if (!data) return NextResponse.json({ error: "Event not found" }, { status: 404 });
 
   const event = data as EventRow;

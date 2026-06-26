@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { geocodeLocation, isLocationIqConfigured } from "@/lib/geo/geocode";
 import { safeEqual } from "@/lib/security/timing";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
     .order("start_date", { ascending: true })
     .limit(BATCH_SIZE);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "admin/geocode-events", 500);
 
   const events = (data ?? []) as CandidateEvent[];
   const summary = {
@@ -141,6 +142,6 @@ export async function PATCH(req: NextRequest) {
     .from("events")
     .update({ geocode_status: null, geocode_error: null }, { count: "exact" })
     .eq("geocode_status", "failed");
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "admin/geocode-events", 500);
   return NextResponse.json({ ok: true, cleared: count ?? 0 });
 }

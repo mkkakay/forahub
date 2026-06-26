@@ -115,7 +115,6 @@ export default function OrganizationsPanel({ adminSecret }: { adminSecret: strin
         headers: { ...headers, "Content-Type": "application/json" },
         body: JSON.stringify({ slug, ...draft }),
       });
-      console.log("[OrganizationsPanel] PATCH save →", res.status);
       const parsed = await parseApiResponse(res);
       if (!parsed.ok) throw new Error(parsed.error);
       setSavedFlash(slug);
@@ -137,7 +136,6 @@ export default function OrganizationsPanel({ adminSecret }: { adminSecret: strin
         headers: { ...headers, "Content-Type": "application/json" },
         body: JSON.stringify({ slug, logo_display_mode: mode }),
       });
-      console.log("[OrganizationsPanel] PATCH display mode →", res.status);
       const parsed = await parseApiResponse(res);
       if (!parsed.ok) throw new Error(parsed.error);
       await refresh();
@@ -164,7 +162,6 @@ export default function OrganizationsPanel({ adminSecret }: { adminSecret: strin
         headers,
         body: fd,
       });
-      console.log("[OrganizationsPanel] upload-logo →", res.status, res.headers.get("content-type"));
       const parsed = await parseApiResponse(res);
       if (!parsed.ok) throw new Error(parsed.error);
       setSavedFlash(slug);
@@ -186,7 +183,6 @@ export default function OrganizationsPanel({ adminSecret }: { adminSecret: strin
         headers: { ...headers, "Content-Type": "application/json" },
         body: JSON.stringify({ slug }),
       });
-      console.log("[OrganizationsPanel] refresh-logo →", res.status);
       const parsed = await parseApiResponse(res);
       if (!parsed.ok) throw new Error(parsed.error);
       await refresh();

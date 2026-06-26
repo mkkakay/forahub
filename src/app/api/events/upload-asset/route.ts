@@ -5,6 +5,7 @@ import {
   EXT_BY_MIME,
   type AllowedMime,
 } from "@/lib/admin/imageUpload";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -57,9 +58,6 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json({ url: publicUrl, storage_path: storagePath, purpose });
   } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : String(err) },
-      { status: 500 }
-    );
+    return sanitizeApiError(err, "events/upload-asset", 500);
   }
 }

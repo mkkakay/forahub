@@ -8,6 +8,7 @@ import {
   type AllowedMime,
 } from "@/lib/admin/imageUpload";
 import { safeEqual } from "@/lib/security/timing";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -53,7 +54,7 @@ export async function POST(req: NextRequest) {
     });
     publicUrl = result.publicUrl;
   } catch (err) {
-    return NextResponse.json({ error: err instanceof Error ? err.message : String(err) }, { status: 500 });
+    return sanitizeApiError(err, "admin/organizations/upload-logo", 500);
   }
 
   const { error: upsertError } = await adminSupabase
@@ -69,7 +70,7 @@ export async function POST(req: NextRequest) {
 
   if (upsertError) {
     await removeFromStorage(BUCKET, storagePath);
-    return NextResponse.json({ error: upsertError.message }, { status: 500 });
+    return sanitizeApiError(upsertError, "admin/organizations/upload-logo", 500);
   }
 
   return NextResponse.json({ logo_url: publicUrl, slug });

@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { isOrgManager } from "@/lib/orgs/managers";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -50,7 +51,7 @@ export async function DELETE(req: NextRequest, ctx: { params: { slug: string; id
       token: `revoked-${crypto.randomUUID()}`, // invalidate so the link is dead
     })
     .eq("id", invite.id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "orgs/:slug/team/invites/:id", 500);
 
   return NextResponse.json({ success: true });
 }

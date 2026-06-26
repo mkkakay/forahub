@@ -14,6 +14,7 @@ import {
 } from "@/lib/admin/imageUpload";
 import { invalidateAudienceCardsCache } from "@/lib/audienceCards";
 import { safeEqual } from "@/lib/security/timing";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest) {
     .select("id")
     .eq("id", id)
     .maybeSingle();
-  if (lookupError) return NextResponse.json({ error: lookupError.message }, { status: 500 });
+  if (lookupError) return sanitizeApiError(lookupError, "admin/audience-cards/upload", 500);
   if (!existing) return NextResponse.json({ error: "audience card not found" }, { status: 404 });
 
   const ext = EXT_BY_MIME[validation.mime];
@@ -65,7 +66,7 @@ export async function POST(req: NextRequest) {
     });
     publicUrl = result.publicUrl;
   } catch (err) {
-    return NextResponse.json({ error: err instanceof Error ? err.message : String(err) }, { status: 500 });
+    return sanitizeApiError(err, "admin/audience-cards/upload", 500);
   }
 
   const { data, error: updateError } = await adminSupabase
@@ -76,7 +77,7 @@ export async function POST(req: NextRequest) {
     .single();
   if (updateError) {
     await removeFromStorage(BUCKET, storagePath);
-    return NextResponse.json({ error: updateError.message }, { status: 500 });
+    return sanitizeApiError(updateError, "admin/audience-cards/upload", 500);
   }
 
   invalidateAudienceCardsCache();

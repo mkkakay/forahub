@@ -13,6 +13,7 @@ import {
   newInviteToken,
 } from "@/lib/orgs/invites";
 import { renderOrgInviteEmail } from "@/lib/email/orgInvite";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -96,7 +97,7 @@ export async function POST(req: NextRequest, ctx: { params: { slug: string; id: 
       invited_by_email: user.email ?? null,
     })
     .eq("id", invite.id);
-  if (upErr) return NextResponse.json({ error: upErr.message }, { status: 500 });
+  if (upErr) return sanitizeApiError(upErr, "orgs/:slug/team/invites/:id/resend", 500);
 
   const meta = (user.user_metadata ?? {}) as Record<string, unknown>;
   const inviterName =

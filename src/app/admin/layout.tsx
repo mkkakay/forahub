@@ -5,14 +5,21 @@ import AdminNav from '@/components/admin/AdminNav'
 
 export const metadata = { title: 'Admin — ForaHub', robots: 'noindex, nofollow' }
 
+// Local debug-only logger. In production we don't want admin emails or
+// raw profile rows in Vercel function logs — those are PII that should
+// stay out of long-lived log storage.
+const debugLog = process.env.NODE_ENV !== 'production'
+  ? (...args: unknown[]) => console.log('[admin]', ...args)
+  : () => { /* no-op in prod */ }
+
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = createServerSupabaseClient()
   const { data: { user }, error: authErr } = await supabase.auth.getUser()
 
-  console.log('[admin] getUser:', user?.email ?? 'null', 'err:', authErr?.message ?? 'none')
+  debugLog('getUser err:', authErr?.message ?? 'none')
 
   if (!user) {
-    console.log('[admin] redirecting — no user')
+    debugLog('redirect — no user')
     redirect('/')
   }
 
@@ -22,10 +29,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     .eq('id', user.id)
     .single()
 
-  console.log('[admin] profile:', JSON.stringify(profile), 'err:', profileErr?.message ?? 'none')
+  debugLog('profile err:', profileErr?.message ?? 'none', 'is_admin:', !!profile?.is_admin)
 
   if (!profile?.is_admin) {
-    console.log('[admin] redirecting — is_admin false/null for', user.email)
+    debugLog('redirect — not admin')
     redirect('/')
   }
 

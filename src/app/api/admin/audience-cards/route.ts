@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { invalidateAudienceCardsCache } from "@/lib/audienceCards";
 import { safeEqual } from "@/lib/security/timing";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -29,7 +30,7 @@ export async function GET(req: NextRequest) {
       { count: "exact" }
     )
     .order("sort_order", { ascending: true });
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "admin/audience-cards", 500);
   return new NextResponse(JSON.stringify({ data: data ?? [], count: count ?? 0 }), {
     status: 200,
     headers: { "content-type": "application/json", "cache-control": "no-store" },
@@ -60,7 +61,7 @@ export async function POST(req: NextRequest) {
     .order("sort_order", { ascending: false })
     .limit(1)
     .maybeSingle();
-  if (maxErr) return NextResponse.json({ error: maxErr.message }, { status: 500 });
+  if (maxErr) return sanitizeApiError(maxErr, "admin/audience-cards", 500);
   const nextSort = (maxRow?.sort_order ?? 0) + 1;
 
   const insert = {
@@ -78,7 +79,7 @@ export async function POST(req: NextRequest) {
     .insert(insert)
     .select("id, label, icon, image_url, link_url, bg_class, icon_color_class, sort_order, is_active, created_at, updated_at")
     .single();
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "admin/audience-cards", 500);
 
   invalidateAudienceCardsCache();
   return NextResponse.json({ data });
@@ -122,7 +123,7 @@ export async function PATCH(req: NextRequest) {
     .eq("id", id)
     .select("id, label, icon, image_url, link_url, bg_class, icon_color_class, sort_order, is_active, created_at, updated_at")
     .maybeSingle();
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "admin/audience-cards", 500);
   if (!data) return NextResponse.json({ error: "id not found" }, { status: 404 });
 
   invalidateAudienceCardsCache();
@@ -143,7 +144,7 @@ export async function DELETE(req: NextRequest) {
     .from("audience_cards")
     .delete()
     .eq("id", id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "admin/audience-cards", 500);
 
   invalidateAudienceCardsCache();
   return NextResponse.json({ ok: true });

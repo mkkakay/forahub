@@ -14,6 +14,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { isDomainVerified, isOrgManager } from "@/lib/orgs/managers";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -53,7 +54,7 @@ export async function PATCH(req: NextRequest, ctx: { params: { slug: string; id:
     .from("org_managers")
     .select("id, org_slug, user_id, added_via, can_autopublish")
     .eq("org_slug", ctx.params.slug);
-  if (seatsErr) return NextResponse.json({ error: seatsErr.message }, { status: 500 });
+  if (seatsErr) return sanitizeApiError(seatsErr, "orgs/:slug/team/managers/:id/autopublish", 500);
   const rows = (seats as SeatRow[]) ?? [];
 
   const caller = rows.find(s => s.user_id === user.id);
@@ -87,7 +88,7 @@ export async function PATCH(req: NextRequest, ctx: { params: { slug: string; id:
     .from("org_managers")
     .update(patch)
     .eq("id", target.id);
-  if (upErr) return NextResponse.json({ error: upErr.message }, { status: 500 });
+  if (upErr) return sanitizeApiError(upErr, "orgs/:slug/team/managers/:id/autopublish", 500);
 
   return NextResponse.json({ success: true, can_autopublish: desired });
 }

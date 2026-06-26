@@ -18,6 +18,7 @@ import {
   type SeriesRow,
 } from "@/lib/series/engine";
 import { RRule } from "rrule";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -61,7 +62,7 @@ export async function GET(_req: NextRequest, ctx: { params: { slug: string } }) 
     .select("id, series_title, organization, format, location, online_url, registration_url, timezone, start_time_local, duration_minutes, rrule, until_date, occurrence_count, status, auto_published_at, created_at, updated_at, last_horizon_at")
     .eq("org_slug", ctx.params.slug)
     .order("created_at", { ascending: false });
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "orgs/:slug/series", 500);
 
   // Per-series occurrence counters so the panel can show "12 upcoming · 4 past".
   const seriesList = (series ?? []) as Array<Record<string, unknown> & { id: string }>;
@@ -171,7 +172,7 @@ export async function POST(req: NextRequest, ctx: { params: { slug: string } }) 
     .select()
     .single();
   if (insErr || !insertedSeries) {
-    return NextResponse.json({ error: insErr?.message ?? "series_insert_failed" }, { status: 500 });
+    return sanitizeApiError(insErr, "orgs/:slug/series", 500);
   }
   const series = insertedSeries as SeriesRow;
 

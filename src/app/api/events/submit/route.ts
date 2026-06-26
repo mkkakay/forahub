@@ -6,6 +6,7 @@ import { geocodeLocation } from "@/lib/geo/geocode";
 import { classifyEventSync } from "@/lib/categories/classify";
 import { isCategoryKey, type CategoryKey, type CategorySource } from "@/lib/categories";
 import { evaluateAutoPublish } from "@/lib/orgs/autoPublish";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -305,7 +306,7 @@ export async function POST(req: NextRequest) {
 
   if (error) {
     console.error("[events/submit] insert failed:", error.message);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return sanitizeApiError(error, "events/submit", 500);
   }
 
   // Auto-geocode in-person events in the background so they appear on the map

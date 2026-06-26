@@ -14,6 +14,7 @@ import { adminSupabase } from "@/lib/supabase/admin";
 import { addOrgManager } from "@/lib/orgs/managers";
 import { renderClaimDeniedEmail } from "@/lib/email/claimDenied";
 import { safeEqual } from "@/lib/security/timing";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -90,7 +91,7 @@ export async function GET(req: NextRequest) {
     .eq("status", "pending_admin_review")
     .order("created_at", { ascending: true });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "admin/claim-review", 500);
 
   const rows: PendingClaimRow[] = ((data ?? []) as Array<Record<string, unknown>>).map(r => {
     const orgRel = (r.organizations_directory ?? {}) as Record<string, unknown>;
@@ -145,7 +146,7 @@ export async function PATCH(req: NextRequest) {
     .select("id, org_slug, user_email, user_id, status, claimant_name")
     .eq("id", id)
     .maybeSingle();
-  if (lookupErr) return NextResponse.json({ error: lookupErr.message }, { status: 500 });
+  if (lookupErr) return sanitizeApiError(lookupErr, "admin/claim-review", 500);
   if (!claimRow) return NextResponse.json({ error: "claim not found" }, { status: 404 });
   if (claimRow.status !== "pending_admin_review") {
     return NextResponse.json({ error: `claim is ${claimRow.status}, not pending_admin_review` }, { status: 409 });
@@ -167,7 +168,7 @@ export async function PATCH(req: NextRequest) {
         reviewer_notes: body.reviewer_notes ?? null,
       })
       .eq("id", id);
-    if (claimErr) return NextResponse.json({ error: claimErr.message }, { status: 500 });
+    if (claimErr) return sanitizeApiError(claimErr, "admin/claim-review", 500);
 
     // Fetch org name for the email.
     const { data: org } = await adminSupabase
@@ -222,7 +223,7 @@ export async function PATCH(req: NextRequest) {
     })
     .eq("id", id);
   if (claimUpdate.error) {
-    return NextResponse.json({ error: claimUpdate.error.message }, { status: 500 });
+    return sanitizeApiError(claimUpdate.error, "admin/claim-review", 500);
   }
 
   const seat = await addOrgManager({
@@ -245,7 +246,7 @@ export async function PATCH(req: NextRequest) {
     })
     .eq("slug", claimRow.org_slug);
   if (orgUpdate.error) {
-    return NextResponse.json({ error: orgUpdate.error.message }, { status: 500 });
+    return sanitizeApiError(orgUpdate.error, "admin/claim-review", 500);
   }
 
   return NextResponse.json({

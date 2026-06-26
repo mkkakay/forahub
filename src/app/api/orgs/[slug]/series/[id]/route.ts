@@ -27,6 +27,7 @@ import {
   type SeriesRow,
 } from "@/lib/series/engine";
 import { RRule } from "rrule";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -140,7 +141,7 @@ export async function PATCH(req: NextRequest, ctx: { params: { slug: string; id:
     .from("event_series")
     .update(patch)
     .eq("id", series.id);
-  if (updSeriesErr) return NextResponse.json({ error: updSeriesErr.message }, { status: 500 });
+  if (updSeriesErr) return sanitizeApiError(updSeriesErr, "orgs/:slug/series/:id", 500);
 
   // Reload the (now-updated) series so the regeneration uses the new shape.
   const { data: refreshedRow } = await adminSupabase
@@ -165,7 +166,7 @@ export async function PATCH(req: NextRequest, ctx: { params: { slug: string; id:
       .eq("is_cancelled", false)
       .gte("start_date", nowIso)
       .select("id");
-    if (delErr) return NextResponse.json({ error: delErr.message }, { status: 500 });
+    if (delErr) return sanitizeApiError(delErr, "orgs/:slug/series/:id", 500);
     occurrencesDeleted = (delRows ?? []).length;
     const { from, to } = horizonWindow();
     const occs = enumerateOccurrences(refreshed, from, to);
@@ -202,7 +203,7 @@ export async function PATCH(req: NextRequest, ctx: { params: { slug: string; id:
         .eq("is_cancelled", false)
         .gte("start_date", nowIso)
         .select("id");
-      if (updEvErr) return NextResponse.json({ error: updEvErr.message }, { status: 500 });
+      if (updEvErr) return sanitizeApiError(updEvErr, "orgs/:slug/series/:id", 500);
       occurrencesUpdated = (updRows ?? []).length;
     }
   }
@@ -230,7 +231,7 @@ export async function DELETE(_req: NextRequest, ctx: { params: { slug: string; i
     .from("event_series")
     .update({ status: "cancelled", updated_at: nowIso })
     .eq("id", series.id);
-  if (sErr) return NextResponse.json({ error: sErr.message }, { status: 500 });
+  if (sErr) return sanitizeApiError(sErr, "orgs/:slug/series/:id", 500);
 
   // Cancel future non-exception occurrences. Exceptions are left alone
   // because the manager promised those specifically.
@@ -244,7 +245,7 @@ export async function DELETE(_req: NextRequest, ctx: { params: { slug: string; i
     .eq("is_exception", false)
     .gte("start_date", nowIso)
     .select("id");
-  if (evErr) return NextResponse.json({ error: evErr.message }, { status: 500 });
+  if (evErr) return sanitizeApiError(evErr, "orgs/:slug/series/:id", 500);
 
   return NextResponse.json({
     success: true,

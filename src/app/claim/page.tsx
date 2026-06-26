@@ -182,6 +182,17 @@ function ClaimInner() {
 
   async function submitClaim() {
     if (!picked) return;
+    // Defensive: the ClaimAction render guard above already hides the
+    // submit buttons when the org has no verified domain on file. If a
+    // future refactor relaxes that guard, this stops the API from
+    // creating a pending-review row that the user can't ever resolve.
+    if (!orgDomain) {
+      setFeedback({
+        kind: "info",
+        text: "We don't have a verified domain on file for this organization yet. Email admin@forahub.org and we'll help.",
+      });
+      return;
+    }
     setFeedback(null);
     setSubmitting(true);
     try {

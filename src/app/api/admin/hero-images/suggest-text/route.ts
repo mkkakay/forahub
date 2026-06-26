@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { safeEqual } from "@/lib/security/timing";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -174,9 +175,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Rate limited by Anthropic. Try again in a moment." }, { status: 429 });
     }
     if (err instanceof Anthropic.APIError) {
-      return NextResponse.json({ error: `Anthropic API error: ${err.message}` }, { status: 502 });
+      return sanitizeApiError(err, "admin/hero-images/suggest-text", 502);
     }
-    return NextResponse.json({ error: String(err instanceof Error ? err.message : err) }, { status: 500 });
+    return sanitizeApiError(err, "admin/hero-images/suggest-text", 500);
   }
 
   const raw = extractFirstText(message);

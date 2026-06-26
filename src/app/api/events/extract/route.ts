@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -364,11 +365,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Rate limited by Anthropic. Try again shortly." }, { status: 429 });
     }
     if (err instanceof Anthropic.APIError) {
-      return NextResponse.json({ error: `Anthropic API error: ${err.message}` }, { status: 502 });
+      return sanitizeApiError(err, "events/extract", 502);
     }
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : String(err) },
-      { status: 500 }
-    );
+    return sanitizeApiError(err, "events/extract", 500);
   }
 }

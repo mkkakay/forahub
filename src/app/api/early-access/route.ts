@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -40,7 +41,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, message: "You're already on the list — we'll be in touch." });
     }
     console.error("[early-access] insert failed:", error.message);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return sanitizeApiError(error, "early-access", 500);
   }
 
   return NextResponse.json({

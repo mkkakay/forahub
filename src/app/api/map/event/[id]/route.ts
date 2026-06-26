@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -28,7 +29,7 @@ export async function GET(_req: NextRequest, ctx: { params: { id: string } }) {
     .eq("id", id)
     .maybeSingle();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "map/event/:id", 500);
   if (!data) return NextResponse.json({ error: "not_found" }, { status: 404 });
 
   const row = data as EventRow;

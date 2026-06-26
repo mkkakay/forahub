@@ -14,6 +14,7 @@ import {
 } from "@/lib/admin/imageUpload";
 import { invalidatePageBannerCache } from "@/lib/pageBanners";
 import { safeEqual } from "@/lib/security/timing";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest) {
     .select("id")
     .eq("page_key", pageKey)
     .maybeSingle();
-  if (lookupError) return NextResponse.json({ error: lookupError.message }, { status: 500 });
+  if (lookupError) return sanitizeApiError(lookupError, "admin/page-banners/upload", 500);
   if (!existing) return NextResponse.json({ error: "page_key not found" }, { status: 404 });
 
   const ext = EXT_BY_MIME[validation.mime];
@@ -65,7 +66,7 @@ export async function POST(req: NextRequest) {
     });
     publicUrl = result.publicUrl;
   } catch (err) {
-    return NextResponse.json({ error: err instanceof Error ? err.message : String(err) }, { status: 500 });
+    return sanitizeApiError(err, "admin/page-banners/upload", 500);
   }
 
   // Auto-enable on upload — same one-step UX as the PATCH route.
@@ -79,7 +80,7 @@ export async function POST(req: NextRequest) {
     .eq("page_key", pageKey);
   if (updateError) {
     await removeFromStorage(BUCKET, storagePath);
-    return NextResponse.json({ error: updateError.message }, { status: 500 });
+    return sanitizeApiError(updateError, "admin/page-banners/upload", 500);
   }
 
   invalidatePageBannerCache();

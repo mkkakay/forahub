@@ -19,6 +19,7 @@ import {
   type AllowedMime,
 } from "@/lib/admin/imageUpload";
 import { safeEqual } from "@/lib/security/timing";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -45,7 +46,7 @@ export async function GET(req: NextRequest) {
     .from("trust_logos")
     .select("id, name, image_url, storage_path, display_order, is_active, created_at")
     .order("display_order", { ascending: true });
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "admin/trust-logos", 500);
   return new NextResponse(JSON.stringify({ data: data ?? [] }), {
     status: 200,
     headers: { "content-type": "application/json", "cache-control": "no-store" },
@@ -72,7 +73,7 @@ async function insertRow(row: InsertRow) {
     if (row.storage_path) {
       await removeFromStorage(BUCKET, row.storage_path).catch(() => {});
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return sanitizeApiError(error, "admin/trust-logos", 500);
   }
   return NextResponse.json({ data });
 }
@@ -141,7 +142,7 @@ export async function POST(req: NextRequest) {
     });
     publicUrl = result.publicUrl;
   } catch (err) {
-    return NextResponse.json({ error: err instanceof Error ? err.message : String(err) }, { status: 500 });
+    return sanitizeApiError(err, "admin/trust-logos", 500);
   }
 
   const orderRaw = form.get("display_order") as string | null;
@@ -193,7 +194,7 @@ export async function PATCH(req: NextRequest) {
     .eq("id", body.id)
     .select("id, name, image_url, storage_path, display_order, is_active, created_at")
     .single();
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return sanitizeApiError(error, "admin/trust-logos", 500);
   return NextResponse.json({ data });
 }
 
@@ -210,7 +211,7 @@ export async function DELETE(req: NextRequest) {
     .select("storage_path")
     .eq("id", body.id)
     .maybeSingle();
-  if (fetchError) return NextResponse.json({ error: fetchError.message }, { status: 500 });
+  if (fetchError) return sanitizeApiError(fetchError, "admin/trust-logos", 500);
   if (!row) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   // Only remove from Storage when this row owns a file. External URL rows have
@@ -225,6 +226,6 @@ export async function DELETE(req: NextRequest) {
   }
 
   const { error: dbError } = await adminSupabase.from("trust_logos").delete().eq("id", body.id);
-  if (dbError) return NextResponse.json({ error: dbError.message }, { status: 500 });
+  if (dbError) return sanitizeApiError(dbError, "admin/trust-logos", 500);
   return NextResponse.json({ ok: true });
 }

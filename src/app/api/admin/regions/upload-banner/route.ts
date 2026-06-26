@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { safeEqual } from "@/lib/security/timing";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -52,10 +53,7 @@ export async function POST(req: NextRequest) {
     .upload(storage_path, buf, { contentType: file.type, upsert: false });
 
   if (uploadError) {
-    return NextResponse.json(
-      { error: `Upload failed: ${uploadError.message}. Confirm the "${BUCKET}" bucket exists and is public.` },
-      { status: 500 }
-    );
+    return sanitizeApiError(uploadError, "admin/regions/upload-banner", 500);
   }
 
   const { data: urlData } = adminSupabase.storage.from(BUCKET).getPublicUrl(storage_path);
@@ -70,7 +68,7 @@ export async function POST(req: NextRequest) {
   if (updateError) {
     // Best-effort cleanup on DB failure.
     await adminSupabase.storage.from(BUCKET).remove([storage_path]);
-    return NextResponse.json({ error: updateError.message }, { status: 500 });
+    return sanitizeApiError(updateError, "admin/regions/upload-banner", 500);
   }
 
   return NextResponse.json({ banner_image_url: public_url, storage_path });

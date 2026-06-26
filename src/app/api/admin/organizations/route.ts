@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { getAllResolvedOrgs } from "@/lib/organizations/getResolvedOrg";
 import { safeEqual } from "@/lib/security/timing";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -63,18 +64,12 @@ export async function PATCH(req: NextRequest) {
     }
   }
 
-  console.log("[admin/organizations PATCH]", { slug, fields: Object.keys(patch).filter(k => k !== "slug" && k !== "updated_at") });
-
   const { data, error } = await adminSupabase
     .from("organization_overrides")
     .upsert(patch, { onConflict: "slug" })
     .select()
     .single();
 
-  if (error) {
-    console.error("[admin/organizations PATCH] upsert failed:", error.message);
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-  console.log("[admin/organizations PATCH] ok", { slug, has_manual_logo: !!data?.manual_logo_url });
+  if (error) return sanitizeApiError(error, "admin/organizations", 500);
   return NextResponse.json({ data });
 }

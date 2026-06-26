@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { fetchEventBannerDetailed, type BannerSource } from "@/lib/events/fetchEventBanner";
 import { safeEqual } from "@/lib/security/timing";
+import { sanitizeApiError } from "@/lib/security/apiError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -76,10 +77,7 @@ export async function GET(req: NextRequest) {
     const summary = await runBackfill();
     return NextResponse.json({ ok: true, ...summary });
   } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : String(err) },
-      { status: 500 }
-    );
+    return sanitizeApiError(err, "cron/backfill-banners", 500);
   }
 }
 
