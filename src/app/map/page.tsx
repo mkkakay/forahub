@@ -13,7 +13,7 @@ export const metadata = {
 export default async function MapPage() {
   const banner = await getPageBanner("map").catch(() => null);
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       <Navbar />
       <PageHeader
         pageKey="map"

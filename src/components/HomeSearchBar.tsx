@@ -95,8 +95,8 @@ export default function HomeSearchBar({ eventTitles }: { eventTitles: string[] }
     <div className="mt-8 max-w-2xl mx-auto">
       <div ref={containerRef} className="relative">
         {/* Input row */}
-        <div className="flex items-center bg-white rounded-2xl shadow-2xl overflow-hidden ring-1 ring-white/20">
-          <Search className="ml-5 text-gray-400 shrink-0" size={20} />
+        <div className="flex items-center bg-white dark:bg-slate-800 rounded-2xl shadow-2xl overflow-hidden ring-1 ring-white/20">
+          <Search className="ml-5 text-gray-400 dark:text-slate-500 shrink-0" size={20} />
           <input
             ref={inputRef}
             type="text"
@@ -105,7 +105,7 @@ export default function HomeSearchBar({ eventTitles }: { eventTitles: string[] }
             onKeyDown={handleKeyDown}
             onFocus={() => suggestions.length > 0 && setOpen(true)}
             placeholder="Search events, organizations, or SDG goals…"
-            className="flex-1 px-4 py-5 text-gray-800 placeholder-gray-400 text-sm focus:outline-none"
+            className="flex-1 px-4 py-5 text-gray-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 text-sm focus:outline-none"
             role="combobox"
             aria-autocomplete="list"
             aria-expanded={open}
@@ -115,7 +115,7 @@ export default function HomeSearchBar({ eventTitles }: { eventTitles: string[] }
           {query && (
             <button
               onClick={clearQuery}
-              className="px-2 text-gray-400 hover:text-gray-600 transition-colors"
+              className="px-2 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
               aria-label="Clear search"
             >
               <X size={16} />
@@ -134,7 +134,7 @@ export default function HomeSearchBar({ eventTitles }: { eventTitles: string[] }
           <ul
             id="search-suggestions"
             role="listbox"
-            className="absolute z-50 left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden"
+            className="absolute z-50 left-0 right-0 top-full mt-2 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-800 overflow-hidden"
           >
             {suggestions.map((title, i) => (
               <li
@@ -145,11 +145,11 @@ export default function HomeSearchBar({ eventTitles }: { eventTitles: string[] }
                 onMouseEnter={() => setActiveIndex(i)}
                 className={`flex items-center gap-3 px-4 py-3 text-sm cursor-pointer transition-colors ${
                   i === activeIndex
-                    ? "bg-blue-50 text-[#0f2a4a]"
-                    : "text-gray-700 hover:bg-gray-50"
+                    ? "bg-blue-50 text-[#0f2a4a] dark:text-slate-100"
+                    : "text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-900"
                 }`}
               >
-                <Search size={13} className="text-gray-400 shrink-0" />
+                <Search size={13} className="text-gray-400 dark:text-slate-500 shrink-0" />
                 {title}
               </li>
             ))}

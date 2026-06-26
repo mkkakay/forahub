@@ -125,7 +125,7 @@ export default function OrgManagersPanel({ adminSecret }: { adminSecret: string 
           <Users size={18} className="text-sky-300" />
           <h2 className="text-white font-semibold">Org Managers</h2>
           {data && (
-            <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] text-[11px] font-bold rounded-full bg-sky-400 text-[#0f2a4a] px-1.5">
+            <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] text-[11px] font-bold rounded-full bg-sky-400 text-[#0f2a4a] dark:text-slate-100 px-1.5">
               {data.count}
             </span>
           )}

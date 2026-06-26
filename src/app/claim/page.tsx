@@ -70,7 +70,7 @@ export default function ClaimPage() {
   // Suspense gate keeps the useSearchParams hook compatible with static
   // prerendering — Next 14 fails to export the page otherwise.
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 dark:bg-slate-900" />}>
       <ClaimInner />
     </Suspense>
   );
@@ -245,32 +245,32 @@ function ClaimInner() {
     : "/claim";
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       <Navbar />
       <main className="max-w-2xl mx-auto px-4 py-10 md:py-16">
         <header className="mb-8 text-center">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-emerald-50 mb-4">
             <BadgeCheck className="w-7 h-7 text-emerald-600" />
           </div>
-          <h1 className="text-3xl md:text-4xl font-extrabold text-[#0f2a4a] tracking-tight">
+          <h1 className="text-3xl md:text-4xl font-extrabold text-[#0f2a4a] dark:text-slate-100 tracking-tight">
             Claim your organization
           </h1>
-          <p className="text-base text-gray-600 mt-3 max-w-lg mx-auto">
+          <p className="text-base text-gray-600 dark:text-slate-300 mt-3 max-w-lg mx-auto">
             Sign in with your work email and we&apos;ll grant you manager access in one click.
           </p>
         </header>
 
         <ol className="flex items-center justify-center gap-2 mb-8 text-xs font-semibold uppercase tracking-wider">
           <StepDot label="Pick org" active={step === "pick"} done={step !== "pick"} />
-          <span className="text-gray-300">—</span>
+          <span className="text-gray-300 dark:text-slate-600">—</span>
           <StepDot label="Account" active={step === "decide" && !auth.signedIn} done={step !== "pick" && auth.signedIn} />
-          <span className="text-gray-300">—</span>
+          <span className="text-gray-300 dark:text-slate-600">—</span>
           <StepDot label="Claim" active={step === "decide" && auth.signedIn} done={step === "queued" || step === "already_owned"} />
         </ol>
 
         {step === "pick" && (
-          <section className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 md:p-6">
-            <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">
+          <section className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm p-5 md:p-6">
+            <label className="block text-xs font-semibold text-gray-600 dark:text-slate-300 uppercase tracking-wider mb-1.5">
               Find your organization
             </label>
             <OrgCombobox
@@ -279,7 +279,7 @@ function ClaimInner() {
               onPicked={chooseOrg}
               placeholder="Start typing your organization name…"
             />
-            <p className="text-xs text-gray-500 mt-3">
+            <p className="text-xs text-gray-500 dark:text-slate-400 mt-3">
               Don&apos;t see your org? You can still submit events without claiming — head back to{" "}
               <Link href="/submit" className="text-blue-600 hover:underline font-medium">/submit</Link>.
             </p>
@@ -287,7 +287,7 @@ function ClaimInner() {
         )}
 
         {step === "decide" && picked && (
-          <section className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 md:p-6">
+          <section className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm p-5 md:p-6">
             <OrgPreviewCard org={picked} onChange={resetPick} />
 
             {!orgDomain && (
@@ -301,7 +301,7 @@ function ClaimInner() {
             )}
 
             {auth.loading && (
-              <div className="mt-5 flex items-center justify-center gap-2 text-sm text-gray-500 py-6">
+              <div className="mt-5 flex items-center justify-center gap-2 text-sm text-gray-500 dark:text-slate-400 py-6">
                 <Loader2 size={14} className="animate-spin" /> Checking your session…
               </div>
             )}
@@ -332,15 +332,15 @@ function ClaimInner() {
         )}
 
         {step === "queued" && picked && (
-          <section className="bg-white rounded-2xl border border-amber-200 shadow-sm p-6 text-center">
+          <section className="bg-white dark:bg-slate-800 rounded-2xl border border-amber-200 shadow-sm p-6 text-center">
             <div className="mx-auto w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center mb-4">
               <Clock className="w-7 h-7 text-amber-600" />
             </div>
-            <h2 className="text-xl font-bold text-[#0f2a4a]">Your claim for {picked.name} is queued for review</h2>
-            <p className="text-sm text-gray-600 mt-2">
+            <h2 className="text-xl font-bold text-[#0f2a4a] dark:text-slate-100">Your claim for {picked.name} is queued for review</h2>
+            <p className="text-sm text-gray-600 dark:text-slate-300 mt-2">
               Your account email isn&apos;t on <span className="font-mono">@{orgDomain ?? picked.domain}</span>, so an admin will review your claim. We&apos;ll email you with the decision — usually within 2 business days.
             </p>
-            <p className="text-xs text-gray-500 mt-3">
+            <p className="text-xs text-gray-500 dark:text-slate-400 mt-3">
               Need to add context? Reply to your signup confirmation email or write to{" "}
               <a href="mailto:admin@forahub.org" className="text-blue-700 hover:underline font-medium">admin@forahub.org</a>.
             </p>
@@ -355,12 +355,12 @@ function ClaimInner() {
         )}
 
         {step === "already_owned" && picked && (
-          <section className="bg-white rounded-2xl border border-emerald-200 shadow-sm p-6 text-center">
+          <section className="bg-white dark:bg-slate-800 rounded-2xl border border-emerald-200 shadow-sm p-6 text-center">
             <div className="mx-auto w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center mb-4">
               <Sparkles size={28} className="text-emerald-600" />
             </div>
-            <h2 className="text-xl font-bold text-[#0f2a4a]">You already manage {picked.name}</h2>
-            <p className="text-sm text-gray-600 mt-2">
+            <h2 className="text-xl font-bold text-[#0f2a4a] dark:text-slate-100">You already manage {picked.name}</h2>
+            <p className="text-sm text-gray-600 dark:text-slate-300 mt-2">
               You&apos;re signed in as a verified manager. Open the manage page to update the org profile.
             </p>
             <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -389,30 +389,30 @@ function StepDot({ label, active, done }: { label: string; active: boolean; done
   const color = done
     ? "text-green-700"
     : active
-    ? "text-[#0f2a4a]"
-    : "text-gray-400";
+    ? "text-[#0f2a4a] dark:text-slate-100"
+    : "text-gray-400 dark:text-slate-500";
   return <span className={color}>{label}</span>;
 }
 
 function OrgPreviewCard({ org, onChange }: { org: OrgSuggestion; onChange: () => void }) {
   return (
-    <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-xl px-3 py-3">
-      <div className="shrink-0 w-12 h-12 rounded-lg bg-white border border-gray-200 flex items-center justify-center overflow-hidden">
+    <div className="flex items-center gap-3 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-3">
+      <div className="shrink-0 w-12 h-12 rounded-lg bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 flex items-center justify-center overflow-hidden">
         {org.logo_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={org.logo_url} alt="" className="max-w-full max-h-full object-contain p-1" />
         ) : (
-          <Building2 className="w-5 h-5 text-gray-400" />
+          <Building2 className="w-5 h-5 text-gray-400 dark:text-slate-500" />
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-bold text-[#0f2a4a] truncate inline-flex items-center gap-1.5">
+        <p className="text-sm font-bold text-[#0f2a4a] dark:text-slate-100 truncate inline-flex items-center gap-1.5">
           {org.name}
           {org.is_verified && org.is_claimed && (
             <BadgeCheck className="w-4 h-4 text-emerald-600 shrink-0" aria-label="Verified organization" />
           )}
         </p>
-        <p className="text-xs text-gray-500 mt-0.5">
+        <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">
           {org.domain ? <>Domain on file: <span className="font-semibold">@{org.domain}</span></> : "No domain on file"}
         </p>
       </div>
@@ -437,8 +437,8 @@ function SignInPrompt({ orgName, orgDomain, next }: { orgName: string; orgDomain
             <ShieldCheck className="w-4 h-4 text-blue-700" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-[#0f2a4a]">Sign in to claim {orgName}</p>
-            <p className="text-xs text-gray-700 mt-0.5">
+            <p className="text-sm font-bold text-[#0f2a4a] dark:text-slate-100">Sign in to claim {orgName}</p>
+            <p className="text-xs text-gray-700 dark:text-slate-200 mt-0.5">
               Most users sign in with Google or Microsoft — it&apos;s instant, no email confirmation. Use your <span className="font-mono">@{orgDomain}</span> work account and claiming happens automatically.
             </p>
           </div>
@@ -447,7 +447,7 @@ function SignInPrompt({ orgName, orgDomain, next }: { orgName: string; orgDomain
 
       <OAuthButtons next={next} />
 
-      <div className="border-t border-gray-100 pt-3 text-xs text-center text-gray-500 space-y-1.5">
+      <div className="border-t border-gray-100 dark:border-slate-800 pt-3 text-xs text-center text-gray-500 dark:text-slate-400 space-y-1.5">
         <p>
           Prefer email?{" "}
           <Link href={`/auth/signup?next=${nextParam}`} className="text-blue-700 hover:underline font-semibold">

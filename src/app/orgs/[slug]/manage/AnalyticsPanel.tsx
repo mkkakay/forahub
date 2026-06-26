@@ -77,18 +77,18 @@ export default function AnalyticsPanel(props: Props) {
   })), [data]);
 
   return (
-    <section className="bg-white rounded-2xl border border-gray-200/80 shadow-[0_1px_2px_rgba(15,42,74,0.04)]">
-      <header className="flex items-start justify-between gap-3 p-5 md:p-6 border-b border-gray-100 flex-wrap">
+    <section className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200/80 dark:border-slate-700/80 shadow-[0_1px_2px_rgba(15,42,74,0.04)]">
+      <header className="flex items-start justify-between gap-3 p-5 md:p-6 border-b border-gray-100 dark:border-slate-800 flex-wrap">
         <div className="min-w-0">
-          <h2 className="text-lg font-bold text-[#0f2a4a]">Analytics</h2>
-          <p className="text-xs text-gray-500 mt-1 max-w-prose">
+          <h2 className="text-lg font-bold text-[#0f2a4a] dark:text-slate-100">Analytics</h2>
+          <p className="text-xs text-gray-500 dark:text-slate-400 mt-1 max-w-prose">
             Track how people discover, save, and click through to your events.
           </p>
         </div>
         <div
           role="tablist"
           aria-label="Window"
-          className="shrink-0 inline-flex bg-gray-100 rounded-lg p-0.5 text-[11px] font-semibold"
+          className="shrink-0 inline-flex bg-gray-100 dark:bg-slate-800 rounded-lg p-0.5 text-[11px] font-semibold"
         >
           {(["30", "90"] as const).map(d => (
             <button
@@ -100,8 +100,8 @@ export default function AnalyticsPanel(props: Props) {
               className={
                 "px-3 py-1.5 rounded-md transition-colors " +
                 (window === d
-                  ? "bg-white text-[#0f2a4a] shadow-sm"
-                  : "text-gray-500 hover:text-[#0f2a4a]")
+                  ? "bg-white dark:bg-slate-800 text-[#0f2a4a] dark:text-slate-100 shadow-sm"
+                  : "text-gray-500 dark:text-slate-400 hover:text-[#0f2a4a] dark:hover:text-slate-100")
               }
             >
               Last {d} days
@@ -119,12 +119,12 @@ export default function AnalyticsPanel(props: Props) {
         </div>
 
         {showEmpty ? (
-          <div className="rounded-xl bg-gray-50/60 border border-gray-100 px-4 py-12 text-center">
-            <div className="mx-auto w-12 h-12 rounded-full bg-white border border-gray-200 flex items-center justify-center mb-3">
-              <BarChart3 className="w-5 h-5 text-gray-300" aria-hidden="true" />
+          <div className="rounded-xl bg-gray-50/60 dark:bg-slate-900/60 border border-gray-100 dark:border-slate-800 px-4 py-12 text-center">
+            <div className="mx-auto w-12 h-12 rounded-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 flex items-center justify-center mb-3">
+              <BarChart3 className="w-5 h-5 text-gray-300 dark:text-slate-600" aria-hidden="true" />
             </div>
-            <p className="text-sm font-bold text-[#0f2a4a]">No data yet for this window</p>
-            <p className="text-xs text-gray-500 mt-1 max-w-md mx-auto">
+            <p className="text-sm font-bold text-[#0f2a4a] dark:text-slate-100">No data yet for this window</p>
+            <p className="text-xs text-gray-500 dark:text-slate-400 mt-1 max-w-md mx-auto">
               Analytics will appear once visitors engage with your published events.
             </p>
           </div>
@@ -132,8 +132,8 @@ export default function AnalyticsPanel(props: Props) {
           <div className="space-y-6">
 
           {/* Trend chart */}
-          <div className="bg-gray-50 border border-gray-100 rounded-xl px-3 py-4">
-            <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2 px-2">Daily trend</p>
+          <div className="bg-gray-50 dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl px-3 py-4">
+            <p className="text-[11px] font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-2 px-2">Daily trend</p>
             <div className="h-48">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData} margin={{ top: 5, right: 8, left: -20, bottom: 0 }}>
@@ -156,7 +156,7 @@ export default function AnalyticsPanel(props: Props) {
                 </AreaChart>
               </ResponsiveContainer>
             </div>
-            <p className="text-[10px] text-gray-400 mt-2 px-2 inline-flex items-center gap-3">
+            <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-2 px-2 inline-flex items-center gap-3">
               <Legend swatch="#4ea8de" label="Views" />
               <Legend swatch="#10b981" label="Saves" />
               <Legend swatch="#f59e0b" label="Reg. clicks" />
@@ -166,18 +166,18 @@ export default function AnalyticsPanel(props: Props) {
           {/* Series rollup */}
           {data.seriesRollup.length > 0 && (
             <div>
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider inline-flex items-center gap-1.5 mb-2">
+              <h3 className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider inline-flex items-center gap-1.5 mb-2">
                 <Repeat className="w-3 h-3" /> Series rollups
               </h3>
-              <ul className="divide-y divide-gray-100 border border-gray-100 rounded-xl overflow-hidden">
+              <ul className="divide-y divide-gray-100 dark:divide-slate-800 border border-gray-100 dark:border-slate-800 rounded-xl overflow-hidden">
                 {data.seriesRollup.map(s => (
                   <li key={s.series_id} className="px-4 py-3 text-sm">
                     <div className="flex items-center justify-between gap-3 flex-wrap">
                       <div className="min-w-0 flex-1">
-                        <p className="text-gray-900 font-medium truncate">{s.series_title}</p>
-                        <p className="text-[11px] text-gray-500 mt-0.5">{s.occurrence_count} occurrence(s) combined</p>
+                        <p className="text-gray-900 dark:text-slate-100 font-medium truncate">{s.series_title}</p>
+                        <p className="text-[11px] text-gray-500 dark:text-slate-400 mt-0.5">{s.occurrence_count} occurrence(s) combined</p>
                       </div>
-                      <div className="shrink-0 inline-flex items-center gap-3 text-[12px] text-gray-700 tabular-nums">
+                      <div className="shrink-0 inline-flex items-center gap-3 text-[12px] text-gray-700 dark:text-slate-200 tabular-nums">
                         <span className="inline-flex items-center gap-1"><Eye className="w-3 h-3 text-[#4ea8de]" /> {s.views}</span>
                         <span className="inline-flex items-center gap-1"><Bookmark className="w-3 h-3 text-emerald-600" /> {s.saves}</span>
                         <span className="inline-flex items-center gap-1"><ExternalLink className="w-3 h-3 text-amber-600" /> {s.registration_clicks}</span>
@@ -192,20 +192,20 @@ export default function AnalyticsPanel(props: Props) {
           {/* Top standalone events */}
           {data.topEvents.length > 0 && (
             <div>
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider inline-flex items-center gap-1.5 mb-2">
+              <h3 className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider inline-flex items-center gap-1.5 mb-2">
                 <Sparkles className="w-3 h-3" /> Top events
               </h3>
-              <ul className="divide-y divide-gray-100 border border-gray-100 rounded-xl overflow-hidden">
+              <ul className="divide-y divide-gray-100 dark:divide-slate-800 border border-gray-100 dark:border-slate-800 rounded-xl overflow-hidden">
                 {data.topEvents.map(ev => (
                   <li key={ev.event_id} className="px-4 py-3 text-sm">
                     <div className="flex items-center justify-between gap-3 flex-wrap">
                       <div className="min-w-0 flex-1">
-                        <p className="text-gray-900 font-medium truncate">{ev.title}</p>
-                        <p className="text-[11px] text-gray-500 mt-0.5">
+                        <p className="text-gray-900 dark:text-slate-100 font-medium truncate">{ev.title}</p>
+                        <p className="text-[11px] text-gray-500 dark:text-slate-400 mt-0.5">
                           {fmtFull(ev.start_date)}{ev.series_id && " · part of a series"}
                         </p>
                       </div>
-                      <div className="shrink-0 inline-flex items-center gap-3 text-[12px] text-gray-700 tabular-nums">
+                      <div className="shrink-0 inline-flex items-center gap-3 text-[12px] text-gray-700 dark:text-slate-200 tabular-nums">
                         <span className="inline-flex items-center gap-1"><Eye className="w-3 h-3 text-[#4ea8de]" /> {ev.views}</span>
                         <span className="inline-flex items-center gap-1"><Bookmark className="w-3 h-3 text-emerald-600" /> {ev.saves}</span>
                         <span className="inline-flex items-center gap-1"><ExternalLink className="w-3 h-3 text-amber-600" /> {ev.registration_clicks}</span>
@@ -220,7 +220,7 @@ export default function AnalyticsPanel(props: Props) {
       )}
       </div>
 
-      <footer className="px-5 md:px-6 py-3 border-t border-gray-100 text-[11px] text-gray-500">
+      <footer className="px-5 md:px-6 py-3 border-t border-gray-100 dark:border-slate-800 text-[11px] text-gray-500 dark:text-slate-400">
         Only aggregate analytics are shown. Individual visitor identities are never exposed. Raw logs auto-delete after 14 months.
       </footer>
     </section>
@@ -229,11 +229,11 @@ export default function AnalyticsPanel(props: Props) {
 
 function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
   return (
-    <div className="bg-white border border-gray-200/80 rounded-xl px-4 py-3">
-      <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider inline-flex items-center gap-1.5">
-        <span className="text-gray-400">{icon}</span> {label}
+    <div className="bg-white dark:bg-slate-800 border border-gray-200/80 dark:border-slate-700/80 rounded-xl px-4 py-3">
+      <p className="text-[10px] font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider inline-flex items-center gap-1.5">
+        <span className="text-gray-400 dark:text-slate-500">{icon}</span> {label}
       </p>
-      <p className="text-2xl font-bold text-[#0f2a4a] mt-1 tabular-nums">{value.toLocaleString()}</p>
+      <p className="text-2xl font-bold text-[#0f2a4a] dark:text-slate-100 mt-1 tabular-nums">{value.toLocaleString()}</p>
     </div>
   );
 }

@@ -320,7 +320,7 @@ export default function EventsBannerPanel({ adminSecret }: { adminSecret: string
                 return (
                   <div key={event.id} className="bg-[#0a1a2e] border border-blue-900/40 rounded-lg p-3 grid grid-cols-1 lg:grid-cols-[160px_1fr_auto] gap-3">
                     {/* Banner thumbnail */}
-                    <div className="w-full lg:w-[160px] h-24 rounded-md border border-blue-900/40 overflow-hidden bg-white flex items-center justify-center">
+                    <div className="w-full lg:w-[160px] h-24 rounded-md border border-blue-900/40 overflow-hidden bg-white dark:bg-slate-800 flex items-center justify-center">
                       {event.banner_image_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img

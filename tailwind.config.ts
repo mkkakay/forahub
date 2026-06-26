@@ -10,8 +10,32 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Semantic theme tokens — backed by CSS variables in globals.css.
+        // Prefer these over raw color classes so components respond to the
+        // active theme automatically (light, dark, high-contrast).
         background: "var(--background)",
         foreground: "var(--foreground)",
+        muted: "var(--muted)",
+        surface: {
+          DEFAULT: "var(--surface)",
+          2: "var(--surface-2)",
+          3: "var(--surface-3)",
+        },
+        default: "var(--border)", // for border-default / divide-default
+        accent: {
+          DEFAULT: "var(--accent)",
+          fg: "var(--accent-fg)",
+        },
+      },
+      borderColor: {
+        DEFAULT: "var(--border)",
+        default: "var(--border)",
+      },
+      divideColor: {
+        default: "var(--divide)",
+      },
+      ringColor: {
+        accent: "var(--ring)",
       },
       animation: {
         shimmer: "shimmer 1.5s infinite linear",

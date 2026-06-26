@@ -25,7 +25,7 @@ interface PillGroupProps<T extends string> {
 function PillGroup<T extends string>({ label, options, value, onChange }: PillGroupProps<T>) {
   return (
     <div className="flex items-center gap-2 flex-wrap">
-      <span className="text-xs text-slate-500 font-medium uppercase tracking-wide shrink-0">{label}:</span>
+      <span className="text-xs text-slate-500 dark:text-slate-400 dark:dark:text-slate-500 font-medium uppercase tracking-wide shrink-0">{label}:</span>
       {options.map(opt => {
         const active = opt.value === value;
         return (
@@ -36,7 +36,7 @@ function PillGroup<T extends string>({ label, options, value, onChange }: PillGr
             className={`text-sm font-medium px-3 py-1.5 rounded-full border transition-colors ${
               active
                 ? "bg-blue-600 text-white border-blue-600"
-                : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
+                : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-900"
             }`}
           >
             {opt.label}

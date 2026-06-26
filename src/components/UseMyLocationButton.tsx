@@ -55,8 +55,8 @@ export default function UseMyLocationButton({
   }
 
   const baseClasses = compact
-    ? "inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-60"
-    : "inline-flex items-center gap-1.5 text-sm font-medium px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-60";
+    ? "inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900 disabled:opacity-60"
+    : "inline-flex items-center gap-1.5 text-sm font-medium px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900 disabled:opacity-60";
 
   return (
     <button

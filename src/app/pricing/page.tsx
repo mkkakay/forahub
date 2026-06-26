@@ -14,7 +14,7 @@ export default async function PricingPage() {
   const foundingCount = await getFoundingCount();
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 font-sans">
       <Navbar />
       <PricingClient foundingCount={foundingCount} />
       <footer className="bg-[#0f2a4a] py-8 px-4 text-center">

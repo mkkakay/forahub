@@ -167,7 +167,7 @@ function CollectionDropdown({
         ))}
         <button
           onClick={e => { e.preventDefault(); e.stopPropagation(); setOpen(prev => !prev); }}
-          className="flex items-center gap-0.5 text-xs text-gray-400 hover:text-[#4ea8de] transition-colors px-1.5 py-0.5 rounded border border-gray-200 hover:border-[#4ea8de]"
+          className="flex items-center gap-0.5 text-xs text-gray-400 dark:text-slate-500 hover:text-[#4ea8de] transition-colors px-1.5 py-0.5 rounded border border-gray-200 dark:border-slate-700 hover:border-[#4ea8de]"
         >
           <Plus size={11} />
           Add
@@ -176,9 +176,9 @@ function CollectionDropdown({
       </div>
 
       {open && (
-        <div className="absolute top-full left-0 mt-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[160px]">
+        <div className="absolute top-full left-0 mt-1 z-50 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg py-1 min-w-[160px]">
           {collections.length === 0 ? (
-            <p className="text-xs text-gray-400 px-3 py-2">No collections yet</p>
+            <p className="text-xs text-gray-400 dark:text-slate-500 px-3 py-2">No collections yet</p>
           ) : (
             collections.map(c => {
               const isIn = c.collection_events.some(ce => ce.event_id === eventId);
@@ -186,9 +186,9 @@ function CollectionDropdown({
                 <button
                   key={c.id}
                   onClick={e => { e.preventDefault(); e.stopPropagation(); toggleCollection(c); }}
-                  className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-900 transition-colors"
                 >
-                  <span className={`w-3.5 h-3.5 rounded border flex-shrink-0 flex items-center justify-center ${isIn ? "bg-[#4ea8de] border-[#4ea8de]" : "border-gray-300"}`}>
+                  <span className={`w-3.5 h-3.5 rounded border flex-shrink-0 flex items-center justify-center ${isIn ? "bg-[#4ea8de] border-[#4ea8de]" : "border-gray-300 dark:border-slate-600"}`}>
                     {isIn && <Check className="text-white w-2.5 h-2.5" strokeWidth={3} />}
                   </span>
                   {c.name}
@@ -307,7 +307,7 @@ export default function SavedEventsClient() {
     return (
       <div className="flex items-center justify-center py-24">
         <Loader2 size={24} className="animate-spin text-[#4ea8de]" />
-        <span className="ml-3 text-gray-500">Loading your saved events…</span>
+        <span className="ml-3 text-gray-500 dark:text-slate-400">Loading your saved events…</span>
       </div>
     );
   }
@@ -315,9 +315,9 @@ export default function SavedEventsClient() {
   if (savedEvents.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
-        <Calendar size={48} className="text-gray-300 mb-4" />
-        <p className="text-gray-500 text-lg font-medium">No saved events yet</p>
-        <p className="text-gray-400 text-sm mt-2 max-w-sm">
+        <Calendar size={48} className="text-gray-300 dark:text-slate-600 mb-4" />
+        <p className="text-gray-500 dark:text-slate-400 text-lg font-medium">No saved events yet</p>
+        <p className="text-gray-400 dark:text-slate-500 text-sm mt-2 max-w-sm">
           Browse events and click the bookmark icon to save them here.
         </p>
         <Link
@@ -334,18 +334,18 @@ export default function SavedEventsClient() {
     <div className="flex gap-6">
       {/* Sidebar — desktop */}
       <aside className="hidden md:flex flex-col w-64 shrink-0">
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm overflow-hidden">
           {/* All saved */}
           <button
             onClick={() => setSelectedCollectionId(null)}
             className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors flex items-center justify-between ${
               selectedCollectionId === null
                 ? "bg-[#4ea8de] text-white"
-                : "text-gray-700 hover:bg-gray-50"
+                : "text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-900"
             }`}
           >
             <span>All Saved</span>
-            <span className={`text-xs rounded-full px-2 py-0.5 ${selectedCollectionId === null ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500"}`}>
+            <span className={`text-xs rounded-full px-2 py-0.5 ${selectedCollectionId === null ? "bg-white/20 text-white" : "bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400"}`}>
               {savedEvents.length}
             </span>
           </button>
@@ -355,21 +355,21 @@ export default function SavedEventsClient() {
             <button
               key={coll.id}
               onClick={() => setSelectedCollectionId(coll.id)}
-              className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors flex items-center justify-between border-t border-gray-100 ${
+              className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors flex items-center justify-between border-t border-gray-100 dark:border-slate-800 ${
                 selectedCollectionId === coll.id
                   ? "bg-[#4ea8de] text-white"
-                  : "text-gray-700 hover:bg-gray-50"
+                  : "text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-900"
               }`}
             >
               <span className="truncate">{coll.name}</span>
-              <span className={`text-xs rounded-full px-2 py-0.5 shrink-0 ${selectedCollectionId === coll.id ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500"}`}>
+              <span className={`text-xs rounded-full px-2 py-0.5 shrink-0 ${selectedCollectionId === coll.id ? "bg-white/20 text-white" : "bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400"}`}>
                 {coll.collection_events.length}
               </span>
             </button>
           ))}
 
           {/* Create collection */}
-          <div className="border-t border-gray-100 p-3">
+          <div className="border-t border-gray-100 dark:border-slate-800 p-3">
             <div className="flex gap-2">
               <input
                 type="text"
@@ -377,7 +377,7 @@ export default function SavedEventsClient() {
                 onChange={e => setNewCollectionName(e.target.value)}
                 onKeyDown={e => { if (e.key === "Enter") createCollection(); }}
                 placeholder="New collection…"
-                className="flex-1 text-xs border border-gray-200 rounded-md px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#4ea8de] min-w-0"
+                className="flex-1 text-xs border border-gray-200 dark:border-slate-700 rounded-md px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#4ea8de] min-w-0"
               />
               <button
                 onClick={createCollection}
@@ -399,7 +399,7 @@ export default function SavedEventsClient() {
             className={`shrink-0 text-sm font-medium px-3 py-1.5 rounded-full transition-colors ${
               selectedCollectionId === null
                 ? "bg-[#4ea8de] text-white"
-                : "bg-white border border-gray-200 text-gray-700"
+                : "bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200"
             }`}
           >
             All ({savedEvents.length})
@@ -411,7 +411,7 @@ export default function SavedEventsClient() {
               className={`shrink-0 text-sm font-medium px-3 py-1.5 rounded-full transition-colors ${
                 selectedCollectionId === coll.id
                   ? "bg-[#4ea8de] text-white"
-                  : "bg-white border border-gray-200 text-gray-700"
+                  : "bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200"
               }`}
             >
               {coll.name} ({coll.collection_events.length})
@@ -424,12 +424,12 @@ export default function SavedEventsClient() {
       <div className="flex-1 min-w-0">
         {displayedEvents.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <Calendar size={40} className="text-gray-300 mb-3" />
-            <p className="text-gray-500 font-medium">
+            <Calendar size={40} className="text-gray-300 dark:text-slate-600 mb-3" />
+            <p className="text-gray-500 dark:text-slate-400 font-medium">
               {selectedCollectionId ? "No events in this collection" : "No saved events"}
             </p>
             {selectedCollectionId && (
-              <p className="text-gray-400 text-sm mt-1">
+              <p className="text-gray-400 dark:text-slate-500 text-sm mt-1">
                 Add events to this collection from your saved events list.
               </p>
             )}
@@ -446,7 +446,7 @@ export default function SavedEventsClient() {
               return (
                 <div
                   key={se.id}
-                  className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 max-w-3xl"
+                  className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm p-5 max-w-3xl"
                 >
                   {/* Row 1: SDG tag + format + remove */}
                   <div className="flex items-center gap-2 mb-2">
@@ -456,10 +456,10 @@ export default function SavedEventsClient() {
                         SDG {primarySdg}
                       </span>
                     )}
-                    <span className="text-xs text-gray-400">{FORMAT_LABELS[event.format] ?? event.format}</span>
+                    <span className="text-xs text-gray-400 dark:text-slate-500">{FORMAT_LABELS[event.format] ?? event.format}</span>
                     <button
                       onClick={() => removeEvent(se.id)}
-                      className="ml-auto p-1 rounded text-gray-300 hover:text-red-500 transition-colors"
+                      className="ml-auto p-1 rounded text-gray-300 dark:text-slate-600 hover:text-red-500 transition-colors"
                       aria-label="Remove saved event"
                     >
                       <Trash2 size={15} />
@@ -468,26 +468,26 @@ export default function SavedEventsClient() {
 
                   {/* Row 2: Title */}
                   <Link href={`/events/${event.id}`}>
-                    <h3 className="text-[#0f2a4a] font-semibold text-base leading-snug hover:text-[#4ea8de] transition-colors mb-2">
+                    <h3 className="text-[#0f2a4a] dark:text-slate-100 font-semibold text-base leading-snug hover:text-[#4ea8de] transition-colors mb-2">
                       {event.title}
                     </h3>
                   </Link>
 
                   {/* Row 3: Date / Location / Org */}
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500 mb-3">
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500 dark:text-slate-400 mb-3">
                     <span className="flex items-center gap-1.5">
-                      <Calendar size={13} className="text-gray-400 shrink-0" />
+                      <Calendar size={13} className="text-gray-400 dark:text-slate-500 shrink-0" />
                       {formatDateRange(event.start_date, event.end_date)}
                     </span>
                     {event.location && (
                       <span className="flex items-center gap-1.5">
-                        <MapPin size={13} className="text-gray-400 shrink-0" />
+                        <MapPin size={13} className="text-gray-400 dark:text-slate-500 shrink-0" />
                         {event.location}
                       </span>
                     )}
                     {event.organization && (
                       <span className="flex items-center gap-1.5">
-                        <Building2 size={13} className="text-gray-400 shrink-0" />
+                        <Building2 size={13} className="text-gray-400 dark:text-slate-500 shrink-0" />
                         {event.organization}
                       </span>
                     )}
@@ -495,7 +495,7 @@ export default function SavedEventsClient() {
 
                   {/* Row 4: Status pills */}
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="text-xs text-gray-400 font-medium">Status:</span>
+                    <span className="text-xs text-gray-400 dark:text-slate-500 font-medium">Status:</span>
                     {(["interested", "registered", "attended"] as AttendanceStatus[]).map(s => (
                       <button
                         key={s}
@@ -503,7 +503,7 @@ export default function SavedEventsClient() {
                         className={`text-xs font-medium px-2.5 py-1 rounded-full border transition-colors ${
                           se.status === s
                             ? "bg-[#4ea8de] text-white border-[#4ea8de]"
-                            : "border-gray-200 text-gray-500 hover:border-[#4ea8de] hover:text-[#4ea8de]"
+                            : "border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400 hover:border-[#4ea8de] hover:text-[#4ea8de]"
                         }`}
                       >
                         {s.charAt(0).toUpperCase() + s.slice(1)}
@@ -526,7 +526,7 @@ export default function SavedEventsClient() {
                       <div className="flex items-center gap-2">
                         {se.notes ? (
                           <>
-                            <p className="text-xs text-gray-500 line-clamp-1 flex-1">{se.notes}</p>
+                            <p className="text-xs text-gray-500 dark:text-slate-400 line-clamp-1 flex-1">{se.notes}</p>
                             <button
                               onClick={() => {
                                 setPendingNotes(prev => ({ ...prev, [se.id]: se.notes ?? "" }));
@@ -543,7 +543,7 @@ export default function SavedEventsClient() {
                               setPendingNotes(prev => ({ ...prev, [se.id]: "" }));
                               setExpandedNotes(prev => { const n = new Set(prev); n.add(se.id); return n; });
                             }}
-                            className="text-xs text-gray-400 hover:text-[#4ea8de] transition-colors"
+                            className="text-xs text-gray-400 dark:text-slate-500 hover:text-[#4ea8de] transition-colors"
                           >
                             + Add note
                           </button>
@@ -556,7 +556,7 @@ export default function SavedEventsClient() {
                           onChange={e => setPendingNotes(prev => ({ ...prev, [se.id]: e.target.value }))}
                           rows={2}
                           placeholder="Add a note…"
-                          className="text-xs border border-gray-200 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#4ea8de] resize-none"
+                          className="text-xs border border-gray-200 dark:border-slate-700 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#4ea8de] resize-none"
                         />
                         <div className="flex items-center gap-2">
                           <button
@@ -570,7 +570,7 @@ export default function SavedEventsClient() {
                               setPendingNotes(prev => { const n = { ...prev }; delete n[se.id]; return n; });
                               setExpandedNotes(prev => { const n = new Set(prev); n.delete(se.id); return n; });
                             }}
-                            className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                            className="text-xs text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
                           >
                             Cancel
                           </button>
@@ -581,12 +581,12 @@ export default function SavedEventsClient() {
 
                   {/* Row 7: Reminder */}
                   <div className="mb-3 flex items-center gap-2 flex-wrap">
-                    <span className="text-xs text-gray-400">Set reminder:</span>
+                    <span className="text-xs text-gray-400 dark:text-slate-500">Set reminder:</span>
                     <input
                       type="date"
                       defaultValue={toDateInputValue(se.reminder_date)}
                       onBlur={e => updateReminder(se.id, e.target.value)}
-                      className="text-xs border border-gray-200 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#4ea8de]"
+                      className="text-xs border border-gray-200 dark:border-slate-700 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#4ea8de]"
                     />
                     {se.reminder_date && (
                       <>
@@ -600,7 +600,7 @@ export default function SavedEventsClient() {
                         </span>
                         <button
                           onClick={() => updateReminder(se.id, "")}
-                          className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+                          className="text-xs text-gray-400 dark:text-slate-500 hover:text-red-500 transition-colors"
                         >
                           Clear
                         </button>
@@ -609,7 +609,7 @@ export default function SavedEventsClient() {
                   </div>
 
                   {/* Row 8: Action buttons */}
-                  <div className="flex items-center justify-end gap-0.5 pt-2 border-t border-gray-100">
+                  <div className="flex items-center justify-end gap-0.5 pt-2 border-t border-gray-100 dark:border-slate-800">
                     <CalendarExportMenu
                       title={event.title}
                       startDate={event.start_date}

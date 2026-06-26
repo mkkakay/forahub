@@ -68,7 +68,7 @@ function LogoTile({ org }: { org: TrustOrgRow }) {
           }}
         />
       ) : (
-        <span className="text-[11px] font-semibold text-gray-500 line-clamp-2 text-center px-2">
+        <span className="text-[11px] font-semibold text-gray-500 dark:text-slate-400 line-clamp-2 text-center px-2">
           {org.name}
         </span>
       )}
@@ -90,7 +90,7 @@ export default function OrganizationLogoMarquee({
     <section aria-labelledby="org-marquee-heading">
       <h3
         id="org-marquee-heading"
-        className="text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500"
+        className="text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500 dark:text-slate-400"
       >
         {heading}
       </h3>
@@ -122,7 +122,7 @@ export default function OrganizationLogoMarquee({
         </div>
       </div>
 
-      <p className="mt-4 text-center text-[11px] text-gray-400">
+      <p className="mt-4 text-center text-[11px] text-gray-400 dark:text-slate-500">
         {subline}
       </p>
 

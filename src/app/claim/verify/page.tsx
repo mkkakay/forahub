@@ -225,21 +225,21 @@ export default async function ClaimVerifyPage({
 
 function renderQueued() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       <Navbar />
       <main className="max-w-xl mx-auto px-4 py-16">
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 text-center">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm p-6 text-center">
           <div className="mx-auto w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center mb-4">
             <Clock className="w-7 h-7 text-amber-600" />
           </div>
-          <h1 className="text-2xl font-bold text-[#0f2a4a]">Email confirmed — pending review</h1>
-          <p className="text-sm text-gray-600 mt-3">
+          <h1 className="text-2xl font-bold text-[#0f2a4a] dark:text-slate-100">Email confirmed — pending review</h1>
+          <p className="text-sm text-gray-600 dark:text-slate-300 mt-3">
             Thanks for confirming your email. Because your address isn&apos;t on the
             organization&apos;s known domain, we&apos;ll review your claim manually
             before granting access. We&apos;ll email you with the decision — usually
             within 2 business days.
           </p>
-          <p className="text-xs text-gray-500 mt-4">
+          <p className="text-xs text-gray-500 dark:text-slate-400 mt-4">
             Need to share more context? Reply to the verification email or write to{" "}
             <a href="mailto:admin@forahub.org" className="text-blue-700 hover:underline font-medium">
               admin@forahub.org
@@ -277,15 +277,15 @@ function renderError(
   const iconColor = isUsed ? "text-emerald-600" : copy.variant === "expired" ? "text-amber-600" : "text-red-600";
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       <Navbar />
       <main className="max-w-xl mx-auto px-4 py-16">
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 text-center">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm p-6 text-center">
           <div className={`mx-auto w-14 h-14 rounded-full ${iconBg} flex items-center justify-center mb-4`}>
             <Icon className={`w-7 h-7 ${iconColor}`} />
           </div>
-          <h1 className="text-2xl font-bold text-[#0f2a4a]">{copy.title}</h1>
-          <p className="text-sm text-gray-600 mt-3">{copy.body}</p>
+          <h1 className="text-2xl font-bold text-[#0f2a4a] dark:text-slate-100">{copy.title}</h1>
+          <p className="text-sm text-gray-600 dark:text-slate-300 mt-3">{copy.body}</p>
 
           {canResend && context && (
             <ResendForm orgSlug={context.orgSlug} prefillEmail={context.userEmail} />
@@ -302,7 +302,7 @@ function renderError(
               {context && (
                 <Link
                   href={`/orgs/${context.orgSlug}/manage`}
-                  className="inline-flex items-center justify-center bg-white border border-gray-200 text-[#0f2a4a] hover:bg-gray-50 font-semibold px-5 py-2.5 rounded-xl text-sm"
+                  className="inline-flex items-center justify-center bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-[#0f2a4a] dark:text-slate-100 hover:bg-gray-50 dark:hover:bg-slate-900 font-semibold px-5 py-2.5 rounded-xl text-sm"
                 >
                   Go to manage page →
                 </Link>

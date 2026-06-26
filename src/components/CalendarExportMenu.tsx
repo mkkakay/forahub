@@ -116,35 +116,35 @@ export default function CalendarExportMenu({
       <button
         onClick={handleTrigger}
         aria-label="Add to calendar"
-        className="p-1.5 rounded-md text-gray-400 hover:text-[#4ea8de] transition-colors"
+        className="p-1.5 rounded-md text-gray-400 dark:text-slate-500 hover:text-[#4ea8de] transition-colors"
       >
         <CalendarPlus size={16} />
       </button>
 
       {open && (
-        <div className="absolute bottom-full right-0 mb-2 z-50 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[200px]">
+        <div className="absolute bottom-full right-0 mb-2 z-50 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg py-1 min-w-[200px]">
           {hasFullAccess ? (
             <>
               <a href={buildGoogleUrl()} target="_blank" rel="noopener noreferrer"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                className="block px-4 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-900 transition-colors"
                 onClick={() => setOpen(false)}>
                 Google Calendar
               </a>
               <a href={buildOutlookUrl()} target="_blank" rel="noopener noreferrer"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                className="block px-4 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-900 transition-colors"
                 onClick={() => setOpen(false)}>
                 Outlook
               </a>
               <button onClick={downloadICS}
                 title="Works with Google Calendar, Apple Calendar, Samsung Calendar, Outlook and all other calendar apps"
-                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-900 transition-colors">
                 Download .ics (All Calendars)
               </button>
             </>
           ) : (
             <div className="px-4 py-3">
-              <p className="text-sm text-gray-700 font-medium mb-1">Calendar export is a Pro feature</p>
-              <p className="text-xs text-gray-400 mb-2">$9.99/year · cancel anytime</p>
+              <p className="text-sm text-gray-700 dark:text-slate-200 font-medium mb-1">Calendar export is a Pro feature</p>
+              <p className="text-xs text-gray-400 dark:text-slate-500 mb-2">$9.99/year · cancel anytime</p>
               <Link
                 href="/pricing"
                 className="text-sm text-[#4ea8de] hover:text-[#3a95cc] font-semibold transition-colors"

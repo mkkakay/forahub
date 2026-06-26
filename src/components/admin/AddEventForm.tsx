@@ -141,7 +141,7 @@ export default function AddEventForm() {
           onClick={() => setIsFeatured(!isFeatured)}
           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isFeatured ? 'bg-[#4ea8de]' : 'bg-blue-900/60'}`}
         >
-          <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isFeatured ? 'translate-x-6' : 'translate-x-1'}`} />
+          <span className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-slate-800 transition-transform ${isFeatured ? 'translate-x-6' : 'translate-x-1'}`} />
         </button>
         <label className="text-blue-300 text-sm">Feature this event on the homepage</label>
       </div>

@@ -36,16 +36,16 @@ export default function CookieConsent() {
       className="fixed inset-x-0 bottom-16 md:bottom-4 z-[45] px-4 md:px-0 pointer-events-none"
     >
       <div
-        className="pointer-events-auto mx-auto max-w-3xl bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/90 border border-gray-200/80 rounded-xl shadow-[0_10px_30px_-12px_rgba(15,42,74,0.18)] px-4 md:px-5 py-3 md:py-3.5 pr-20 md:pr-28
+        className="pointer-events-auto mx-auto max-w-3xl bg-white/95 dark:bg-slate-800/95 backdrop-blur supports-[backdrop-filter]:bg-white/90 dark:bg-slate-800/90 border border-gray-200/80 dark:border-slate-700/80 rounded-xl shadow-[0_10px_30px_-12px_rgba(15,42,74,0.18)] px-4 md:px-5 py-3 md:py-3.5 pr-20 md:pr-28
                    flex flex-col sm:flex-row sm:items-center gap-3"
       >
-        <p className="text-[13px] leading-snug text-gray-700 flex-1">
+        <p className="text-[13px] leading-snug text-gray-700 dark:text-slate-200 flex-1">
           {t(lang, "cookie.message")}{" "}
-          <Link href="/privacy#analytics" className="text-[#0f2a4a] hover:underline whitespace-nowrap">
+          <Link href="/privacy#analytics" className="text-[#0f2a4a] dark:text-slate-100 hover:underline whitespace-nowrap">
             What we log
           </Link>
-          <span className="text-gray-300 mx-1" aria-hidden="true">·</span>
-          <Link href="/profile#privacy" className="text-[#0f2a4a] hover:underline whitespace-nowrap">
+          <span className="text-gray-300 dark:text-slate-600 mx-1" aria-hidden="true">·</span>
+          <Link href="/profile#privacy" className="text-[#0f2a4a] dark:text-slate-100 hover:underline whitespace-nowrap">
             Change later
           </Link>
         </p>
@@ -53,7 +53,7 @@ export default function CookieConsent() {
           <button
             type="button"
             onClick={decline}
-            className="flex-1 sm:flex-none text-[13px] font-medium px-3.5 py-1.5 rounded-lg text-gray-600 hover:text-[#0f2a4a] hover:bg-gray-100 transition-colors"
+            className="flex-1 sm:flex-none text-[13px] font-medium px-3.5 py-1.5 rounded-lg text-gray-600 dark:text-slate-300 hover:text-[#0f2a4a] dark:hover:text-slate-100 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
           >
             {t(lang, "cookie.decline")}
           </button>

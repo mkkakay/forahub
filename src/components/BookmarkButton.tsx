@@ -79,7 +79,7 @@ export default function BookmarkButton({ eventId, initialSaved, userId, onToggle
         onClick={handleClick}
         disabled={loading || subLoading}
         aria-label={saved ? "Unsave event" : "Save event"}
-        className="p-1.5 rounded-md text-gray-400 hover:text-[#4ea8de] transition-colors disabled:opacity-50"
+        className="p-1.5 rounded-md text-gray-400 dark:text-slate-500 hover:text-[#4ea8de] transition-colors disabled:opacity-50"
       >
         <Bookmark size={16} className={saved ? "fill-current text-[#4ea8de]" : ""} />
       </button>
@@ -87,16 +87,16 @@ export default function BookmarkButton({ eventId, initialSaved, userId, onToggle
       {showPopover && (
         <div
           ref={popoverRef}
-          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 bg-white border border-gray-200 rounded-lg shadow-lg px-3 py-2.5 text-sm min-w-max"
+          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg px-3 py-2.5 text-sm min-w-max"
         >
-          <p className="text-gray-700 mb-1.5">{popoverContent.heading}</p>
+          <p className="text-gray-700 dark:text-slate-200 mb-1.5">{popoverContent.heading}</p>
           {!userId ? popoverContent.cta : (
             <div>
-              <p className="text-gray-400 text-xs mb-1.5">$9.99/year · cancel anytime</p>
+              <p className="text-gray-400 dark:text-slate-500 text-xs mb-1.5">$9.99/year · cancel anytime</p>
               {popoverContent.cta}
             </div>
           )}
-          <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-white border-b border-r border-gray-200 rotate-45 -mt-1" />
+          <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-white dark:bg-slate-800 border-b border-r border-gray-200 dark:border-slate-700 rotate-45 -mt-1" />
         </div>
       )}
     </div>

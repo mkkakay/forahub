@@ -281,12 +281,12 @@ export default function DirectoryPanel({ adminSecret }: { adminSecret: string })
                 return (
                   <div key={row.id} className="bg-[#0a1a2e] border border-blue-900/40 rounded-lg p-3">
                     <div className="grid grid-cols-1 lg:grid-cols-[48px_1fr_auto] gap-3 items-start">
-                      <div className="w-12 h-12 rounded bg-white border border-blue-900/40 flex items-center justify-center overflow-hidden">
+                      <div className="w-12 h-12 rounded bg-white dark:bg-slate-800 border border-blue-900/40 flex items-center justify-center overflow-hidden">
                         {row.logo_url ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={row.logo_url} alt="" className="max-w-full max-h-full object-contain p-0.5" />
                         ) : (
-                          <span className="text-[10px] font-bold text-gray-400">{(row.short_name ?? row.name).slice(0, 3).toUpperCase()}</span>
+                          <span className="text-[10px] font-bold text-gray-400 dark:text-slate-500">{(row.short_name ?? row.name).slice(0, 3).toUpperCase()}</span>
                         )}
                       </div>
 

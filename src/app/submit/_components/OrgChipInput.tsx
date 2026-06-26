@@ -124,17 +124,17 @@ export default function OrgChipInput({ value, onChange, placeholder, className }
 
   return (
     <div className={`relative ${className ?? ""}`} ref={wrapperRef}>
-      <div className="w-full bg-white border border-gray-200 rounded-xl px-2 py-1.5 flex flex-wrap items-center gap-1.5 focus-within:ring-2 focus-within:ring-[#4ea8de]/40 focus-within:border-[#4ea8de] transition-colors">
+      <div className="w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-2 py-1.5 flex flex-wrap items-center gap-1.5 focus-within:ring-2 focus-within:ring-[#4ea8de]/40 focus-within:border-[#4ea8de] transition-colors">
         {chips.map((c, i) => (
           <span
             key={`${c}-${i}`}
-            className="inline-flex items-center gap-1 bg-[#4ea8de]/10 text-[#0f2a4a] text-xs font-semibold rounded-md px-2 py-0.5 border border-[#4ea8de]/30"
+            className="inline-flex items-center gap-1 bg-[#4ea8de]/10 text-[#0f2a4a] dark:text-slate-100 text-xs font-semibold rounded-md px-2 py-0.5 border border-[#4ea8de]/30"
           >
             {c}
             <button
               type="button"
               onClick={() => removeChip(i)}
-              className="text-[#0f2a4a]/60 hover:text-[#0f2a4a]"
+              className="text-[#0f2a4a]/60 hover:text-[#0f2a4a] dark:hover:text-slate-100"
               aria-label={`Remove ${c}`}
             >
               <X size={11} />
@@ -156,21 +156,21 @@ export default function OrgChipInput({ value, onChange, placeholder, className }
               if (draft.trim()) addChip(draft);
             }}
             placeholder={chips.length === 0 ? (placeholder ?? "Type to search, press Enter to add") : ""}
-            className="w-full text-sm text-gray-800 placeholder-gray-400 focus:outline-none bg-transparent py-1"
+            className="w-full text-sm text-gray-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none bg-transparent py-1"
             autoComplete="off"
           />
           {loading && (
-            <Loader2 size={12} className="absolute right-1 top-1/2 -translate-y-1/2 text-gray-400 animate-spin" />
+            <Loader2 size={12} className="absolute right-1 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 animate-spin" />
           )}
         </div>
       </div>
       {open && (filteredResults.length > 0 || showAddNew) && (
-        <ul className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-80 overflow-y-auto">
+        <ul className="absolute z-20 mt-1 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg max-h-80 overflow-y-auto">
           {tier1.map(org => (
             <ChipResultRow key={org.slug} org={org} onPick={() => addChip(org.name)} />
           ))}
           {tier1.length > 0 && tierOther.length > 0 && (
-            <li className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 bg-gray-50 border-y border-gray-100">
+            <li className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 bg-gray-50 dark:bg-slate-900 border-y border-gray-100 dark:border-slate-800">
               More organizations
             </li>
           )}
@@ -184,7 +184,7 @@ export default function OrgChipInput({ value, onChange, placeholder, className }
                 onMouseDown={e => e.preventDefault()}  // keep input from blurring before click
                 onClick={handleAddNew}
                 disabled={adding}
-                className="w-full text-left px-3 py-2.5 hover:bg-amber-50 flex items-center gap-2 text-sm border-t border-gray-100 text-amber-900"
+                className="w-full text-left px-3 py-2.5 hover:bg-amber-50 flex items-center gap-2 text-sm border-t border-gray-100 dark:border-slate-800 text-amber-900"
               >
                 {adding ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
                 <span>
@@ -207,19 +207,19 @@ function ChipResultRow({ org, onPick }: { org: OrgSuggestion; onPick: () => void
         type="button"
         onMouseDown={e => e.preventDefault()}
         onClick={onPick}
-        className="w-full text-left px-3 py-2 hover:bg-gray-50 flex items-center gap-2 text-sm border-b border-gray-100 last:border-b-0"
+        className="w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-slate-900 flex items-center gap-2 text-sm border-b border-gray-100 dark:border-slate-800 last:border-b-0"
       >
-        <span className="shrink-0 w-7 h-7 rounded bg-gray-50 border border-gray-200 flex items-center justify-center overflow-hidden">
+        <span className="shrink-0 w-7 h-7 rounded bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 flex items-center justify-center overflow-hidden">
           {org.logo_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={org.logo_url} alt="" className="max-w-full max-h-full object-contain p-0.5" />
           ) : (
-            <Building2 size={12} className="text-gray-400" />
+            <Building2 size={12} className="text-gray-400 dark:text-slate-500" />
           )}
         </span>
         <span className="flex-1 min-w-0">
-          <span className="font-semibold text-gray-900 block truncate">{org.short}</span>
-          <span className="text-[11px] text-gray-500 block truncate">{org.name}</span>
+          <span className="font-semibold text-gray-900 dark:text-slate-100 block truncate">{org.short}</span>
+          <span className="text-[11px] text-gray-500 dark:text-slate-400 block truncate">{org.name}</span>
         </span>
         <span className={`shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded ${badge.className}`}>
           {badge.label}

@@ -14,7 +14,7 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
           <div>
             <h3 className="text-sm font-semibold text-blue-300 uppercase tracking-wider mb-4">ForaHub</h3>
-            <ul className="space-y-2 text-sm text-gray-300">
+            <ul className="space-y-2 text-sm text-gray-300 dark:text-slate-600">
               <li><Link href="/about" className="hover:text-white transition-colors">About</Link></li>
               <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
               <li><Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
@@ -23,7 +23,7 @@ export default function Footer() {
           </div>
           <div>
             <h3 className="text-sm font-semibold text-blue-300 uppercase tracking-wider mb-4">Resources</h3>
-            <ul className="space-y-2 text-sm text-gray-300">
+            <ul className="space-y-2 text-sm text-gray-300 dark:text-slate-600">
               <li><Link href="/help" className="hover:text-white transition-colors">Help Center</Link></li>
               <li><Link href="/data-sources" className="hover:text-white transition-colors">Data Sources</Link></li>
               <li><Link href="/assistant" className="hover:text-white transition-colors">AI Assistant</Link></li>
@@ -31,7 +31,7 @@ export default function Footer() {
           </div>
           <div>
             <h3 className="text-sm font-semibold text-blue-300 uppercase tracking-wider mb-4">Legal</h3>
-            <ul className="space-y-2 text-sm text-gray-300">
+            <ul className="space-y-2 text-sm text-gray-300 dark:text-slate-600">
               <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
               <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
               <li><Link href="/privacy#cookies" className="hover:text-white transition-colors">Cookie Policy</Link></li>
@@ -41,7 +41,7 @@ export default function Footer() {
             <h3 className="text-sm font-semibold text-blue-300 uppercase tracking-wider mb-4">Language</h3>
             <div className="flex items-center gap-2 mb-3">
               <Globe size={14} className="text-blue-300" />
-              <span className="text-sm text-gray-300">
+              <span className="text-sm text-gray-300 dark:text-slate-600">
                 {LANGUAGES[lang].native}
               </span>
             </div>
@@ -53,7 +53,7 @@ export default function Footer() {
                   className={`text-xs px-2 py-1 rounded transition-colors ${
                     lang === l
                       ? "bg-[#4ea8de] text-white"
-                      : "text-gray-400 hover:text-white"
+                      : "text-gray-400 dark:text-slate-500 hover:text-white"
                   }`}
                 >
                   {LANGUAGES[l].label}
@@ -64,10 +64,10 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-white/10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-gray-400 dark:text-slate-500">
             {t(lang, "footer.copyright")}
           </p>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-gray-400 dark:text-slate-500">
             {t(lang, "footer.built")}
           </p>
         </div>

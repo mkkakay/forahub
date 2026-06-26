@@ -135,18 +135,18 @@ function renderError(
     copy.icon === "ok" ? "text-emerald-700" : "text-red-700";
   const Icon = copy.icon === "expired" ? Clock : copy.icon === "ok" ? CheckCircle2 : AlertCircle;
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       <Navbar />
       <main className="max-w-xl mx-auto px-4 py-16">
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 text-center">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm p-6 text-center">
           <div className={`mx-auto w-14 h-14 rounded-full flex items-center justify-center mb-4 ${bgClasses}`}>
             <Icon className={`w-7 h-7 ${fgClasses}`} />
           </div>
-          <h1 className="text-2xl font-bold text-[#0f2a4a]">{copy.title}</h1>
+          <h1 className="text-2xl font-bold text-[#0f2a4a] dark:text-slate-100">{copy.title}</h1>
           {ctx?.orgName && (
-            <p className="text-xs text-gray-500 mt-1">Organization: <span className="font-semibold">{ctx.orgName}</span></p>
+            <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">Organization: <span className="font-semibold">{ctx.orgName}</span></p>
           )}
-          <p className="text-sm text-gray-600 mt-3">{copy.body}</p>
+          <p className="text-sm text-gray-600 dark:text-slate-300 mt-3">{copy.body}</p>
           <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
             {ctx?.orgSlug && copy.icon === "ok" ? (
               <Link
@@ -173,16 +173,16 @@ function renderError(
 function renderSignInGate(opts: { orgName: string; invitedEmail: string; token: string }) {
   const next = encodeURIComponent(`/orgs/invite/accept?token=${opts.token}`);
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       <Navbar />
       <main className="max-w-xl mx-auto px-4 py-16">
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 text-center">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm p-6 text-center">
           <div className="mx-auto w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center mb-4">
             <LogIn className="w-7 h-7 text-blue-700" />
           </div>
-          <h1 className="text-2xl font-bold text-[#0f2a4a]">Sign in to accept your invitation</h1>
-          <p className="text-sm text-gray-600 mt-3">
-            You&apos;ve been invited to co-manage <span className="font-semibold">{opts.orgName}</span> on ForaHub. Sign in with <span className="font-mono break-all text-[#0f2a4a]">{opts.invitedEmail}</span> to accept — Google or Microsoft if you have a work account, otherwise email + password.
+          <h1 className="text-2xl font-bold text-[#0f2a4a] dark:text-slate-100">Sign in to accept your invitation</h1>
+          <p className="text-sm text-gray-600 dark:text-slate-300 mt-3">
+            You&apos;ve been invited to co-manage <span className="font-semibold">{opts.orgName}</span> on ForaHub. Sign in with <span className="font-mono break-all text-[#0f2a4a] dark:text-slate-100">{opts.invitedEmail}</span> to accept — Google or Microsoft if you have a work account, otherwise email + password.
           </p>
           <div className="mt-6 flex flex-col gap-3">
             <Link
@@ -212,16 +212,16 @@ function renderWrongAccount(opts: {
 }) {
   const next = encodeURIComponent(`/orgs/invite/accept?token=${opts.token}`);
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       <Navbar />
       <main className="max-w-xl mx-auto px-4 py-16">
-        <div className="bg-white rounded-2xl border border-amber-200 shadow-sm p-6 text-center">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-amber-200 shadow-sm p-6 text-center">
           <div className="mx-auto w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center mb-4">
             <AlertCircle className="w-7 h-7 text-amber-700" />
           </div>
-          <h1 className="text-2xl font-bold text-[#0f2a4a]">You&apos;re signed in as the wrong account</h1>
-          <p className="text-sm text-gray-600 mt-3">
-            This invitation was sent to <span className="font-mono text-[#0f2a4a] break-all">{opts.invitedEmail}</span>, but you&apos;re currently signed in as <span className="font-mono break-all">{opts.currentEmail}</span>. Sign out and sign back in with the invited email to accept.
+          <h1 className="text-2xl font-bold text-[#0f2a4a] dark:text-slate-100">You&apos;re signed in as the wrong account</h1>
+          <p className="text-sm text-gray-600 dark:text-slate-300 mt-3">
+            This invitation was sent to <span className="font-mono text-[#0f2a4a] dark:text-slate-100 break-all">{opts.invitedEmail}</span>, but you&apos;re currently signed in as <span className="font-mono break-all">{opts.currentEmail}</span>. Sign out and sign back in with the invited email to accept.
           </p>
           <div className="mt-6 flex flex-col gap-3">
             <Link
@@ -252,26 +252,26 @@ function renderAcceptCta(opts: {
   token: string;
 }) {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       <Navbar />
       <main className="max-w-xl mx-auto px-4 py-16">
-        <div className="bg-white rounded-2xl border border-emerald-200 shadow-sm p-6 md:p-8">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-emerald-200 shadow-sm p-6 md:p-8">
           <div className="mx-auto w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center mb-4">
             <CheckCircle2 className="w-7 h-7 text-emerald-600" />
           </div>
-          <h1 className="text-2xl font-bold text-[#0f2a4a] text-center">
+          <h1 className="text-2xl font-bold text-[#0f2a4a] dark:text-slate-100 text-center">
             Join {opts.orgName} as a co-manager
           </h1>
-          <p className="text-sm text-gray-600 mt-3 text-center">
-            You&apos;re signed in as <span className="font-mono text-[#0f2a4a] break-all">{opts.invitedEmail}</span>.
+          <p className="text-sm text-gray-600 dark:text-slate-300 mt-3 text-center">
+            You&apos;re signed in as <span className="font-mono text-[#0f2a4a] dark:text-slate-100 break-all">{opts.invitedEmail}</span>.
             {opts.inviterEmail && (
-              <> Invited by <span className="font-mono text-[#0f2a4a] break-all">{opts.inviterEmail}</span>.</>
+              <> Invited by <span className="font-mono text-[#0f2a4a] dark:text-slate-100 break-all">{opts.inviterEmail}</span>.</>
             )}
           </p>
           {opts.note && (
-            <div className="mt-5 bg-gray-50 border-l-4 border-[#4ea8de] rounded-r-md px-4 py-3 text-left">
-              <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Note from inviter</p>
-              <p className="text-sm text-gray-800 italic">&quot;{opts.note}&quot;</p>
+            <div className="mt-5 bg-gray-50 dark:bg-slate-900 border-l-4 border-[#4ea8de] rounded-r-md px-4 py-3 text-left">
+              <p className="text-[11px] font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Note from inviter</p>
+              <p className="text-sm text-gray-800 dark:text-slate-100 italic">&quot;{opts.note}&quot;</p>
             </div>
           )}
           <div className="mt-6">

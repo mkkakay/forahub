@@ -62,12 +62,24 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // Pre-paint theme script — applies the saved theme class to <html>
+  // before first paint so dark-mode users don't see a white flash. Runs
+  // before React hydrates; the ThemeProvider then keeps state in sync.
+  const themeInit = `(() => { try {
+    var t = localStorage.getItem('forahub-theme') || 'light';
+    var r = document.documentElement;
+    r.classList.remove('dark','high-contrast');
+    if (t === 'dark') r.classList.add('dark');
+    else if (t === 'high-contrast') r.classList.add('dark','high-contrast');
+  } catch (e) {} })();`;
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="canonical" href={process.env.NEXT_PUBLIC_APP_URL || "https://forahub.org"} />
+        <script dangerouslySetInnerHTML={{ __html: themeInit }} />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 dark:bg-[#0f172a] text-gray-900 dark:text-white transition-colors duration-200`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground transition-colors duration-200`}>
         <Providers>
           <div className="flex flex-col min-h-screen pb-16 md:pb-0">
             {children}

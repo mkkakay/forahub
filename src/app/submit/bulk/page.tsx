@@ -43,8 +43,8 @@ const SDG_LABELS: Record<number, string> = {
 };
 
 const inputClass =
-  "w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-800 placeholder-gray-400 hover:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-colors";
-const labelClass = "block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5";
+  "w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-gray-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 hover:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-colors";
+const labelClass = "block text-xs font-semibold text-gray-600 dark:text-slate-300 uppercase tracking-wider mb-1.5";
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
 const ACCEPTED_EXTENSIONS = ".pdf,.docx,.csv,.xlsx,.xls,.txt,.md";
@@ -55,7 +55,7 @@ function confidenceBadge(c: Confidence) {
       ? "bg-green-100 text-green-800 border-green-200"
       : c === "medium"
       ? "bg-amber-100 text-amber-900 border-amber-200"
-      : "bg-gray-100 text-gray-700 border-gray-200";
+      : "bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-200 border-gray-200 dark:border-slate-700";
   return (
     <span className={`inline-flex items-center text-[10px] font-bold uppercase tracking-wider border rounded-full px-2 py-0.5 ${cls}`}>
       {c}
@@ -253,14 +253,14 @@ export default function BulkSubmitPage() {
   // ── Success state ─────────────────────────────────────────────────
   if (submitSuccess) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
         <Navbar />
         <main className="max-w-2xl mx-auto px-4 py-16">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 text-center">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm p-8 text-center">
             <div className="mx-auto w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mb-4">
               <CheckCircle2 size={28} className="text-green-600" />
             </div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-[#0f2a4a] flex items-center justify-center gap-2">
+            <h1 className="text-2xl md:text-3xl font-extrabold text-[#0f2a4a] dark:text-slate-100 flex items-center justify-center gap-2">
               <CheckCircle2 className="w-7 h-7 text-green-600" />
               {submitSuccess.submitted} event{submitSuccess.submitted === 1 ? "" : "s"} submitted for review
             </h1>
@@ -269,7 +269,7 @@ export default function BulkSubmitPage() {
                 {submitSuccess.skipped} event{submitSuccess.skipped === 1 ? " was" : "s were"} skipped (missing required fields).
               </p>
             )}
-            <p className="text-base text-gray-600 mt-3">
+            <p className="text-base text-gray-600 dark:text-slate-300 mt-3">
               All events go through admin review before publishing. You&apos;ll receive an email when each is approved.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
@@ -281,7 +281,7 @@ export default function BulkSubmitPage() {
               </Link>
               <Link
                 href="/"
-                className="inline-flex items-center gap-2 border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold px-5 py-2.5 rounded-xl text-sm"
+                className="inline-flex items-center gap-2 border border-gray-300 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-900 text-gray-700 dark:text-slate-200 font-semibold px-5 py-2.5 rounded-xl text-sm"
               >
                 Back to ForaHub
               </Link>
@@ -294,25 +294,25 @@ export default function BulkSubmitPage() {
 
   // ── Main page ─────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       <Navbar />
       <main className="max-w-3xl mx-auto px-4 py-8 md:py-12">
         <header className="mb-6 text-center md:text-left">
-          <h1 className="text-3xl md:text-4xl font-extrabold text-[#0f2a4a] tracking-tight flex items-center justify-center md:justify-start gap-3">
+          <h1 className="text-3xl md:text-4xl font-extrabold text-[#0f2a4a] dark:text-slate-100 tracking-tight flex items-center justify-center md:justify-start gap-3">
             <Package className="w-8 h-8 text-amber-600" />
             Bulk import events
           </h1>
-          <p className="text-base text-gray-600 mt-2">
+          <p className="text-base text-gray-600 dark:text-slate-300 mt-2">
             Paste a list, upload a document, or paste a URL — we&apos;ll detect each event and let you review.
           </p>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
             Submitting one event? <Link href="/submit/single" className="text-blue-600 hover:underline font-medium">Use the single-event form →</Link>
           </p>
         </header>
 
         {/* Input card */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 md:p-6">
-          <div className="grid grid-cols-3 gap-1 p-1 bg-gray-50 rounded-xl mb-5">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm p-5 md:p-6">
+          <div className="grid grid-cols-3 gap-1 p-1 bg-gray-50 dark:bg-slate-900 rounded-xl mb-5">
             {(["paste", "upload", "url"] as const).map(t => (
               <button
                 key={t}
@@ -321,11 +321,11 @@ export default function BulkSubmitPage() {
                 className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
                   tab === t
                     ? "bg-blue-600 text-white shadow-md"
-                    : "text-gray-700 hover:bg-gray-100"
+                    : "text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800"
                 }`}
               >
-                {t === "paste" && <ClipboardList className={`w-5 h-5 ${tab === t ? "text-white" : "text-slate-600"}`} />}
-                {t === "upload" && <Paperclip className={`w-5 h-5 ${tab === t ? "text-white" : "text-slate-600"}`} />}
+                {t === "paste" && <ClipboardList className={`w-5 h-5 ${tab === t ? "text-white" : "text-slate-600 dark:text-slate-300"}`} />}
+                {t === "upload" && <Paperclip className={`w-5 h-5 ${tab === t ? "text-white" : "text-slate-600 dark:text-slate-300"}`} />}
                 {t === "url" && <Link2 className={`w-5 h-5 ${tab === t ? "text-white" : "text-blue-600"}`} />}
                 <span>{t === "paste" ? "Paste content" : t === "upload" ? "Upload file" : "Paste URL"}</span>
               </button>
@@ -342,7 +342,7 @@ export default function BulkSubmitPage() {
                 placeholder="Paste your events list, calendar table, or any text..."
                 className={inputClass}
               />
-              <p className="text-[11px] text-gray-500 mt-1">Any format works: bullets, tables, prose, JSON. We&apos;ll figure it out.</p>
+              <p className="text-[11px] text-gray-500 dark:text-slate-400 mt-1">Any format works: bullets, tables, prose, JSON. We&apos;ll figure it out.</p>
             </div>
           )}
 
@@ -351,7 +351,7 @@ export default function BulkSubmitPage() {
               <label className={labelClass}>Upload a document</label>
               <label
                 className={`block border-2 border-dashed rounded-xl px-4 py-8 text-center cursor-pointer transition-colors ${
-                  dragOver ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:border-blue-400 bg-gray-50"
+                  dragOver ? "border-blue-500 bg-blue-50" : "border-gray-300 dark:border-slate-600 hover:border-blue-400 bg-gray-50 dark:bg-slate-900"
                 }`}
                 onDragOver={e => { e.preventDefault(); setDragOver(true); }}
                 onDragLeave={() => setDragOver(false)}
@@ -371,16 +371,16 @@ export default function BulkSubmitPage() {
                     if (f) setFile(f);
                   }}
                 />
-                <Upload size={28} className="text-gray-400 mx-auto mb-2" />
+                <Upload size={28} className="text-gray-400 dark:text-slate-500 mx-auto mb-2" />
                 {file ? (
                   <>
-                    <p className="text-sm font-semibold text-gray-800">{file.name}</p>
-                    <p className="text-xs text-gray-500 mt-1">{(file.size / 1024).toFixed(1)} KB · click to change</p>
+                    <p className="text-sm font-semibold text-gray-800 dark:text-slate-100">{file.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">{(file.size / 1024).toFixed(1)} KB · click to change</p>
                   </>
                 ) : (
                   <>
-                    <p className="text-sm font-semibold text-gray-700">Drop a file or click to choose</p>
-                    <p className="text-xs text-gray-500 mt-1">PDF, DOCX, CSV, XLSX, or TXT · max 10MB</p>
+                    <p className="text-sm font-semibold text-gray-700 dark:text-slate-200">Drop a file or click to choose</p>
+                    <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">PDF, DOCX, CSV, XLSX, or TXT · max 10MB</p>
                   </>
                 )}
               </label>
@@ -391,7 +391,7 @@ export default function BulkSubmitPage() {
             <div>
               <label className={labelClass}>URL to your org&apos;s events page</label>
               <div className="relative">
-                <LinkIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <LinkIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
                 <input
                   type="url"
                   value={urlInput}
@@ -400,7 +400,7 @@ export default function BulkSubmitPage() {
                   className={`${inputClass} pl-9`}
                 />
               </div>
-              <p className="text-[11px] text-gray-500 mt-1">A page listing multiple events works best.</p>
+              <p className="text-[11px] text-gray-500 dark:text-slate-400 mt-1">A page listing multiple events works best.</p>
             </div>
           )}
 
@@ -432,7 +432,7 @@ export default function BulkSubmitPage() {
           <div className="mt-8">
             <div className="flex items-end justify-between mb-3">
               <div>
-                <h2 className="text-xl md:text-2xl font-bold text-[#0f2a4a] flex items-center gap-2">
+                <h2 className="text-xl md:text-2xl font-bold text-[#0f2a4a] dark:text-slate-100 flex items-center gap-2">
                   <Target className="w-5 h-5 text-blue-600" />
                   Detected {detected.filter(e => !e.removed).length} event{detected.filter(e => !e.removed).length === 1 ? "" : "s"}
                 </h2>
@@ -443,7 +443,7 @@ export default function BulkSubmitPage() {
                   </p>
                 )}
               </div>
-              <p className="text-xs text-gray-500">{detected.filter(e => e.removed).length} removed</p>
+              <p className="text-xs text-gray-500 dark:text-slate-400">{detected.filter(e => e.removed).length} removed</p>
             </div>
 
             <ul className="space-y-3">
@@ -458,7 +458,7 @@ export default function BulkSubmitPage() {
 
             {/* Email field for anonymous */}
             {!userId && (
-              <div className="mt-6 bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+              <div className="mt-6 bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm p-5">
                 <label className={labelClass}>Your email <span className="text-red-500">*</span></label>
                 <input
                   type="email"
@@ -467,7 +467,7 @@ export default function BulkSubmitPage() {
                   placeholder="you@example.com"
                   className={inputClass}
                 />
-                <p className="text-[11px] text-gray-500 mt-1">We&apos;ll email you when your events are approved.</p>
+                <p className="text-[11px] text-gray-500 dark:text-slate-400 mt-1">We&apos;ll email you when your events are approved.</p>
               </div>
             )}
 
@@ -508,7 +508,7 @@ function EventCard({
 }) {
   if (event.removed) {
     return (
-      <li className="bg-gray-50 border border-gray-200 rounded-xl p-3 flex items-center justify-between text-sm text-gray-500">
+      <li className="bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-3 flex items-center justify-between text-sm text-gray-500 dark:text-slate-400">
         <span className="line-through truncate">{event.title}</span>
         <button
           type="button"
@@ -522,7 +522,7 @@ function EventCard({
   }
 
   return (
-    <li className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+    <li className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-center gap-2 flex-wrap">
           {confidenceBadge(event.confidence)}
@@ -572,7 +572,7 @@ function EventCard({
       />
 
       {event.expanded && (
-        <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
+        <div className="mt-3 pt-3 border-t border-gray-100 dark:border-slate-800 space-y-2">
           <div>
             <label className={labelClass}>Description</label>
             <textarea
@@ -617,7 +617,7 @@ function EventCard({
               className={inputClass}
             />
           </div>
-          <label className="flex items-center gap-2 text-sm text-gray-700 mt-1">
+          <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-200 mt-1">
             <input
               type="checkbox"
               checked={event.is_online}

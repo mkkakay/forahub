@@ -44,7 +44,7 @@ export default function AnalyticsDeleteAction() {
 
   if (signedIn === false) {
     return (
-      <div className="inline-flex items-center gap-2 text-xs text-gray-500">
+      <div className="inline-flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400">
         <ShieldOff size={12} /> Sign in to see this option.
       </div>
     );
@@ -75,7 +75,7 @@ export default function AnalyticsDeleteAction() {
           <button
             type="button"
             onClick={() => setConfirming(false)}
-            className="text-xs text-gray-500 hover:text-gray-700"
+            className="text-xs text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200"
           >
             Cancel
           </button>

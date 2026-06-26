@@ -72,15 +72,15 @@ export default async function ManageOrgPage({
   // Authoritative access check — same predicate /claim short-circuits on.
   if (!(await isOrgManager(org.slug, userId!))) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
         <Navbar />
         <main className="max-w-xl mx-auto px-4 py-16">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 text-center">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm p-6 text-center">
             <div className="mx-auto w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center mb-4">
               <Lock className="w-7 h-7 text-amber-600" />
             </div>
-            <h1 className="text-2xl font-bold text-[#0f2a4a]">You don&apos;t have access to manage this org</h1>
-            <p className="text-sm text-gray-600 mt-2">
+            <h1 className="text-2xl font-bold text-[#0f2a4a] dark:text-slate-100">You don&apos;t have access to manage this org</h1>
+            <p className="text-sm text-gray-600 dark:text-slate-300 mt-2">
               Only verified managers can edit <span className="font-semibold">{org.name}</span>. If you&apos;re a colleague, claim it with your work email.
             </p>
             <div className="mt-6">
@@ -260,26 +260,26 @@ export default async function ManageOrgPage({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       <Navbar />
       <main className="max-w-5xl mx-auto px-4 py-8 md:py-10">
         {/* Header card — logo + name + verified badge + key stats + CTAs */}
-        <section className="mb-6 bg-white rounded-2xl border border-gray-200/80 shadow-[0_1px_2px_rgba(15,42,74,0.04)] p-5 md:p-6">
+        <section className="mb-6 bg-white dark:bg-slate-800 rounded-2xl border border-gray-200/80 dark:border-slate-700/80 shadow-[0_1px_2px_rgba(15,42,74,0.04)] p-5 md:p-6">
           <div className="flex flex-col md:flex-row md:items-center gap-5">
             {/* Logo tile */}
-            <div className="shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-gray-50 border border-gray-200/80 flex items-center justify-center overflow-hidden">
+            <div className="shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-gray-50 dark:bg-slate-900 border border-gray-200/80 dark:border-slate-700/80 flex items-center justify-center overflow-hidden">
               {org.logo_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={org.logo_url} alt={`${org.name} logo`} className="max-w-full max-h-full object-contain p-2" />
               ) : (
-                <Building2 className="w-7 h-7 text-gray-300" aria-hidden="true" />
+                <Building2 className="w-7 h-7 text-gray-300 dark:text-slate-600" aria-hidden="true" />
               )}
             </div>
 
             {/* Identity */}
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-xl md:text-2xl font-bold text-[#0f2a4a] tracking-tight truncate">
+                <h1 className="text-xl md:text-2xl font-bold text-[#0f2a4a] dark:text-slate-100 tracking-tight truncate">
                   {org.name}
                 </h1>
                 {org.is_verified && (
@@ -291,21 +291,21 @@ export default async function ManageOrgPage({
                   </span>
                 )}
                 {!org.is_verified && org.is_claimed && (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-[#0f2a4a] bg-[#0f2a4a]/5 border border-[#0f2a4a]/15 rounded-full px-2 py-0.5">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-[#0f2a4a] dark:text-slate-100 bg-[#0f2a4a]/5 border border-[#0f2a4a]/15 rounded-full px-2 py-0.5">
                     <ShieldCheck className="w-3 h-3" /> Claimed
                   </span>
                 )}
               </div>
               {(org.short_name || org.domain) && (
-                <p className="text-xs text-gray-500 mt-1 inline-flex items-center gap-2">
+                <p className="text-xs text-gray-500 dark:text-slate-400 mt-1 inline-flex items-center gap-2">
                   {org.short_name && <span>{org.short_name}</span>}
-                  {org.short_name && org.domain && <span className="text-gray-300" aria-hidden="true">·</span>}
+                  {org.short_name && org.domain && <span className="text-gray-300 dark:text-slate-600" aria-hidden="true">·</span>}
                   {org.domain && <span className="font-mono">@{org.domain}</span>}
                 </p>
               )}
               <Link
                 href={`/organizations/${org.slug}`}
-                className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-[#0f2a4a]/70 hover:text-[#0f2a4a] hover:underline underline-offset-2"
+                className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-[#0f2a4a]/70 hover:text-[#0f2a4a] dark:hover:text-slate-100 hover:underline underline-offset-2"
               >
                 <Globe className="w-3 h-3" /> View public page
               </Link>
@@ -321,7 +321,7 @@ export default async function ManageOrgPage({
               </Link>
               <Link
                 href={`/organizations/${org.slug}`}
-                className="inline-flex items-center justify-center gap-1.5 bg-white text-[#0f2a4a] font-semibold text-sm px-4 py-2 rounded-xl border border-gray-200 hover:border-[#0f2a4a]/40 hover:bg-gray-50 transition-colors"
+                className="inline-flex items-center justify-center gap-1.5 bg-white dark:bg-slate-800 text-[#0f2a4a] dark:text-slate-100 font-semibold text-sm px-4 py-2 rounded-xl border border-gray-200 dark:border-slate-700 hover:border-[#0f2a4a]/40 hover:bg-gray-50 dark:hover:bg-slate-900 transition-colors"
               >
                 <Globe className="w-4 h-4" /> Public page
               </Link>
@@ -329,7 +329,7 @@ export default async function ManageOrgPage({
           </div>
 
           {/* Stats strip */}
-          <dl className="mt-5 grid grid-cols-3 gap-3 border-t border-gray-100 pt-4">
+          <dl className="mt-5 grid grid-cols-3 gap-3 border-t border-gray-100 dark:border-slate-800 pt-4">
             <Stat
               label="Published events"
               value={(publishedEventsCount ?? 0).toLocaleString()}
@@ -390,11 +390,11 @@ function Stat({ label, value, Icon }: { label: string; value: string; Icon: type
   return (
     <div className="flex items-start gap-2.5">
       <span className="shrink-0 w-8 h-8 rounded-lg bg-[#0f2a4a]/5 flex items-center justify-center">
-        <Icon className="w-4 h-4 text-[#0f2a4a]" aria-hidden="true" />
+        <Icon className="w-4 h-4 text-[#0f2a4a] dark:text-slate-100" aria-hidden="true" />
       </span>
       <div className="min-w-0">
-        <div className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">{label}</div>
-        <div className="text-lg font-bold text-[#0f2a4a] leading-tight tabular-nums">{value}</div>
+        <div className="text-[11px] font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">{label}</div>
+        <div className="text-lg font-bold text-[#0f2a4a] dark:text-slate-100 leading-tight tabular-nums">{value}</div>
       </div>
     </div>
   );
@@ -423,26 +423,26 @@ function SettingsTab({ org }: { org: OrgRow }) {
       <SettingsCard title="Organization status" subtitle="At a glance.">
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
           <div>
-            <dt className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">Verification</dt>
-            <dd className="mt-1.5 inline-flex items-center gap-1.5 text-[#0f2a4a] font-semibold">
+            <dt className="text-[11px] font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Verification</dt>
+            <dd className="mt-1.5 inline-flex items-center gap-1.5 text-[#0f2a4a] dark:text-slate-100 font-semibold">
               {org.is_verified ? (
                 <><BadgeCheck className="w-4 h-4 text-emerald-600" /> Verified</>
               ) : org.is_claimed ? (
                 <><ShieldCheck className="w-4 h-4 text-[#4ea8de]" /> Claimed</>
               ) : (
-                <span className="text-gray-500">Not claimed</span>
+                <span className="text-gray-500 dark:text-slate-400">Not claimed</span>
               )}
             </dd>
             {org.domain && (
-              <dd className="text-xs text-gray-500 mt-1">
+              <dd className="text-xs text-gray-500 dark:text-slate-400 mt-1">
                 Domain on file: <span className="font-mono">@{org.domain}</span>
               </dd>
             )}
           </div>
           <div>
-            <dt className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">First verified</dt>
-            <dd className="mt-1.5 text-[#0f2a4a] font-semibold inline-flex items-center gap-1.5">
-              <CalendarIcon className="w-3.5 h-3.5 text-gray-400" />
+            <dt className="text-[11px] font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">First verified</dt>
+            <dd className="mt-1.5 text-[#0f2a4a] dark:text-slate-100 font-semibold inline-flex items-center gap-1.5">
+              <CalendarIcon className="w-3.5 h-3.5 text-gray-400 dark:text-slate-500" />
               {verifiedAt ?? "—"}
             </dd>
           </div>
@@ -451,33 +451,33 @@ function SettingsTab({ org }: { org: OrgRow }) {
 
       {/* 2. Verification provenance */}
       <SettingsCard title="Verification" subtitle="How ForaHub confirmed this organization.">
-        <p className="text-sm text-gray-700 leading-relaxed">{verificationCopy}</p>
+        <p className="text-sm text-gray-700 dark:text-slate-200 leading-relaxed">{verificationCopy}</p>
       </SettingsCard>
 
       {/* 3. Public page + copy link */}
       <SettingsCard title="Public page" subtitle="What you share to LinkedIn, Slack, or email.">
         <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-          <code className="flex-1 min-w-0 text-xs text-gray-600 bg-gray-50 border border-gray-200/80 rounded-lg px-3 py-2 font-mono truncate">
+          <code className="flex-1 min-w-0 text-xs text-gray-600 dark:text-slate-300 bg-gray-50 dark:bg-slate-900 border border-gray-200/80 dark:border-slate-700/80 rounded-lg px-3 py-2 font-mono truncate">
             {publicUrl}
           </code>
           <div className="flex gap-2 shrink-0">
             <CopyLinkButton url={publicUrl} />
             <Link
               href={`/organizations/${org.slug}`}
-              className="inline-flex items-center justify-center gap-1.5 text-sm font-semibold text-[#0f2a4a] bg-white border border-gray-200/80 hover:border-[#0f2a4a]/40 hover:bg-gray-50 rounded-lg px-3 py-2"
+              className="inline-flex items-center justify-center gap-1.5 text-sm font-semibold text-[#0f2a4a] dark:text-slate-100 bg-white dark:bg-slate-800 border border-gray-200/80 dark:border-slate-700/80 hover:border-[#0f2a4a]/40 hover:bg-gray-50 dark:hover:bg-slate-900 rounded-lg px-3 py-2"
             >
               Open
             </Link>
           </div>
         </div>
-        <p className="text-xs text-gray-500 mt-2.5">
+        <p className="text-xs text-gray-500 dark:text-slate-400 mt-2.5">
           Anything you update under Profile appears here immediately.
         </p>
       </SettingsCard>
 
       {/* 4. Publishing permissions */}
       <SettingsCard title="Publishing permissions" subtitle="Who can publish events instantly.">
-        <ul className="space-y-2 text-sm text-gray-700">
+        <ul className="space-y-2 text-sm text-gray-700 dark:text-slate-200">
           <li className="flex items-start gap-2">
             <ShieldCheck className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
             <span>Domain-verified managers publish instantly.</span>
@@ -487,7 +487,7 @@ function SettingsTab({ org }: { org: OrgRow }) {
             <span>Invited / admin-reviewed managers can be granted instant publishing from the Team tab.</span>
           </li>
           <li className="flex items-start gap-2">
-            <CalendarIcon className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
+            <CalendarIcon className="w-4 h-4 text-gray-400 dark:text-slate-500 mt-0.5 shrink-0" />
             <span>A rolling 24-hour soft cap protects against accidental flooding.</span>
           </li>
         </ul>
@@ -498,10 +498,10 @@ function SettingsTab({ org }: { org: OrgRow }) {
 
 function SettingsCard({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <section className="bg-white rounded-2xl border border-gray-200/80 shadow-[0_1px_2px_rgba(15,42,74,0.04)] p-5 md:p-6">
+    <section className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200/80 dark:border-slate-700/80 shadow-[0_1px_2px_rgba(15,42,74,0.04)] p-5 md:p-6">
       <div className="mb-3">
-        <h2 className="text-sm font-bold text-[#0f2a4a]">{title}</h2>
-        {subtitle && <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>}
+        <h2 className="text-sm font-bold text-[#0f2a4a] dark:text-slate-100">{title}</h2>
+        {subtitle && <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">{subtitle}</p>}
       </div>
       {children}
     </section>

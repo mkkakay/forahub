@@ -59,13 +59,13 @@ export default function SubmitMetricsStrip({ metrics }: Props) {
       {tiles.map(({ label, Icon, display }) => (
         <div
           key={label}
-          className="bg-white border border-gray-200/70 rounded-2xl px-5 py-4 shadow-[0_1px_2px_rgba(15,42,74,0.04)]"
+          className="bg-white dark:bg-slate-800 border border-gray-200/70 dark:border-slate-700/70 rounded-2xl px-5 py-4 shadow-[0_1px_2px_rgba(15,42,74,0.04)]"
         >
-          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-gray-500">
+          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">
             <Icon className="w-3.5 h-3.5 text-[#0f2a4a]/60" aria-hidden="true" />
             {label}
           </div>
-          <div className="mt-1.5 text-2xl md:text-[28px] font-bold text-[#0f2a4a] tabular-nums leading-tight">
+          <div className="mt-1.5 text-2xl md:text-[28px] font-bold text-[#0f2a4a] dark:text-slate-100 tabular-nums leading-tight">
             {display}
           </div>
         </div>

@@ -376,7 +376,7 @@ export default function TrustLogosPanel({ adminSecret }: { adminSecret: string }
                   return (
                     <li key={row.id} className="p-3 grid grid-cols-1 md:grid-cols-[110px_1fr_auto] gap-3 items-start">
                       {/* Thumbnail */}
-                      <div className="w-full md:w-[110px] h-16 rounded-md border border-blue-900/40 bg-white flex items-center justify-center overflow-hidden">
+                      <div className="w-full md:w-[110px] h-16 rounded-md border border-blue-900/40 bg-white dark:bg-slate-800 flex items-center justify-center overflow-hidden">
                         {failed ? (
                           <div className="flex flex-col items-center gap-1 text-amber-700 px-2">
                             <AlertTriangle size={14} />

@@ -356,7 +356,7 @@ export default function EventsClient({
       <div
         key={event.id}
         onClick={() => router.push(`/events/${event.id}`)}
-        className={`bg-white rounded-2xl border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col group cursor-pointer overflow-hidden ${isPast ? "border-gray-100 opacity-80" : "border-gray-200"}`}
+        className={`bg-white dark:bg-slate-800 rounded-2xl border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col group cursor-pointer overflow-hidden ${isPast ? "border-gray-100 dark:border-slate-800 opacity-80" : "border-gray-200 dark:border-slate-700"}`}
       >
         {/* Cover */}
         <div
@@ -371,7 +371,7 @@ export default function EventsClient({
               aria-hidden="true"
               className={
                 event.banner_display_mode === "contain"
-                  ? "w-full h-full object-contain object-center bg-white"
+                  ? "w-full h-full object-contain object-center bg-white dark:bg-slate-800"
                   : "w-full h-full object-cover object-center"
               }
               loading="lazy"
@@ -393,7 +393,7 @@ export default function EventsClient({
               <img
                 src={logoUrl}
                 alt={event.organization}
-                className="w-8 h-8 rounded-md bg-white border border-white/40 object-contain p-1 shadow-sm"
+                className="w-8 h-8 rounded-md bg-white dark:bg-slate-800 border border-white/40 object-contain p-1 shadow-sm"
                 loading="lazy"
               />
               <span className="text-white text-xs font-semibold truncate max-w-[140px] drop-shadow-sm">
@@ -413,7 +413,7 @@ export default function EventsClient({
           <div className="flex items-start justify-between gap-2 flex-wrap">
             <div className="flex items-center gap-2 flex-wrap">
               {isPast && (
-                <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-500">
+                <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400">
                   <Clock size={10} /> Past
                 </span>
               )}
@@ -444,28 +444,28 @@ export default function EventsClient({
                 </span>
               )}
             </div>
-            <span className="text-xs text-gray-400 shrink-0">{FORMAT_LABELS[event.format]}</span>
+            <span className="text-xs text-gray-400 dark:text-slate-500 shrink-0">{FORMAT_LABELS[event.format]}</span>
           </div>
-          <h3 className="text-[#0f2a4a] font-semibold text-base leading-snug group-hover:text-[#4ea8de] transition-colors">
+          <h3 className="text-[#0f2a4a] dark:text-slate-100 font-semibold text-base leading-snug group-hover:text-[#4ea8de] transition-colors">
             {event.title}
           </h3>
           {event.description && (
-            <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">{event.description}</p>
+            <p className="text-gray-500 dark:text-slate-400 text-sm leading-relaxed line-clamp-2">{event.description}</p>
           )}
-          <div className="flex flex-col gap-2 mt-auto text-sm text-gray-500">
+          <div className="flex flex-col gap-2 mt-auto text-sm text-gray-500 dark:text-slate-400">
             <span className="flex items-center gap-2">
-              <Calendar size={14} className="shrink-0 text-gray-400" />
+              <Calendar size={14} className="shrink-0 text-gray-400 dark:text-slate-500" />
               {formatDateRange(event.start_date, event.end_date)}
             </span>
             {event.location && (
               <span className="flex items-center gap-2">
-                <MapPin size={14} className="shrink-0 text-gray-400" />
+                <MapPin size={14} className="shrink-0 text-gray-400 dark:text-slate-500" />
                 {event.location}
               </span>
             )}
             {event.organization && (
               <span className="flex items-center gap-2">
-                <Building2 size={14} className="shrink-0 text-gray-400" />
+                <Building2 size={14} className="shrink-0 text-gray-400 dark:text-slate-500" />
                 {event.organization}
               </span>
             )}
@@ -481,7 +481,7 @@ export default function EventsClient({
               Register →
             </a>
           )}
-          <div className="flex items-center justify-end gap-0.5 pt-2 border-t border-gray-100">
+          <div className="flex items-center justify-end gap-0.5 pt-2 border-t border-gray-100 dark:border-slate-800">
             <BookmarkButton
               eventId={event.id}
               initialSaved={savedIds.has(event.id)}
@@ -524,7 +524,7 @@ export default function EventsClient({
       <div
         key={event.id}
         onClick={() => router.push(`/events/${event.id}`)}
-        className="shrink-0 w-[340px] md:w-[380px] snap-start bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 overflow-hidden cursor-pointer group"
+        className="shrink-0 w-[340px] md:w-[380px] snap-start bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 overflow-hidden cursor-pointer group"
       >
         <div
           className="relative h-52 overflow-hidden flex items-center justify-center"
@@ -538,7 +538,7 @@ export default function EventsClient({
               aria-hidden="true"
               className={
                 event.banner_display_mode === "contain"
-                  ? "w-full h-full object-contain object-center bg-white"
+                  ? "w-full h-full object-contain object-center bg-white dark:bg-slate-800"
                   : "w-full h-full object-cover"
               }
               loading="lazy"
@@ -560,7 +560,7 @@ export default function EventsClient({
               <img
                 src={logoUrl}
                 alt={event.organization}
-                className="w-8 h-8 rounded-md bg-white border border-white/40 object-contain p-1 shadow-sm"
+                className="w-8 h-8 rounded-md bg-white dark:bg-slate-800 border border-white/40 object-contain p-1 shadow-sm"
                 loading="lazy"
               />
               <span className="text-white text-xs font-semibold truncate max-w-[160px] drop-shadow-sm">
@@ -594,29 +594,29 @@ export default function EventsClient({
                 SDG {primarySdg}
               </span>
             )}
-            <span className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold">
+            <span className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-slate-400 font-semibold">
               {FORMAT_LABELS[event.format]}
             </span>
           </div>
-          <h3 className="text-[#0f2a4a] font-bold text-lg leading-snug line-clamp-2 group-hover:text-[#4ea8de] transition-colors">
+          <h3 className="text-[#0f2a4a] dark:text-slate-100 font-bold text-lg leading-snug line-clamp-2 group-hover:text-[#4ea8de] transition-colors">
             {event.title}
           </h3>
           {event.description && (
-            <p className="text-gray-600 text-sm leading-relaxed line-clamp-2">{event.description}</p>
+            <p className="text-gray-600 dark:text-slate-300 text-sm leading-relaxed line-clamp-2">{event.description}</p>
           )}
-          <div className="flex flex-col gap-1.5 text-xs text-gray-500">
+          <div className="flex flex-col gap-1.5 text-xs text-gray-500 dark:text-slate-400">
             <span className="flex items-center gap-1.5">
-              <Calendar size={12} className="text-gray-400" />
+              <Calendar size={12} className="text-gray-400 dark:text-slate-500" />
               {formatDateRange(event.start_date, event.end_date)}
             </span>
             {event.location && (
               <span className="flex items-center gap-1.5">
-                <MapPin size={12} className="text-gray-400" />
+                <MapPin size={12} className="text-gray-400 dark:text-slate-500" />
                 {event.location}
               </span>
             )}
             {speakers && (
-              <span className="flex items-center gap-1.5 text-gray-600">
+              <span className="flex items-center gap-1.5 text-gray-600 dark:text-slate-300">
                 <Sparkles size={12} className="text-purple-500" />
                 {speakers}
               </span>
@@ -633,24 +633,24 @@ export default function EventsClient({
           Row 1: primary actions (search + time scope + view mode)
           Row 2: content filters (4 dropdowns + 2 toggles + clear-all)
           Row 3: jump-to-bucket nav + result count */}
-      <div className="bg-white border-b border-gray-200 sticky top-16 z-40">
+      <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 sticky top-16 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="bg-slate-50 rounded-xl p-3 md:p-4 space-y-3">
+          <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-3 md:p-4 space-y-3">
 
             {/* ── Row 1 — Primary actions ──────────────────────────────── */}
             <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3">
               {/* Search */}
-              <div className="flex-1 min-w-0 flex items-center bg-white border border-slate-200 rounded-lg h-11 px-3 gap-2 focus-within:ring-2 focus-within:ring-[#4ea8de] focus-within:border-[#4ea8de] transition-colors">
-                <Search size={16} className="text-slate-400 shrink-0" />
+              <div className="flex-1 min-w-0 flex items-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg h-11 px-3 gap-2 focus-within:ring-2 focus-within:ring-[#4ea8de] focus-within:border-[#4ea8de] transition-colors">
+                <Search size={16} className="text-slate-400 dark:text-slate-500 shrink-0" />
                 <input
                   type="text"
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder="Search events, organizations, topics…"
-                  className="flex-1 min-w-0 text-base md:text-sm text-slate-800 placeholder-slate-400 bg-transparent focus:outline-none"
+                  className="flex-1 min-w-0 text-base md:text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 bg-transparent focus:outline-none"
                 />
                 {search && (
-                  <button onClick={() => setSearch("")} className="text-slate-400 hover:text-slate-700 transition-colors shrink-0" aria-label="Clear search">
+                  <button onClick={() => setSearch("")} className="text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 transition-colors shrink-0" aria-label="Clear search">
                     <X size={14} />
                   </button>
                 )}
@@ -659,7 +659,7 @@ export default function EventsClient({
               <div className="flex items-center gap-2">
                 {/* Time scope toggle — list mode only */}
                 {viewMode === "list" && (
-                  <div className="flex items-center bg-white border border-slate-200 rounded-lg h-11 p-1">
+                  <div className="flex items-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg h-11 p-1">
                     {TIME_VIEW_OPTIONS.map(opt => (
                       <button
                         key={opt.value}
@@ -668,7 +668,7 @@ export default function EventsClient({
                         className={`text-sm font-medium px-3.5 h-full rounded-md transition-colors ${
                           timeView === opt.value
                             ? "bg-[#0f2a4a] text-white"
-                            : "text-slate-600 hover:text-slate-900"
+                            : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100"
                         }`}
                       >
                         {opt.label}
@@ -678,12 +678,12 @@ export default function EventsClient({
                 )}
 
                 {/* View mode: List / Calendar */}
-                <div className="flex items-center bg-white border border-slate-200 rounded-lg h-11 p-1">
+                <div className="flex items-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg h-11 p-1">
                   <button
                     onClick={() => setViewMode("list")}
                     aria-pressed={viewMode === "list"}
                     className={`flex items-center gap-1.5 text-sm font-medium px-3 h-full rounded-md transition-colors ${
-                      viewMode === "list" ? "bg-[#0f2a4a] text-white" : "text-slate-600 hover:text-slate-900"
+                      viewMode === "list" ? "bg-[#0f2a4a] text-white" : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100"
                     }`}
                   >
                     <List size={14} /> List
@@ -692,7 +692,7 @@ export default function EventsClient({
                     onClick={() => setViewMode("calendar")}
                     aria-pressed={viewMode === "calendar"}
                     className={`flex items-center gap-1.5 text-sm font-medium px-3 h-full rounded-md transition-colors ${
-                      viewMode === "calendar" ? "bg-[#0f2a4a] text-white" : "text-slate-600 hover:text-slate-900"
+                      viewMode === "calendar" ? "bg-[#0f2a4a] text-white" : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100"
                     }`}
                   >
                     <CalendarDays size={14} /> Calendar
@@ -703,7 +703,7 @@ export default function EventsClient({
 
             {/* ── Row 2 — Content filters ──────────────────────────────── */}
             <div className="flex flex-wrap items-center gap-2">
-              <Filter size={14} className="text-slate-400 shrink-0 hidden md:block" />
+              <Filter size={14} className="text-slate-400 dark:text-slate-500 shrink-0 hidden md:block" />
 
               {/* Category — humanitarian / development / nexus / policy / research.
                   Leads the row to signal ForaHub serves the whole humanitarian-
@@ -711,8 +711,8 @@ export default function EventsClient({
               <select
                 value={categoryFilter ?? ""}
                 onChange={e => setCategoryFilter(isCategoryKey(e.target.value) ? e.target.value : null)}
-                className={`text-sm h-9 px-3 rounded-lg bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#4ea8de] transition-colors border ${
-                  categoryFilter !== null ? "bg-blue-50/50" : "border-slate-200"
+                className={`text-sm h-9 px-3 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#4ea8de] transition-colors border ${
+                  categoryFilter !== null ? "bg-blue-50/50" : "border-slate-200 dark:border-slate-700"
                 }`}
                 style={categoryFilter !== null ? { borderColor: getCategory(categoryFilter)?.color ?? "#4ea8de" } : undefined}
               >
@@ -726,8 +726,8 @@ export default function EventsClient({
               <select
                 value={sdgFilter ?? ""}
                 onChange={e => setSdgFilter(e.target.value ? Number(e.target.value) : null)}
-                className={`text-sm h-9 px-3 rounded-lg bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#4ea8de] transition-colors border ${
-                  sdgFilter !== null ? "border-[#4ea8de] bg-blue-50/50" : "border-slate-200"
+                className={`text-sm h-9 px-3 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#4ea8de] transition-colors border ${
+                  sdgFilter !== null ? "border-[#4ea8de] bg-blue-50/50" : "border-slate-200 dark:border-slate-700"
                 }`}
               >
                 <option value="">SDG: All</option>
@@ -740,8 +740,8 @@ export default function EventsClient({
               <select
                 value={formatFilter ?? ""}
                 onChange={e => setFormatFilter(e.target.value || null)}
-                className={`text-sm h-9 px-3 rounded-lg bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#4ea8de] transition-colors border ${
-                  formatFilter !== null ? "border-[#4ea8de] bg-blue-50/50" : "border-slate-200"
+                className={`text-sm h-9 px-3 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#4ea8de] transition-colors border ${
+                  formatFilter !== null ? "border-[#4ea8de] bg-blue-50/50" : "border-slate-200 dark:border-slate-700"
                 }`}
               >
                 <option value="">Format: All</option>
@@ -754,8 +754,8 @@ export default function EventsClient({
               <select
                 value={typeFilter ?? ""}
                 onChange={e => setTypeFilter(e.target.value || null)}
-                className={`text-sm h-9 px-3 rounded-lg bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#4ea8de] transition-colors border ${
-                  typeFilter !== null ? "border-[#4ea8de] bg-blue-50/50" : "border-slate-200"
+                className={`text-sm h-9 px-3 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#4ea8de] transition-colors border ${
+                  typeFilter !== null ? "border-[#4ea8de] bg-blue-50/50" : "border-slate-200 dark:border-slate-700"
                 }`}
               >
                 <option value="">Type: All</option>
@@ -768,8 +768,8 @@ export default function EventsClient({
               <select
                 value={regionFilter ?? ""}
                 onChange={e => setRegionFilter(e.target.value || null)}
-                className={`text-sm h-9 px-3 rounded-lg bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#4ea8de] transition-colors border ${
-                  regionFilter !== null ? "border-[#4ea8de] bg-blue-50/50" : "border-slate-200"
+                className={`text-sm h-9 px-3 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#4ea8de] transition-colors border ${
+                  regionFilter !== null ? "border-[#4ea8de] bg-blue-50/50" : "border-slate-200 dark:border-slate-700"
                 }`}
               >
                 <option value="">Region: All</option>
@@ -789,12 +789,12 @@ export default function EventsClient({
                     aria-pressed={active}
                     className={`inline-flex items-center gap-1.5 text-sm font-medium h-9 px-3 rounded-lg border transition-colors ${
                       active
-                        ? "bg-[#4ea8de]/10 border-[#4ea8de] text-[#0f2a4a]"
-                        : "bg-white border-slate-200 text-slate-700 hover:border-slate-300"
+                        ? "bg-[#4ea8de]/10 border-[#4ea8de] text-[#0f2a4a] dark:text-slate-100"
+                        : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600"
                     }`}
                   >
                     <span className={`inline-flex items-center justify-center w-4 h-4 rounded border ${
-                      active ? "bg-[#4ea8de] border-[#4ea8de]" : "border-slate-300 bg-white"
+                      active ? "bg-[#4ea8de] border-[#4ea8de]" : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800"
                     }`}>
                       {active && <Check size={11} className="text-white" strokeWidth={3} />}
                     </span>
@@ -817,7 +817,7 @@ export default function EventsClient({
             <div className="flex flex-wrap items-center gap-2">
               {showSectionedView && buckets.some(b => b.events.length > 0) ? (
                 <>
-                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide mr-1">Jump to:</span>
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 dark:dark:text-slate-500 uppercase tracking-wide mr-1">Jump to:</span>
                   <div className="flex items-center gap-1.5 flex-wrap md:flex-nowrap overflow-x-auto md:overflow-visible">
                     {buckets
                       .filter(b => b.events.length > 0)
@@ -826,7 +826,7 @@ export default function EventsClient({
                           key={b.id}
                           type="button"
                           onClick={() => jumpToBucket(b.id)}
-                          className="inline-flex items-center gap-1 text-xs font-medium h-8 px-3 rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 transition-colors shrink-0"
+                          className="inline-flex items-center gap-1 text-xs font-medium h-8 px-3 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 transition-colors shrink-0"
                         >
                           <Calendar className="w-3 h-3" />
                           {TIME_PILL_LABELS[b.id] ?? b.label}
@@ -837,7 +837,7 @@ export default function EventsClient({
               ) : (
                 <span />
               )}
-              <span className="text-sm text-slate-500 ml-auto">{countLabel}</span>
+              <span className="text-sm text-slate-500 dark:text-slate-400 dark:dark:text-slate-500 ml-auto">{countLabel}</span>
             </div>
           </div>
         </div>
@@ -848,11 +848,11 @@ export default function EventsClient({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
           <div className="flex items-end justify-between mb-3">
             <div>
-              <h2 className="text-xl font-semibold text-[#0f2a4a] inline-flex items-center gap-2">
+              <h2 className="text-xl font-semibold text-[#0f2a4a] dark:text-slate-100 inline-flex items-center gap-2">
                 <Star className="w-5 h-5 text-amber-500 fill-amber-300" />
                 Featured
               </h2>
-              <p className="text-sm text-slate-500">Curated upcoming events</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400 dark:dark:text-slate-500">Curated upcoming events</p>
             </div>
           </div>
           <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2 -mx-1 px-1">
@@ -863,13 +863,13 @@ export default function EventsClient({
 
       {/* Events near you (Upcoming only) */}
       {showNearbyStrip && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 mt-2 border-t border-slate-200">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 mt-2 border-t border-slate-200 dark:border-slate-700">
           <div className="mt-8 mb-4">
-            <h2 className="text-xl font-semibold text-[#0f2a4a] inline-flex items-center gap-2">
+            <h2 className="text-xl font-semibold text-[#0f2a4a] dark:text-slate-100 inline-flex items-center gap-2">
               <MapPin className="w-5 h-5 text-emerald-600" />
               {nearbyCountryName ? `Events in ${nearbyCountryName}` : "Events near you"}
             </h2>
-            <p className="text-sm text-slate-500 mt-0.5">
+            <p className="text-sm text-slate-500 dark:text-slate-400 dark:dark:text-slate-500 mt-0.5">
               {nearby.length} upcoming event{nearby.length === 1 ? "" : "s"} near you
             </p>
           </div>
@@ -914,18 +914,18 @@ export default function EventsClient({
           </>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <Calendar size={48} className="text-gray-300 mb-4" />
+            <Calendar size={48} className="text-gray-300 dark:text-slate-600 mb-4" />
             {activeSearch.length >= 2 ? (
               <>
-                <p className="text-gray-500 text-lg font-medium">
+                <p className="text-gray-500 dark:text-slate-400 text-lg font-medium">
                   No events found for &ldquo;{activeSearch}&rdquo;.
                 </p>
-                <p className="text-gray-400 text-sm mt-2 max-w-sm">
+                <p className="text-gray-400 dark:text-slate-500 text-sm mt-2 max-w-sm">
                   Try broader search terms like health, climate, education, or water.
                 </p>
               </>
             ) : (
-              <p className="text-gray-500 text-lg font-medium">No events match your filters.</p>
+              <p className="text-gray-500 dark:text-slate-400 text-lg font-medium">No events match your filters.</p>
             )}
             <button onClick={clearAll} className="mt-4 text-[#4ea8de] text-sm hover:underline">
               Clear {activeSearch.length >= 2 ? "search" : "filters"}
@@ -934,7 +934,7 @@ export default function EventsClient({
         ) : showSectionedView ? (
           <div className="space-y-2">
             {buckets.every(b => b.events.length === 0) ? (
-              <p className="text-gray-500 text-sm">No upcoming events match the current filters.</p>
+              <p className="text-gray-500 dark:text-slate-400 text-sm">No upcoming events match the current filters.</p>
             ) : (
               buckets.map((bucket, idx) => {
                 if (bucket.events.length === 0) return null;
@@ -945,16 +945,16 @@ export default function EventsClient({
                   <section
                     key={bucket.id}
                     id={bucket.id}
-                    className={`scroll-mt-24 ${idx === 0 ? "" : "border-t border-slate-200 mt-12 pt-8"}`}
+                    className={`scroll-mt-24 ${idx === 0 ? "" : "border-t border-slate-200 dark:border-slate-700 mt-12 pt-8"}`}
                   >
                     <div className="flex items-baseline justify-between mb-4">
                       <h2
-                        className={`text-xl font-semibold text-[#0f2a4a] rounded-md transition-colors duration-700 ${
+                        className={`text-xl font-semibold text-[#0f2a4a] dark:text-slate-100 rounded-md transition-colors duration-700 ${
                           isFlashing ? "bg-blue-50 px-2 -mx-2" : ""
                         }`}
                       >
                         {bucket.label}{" "}
-                        <span className="text-sm font-normal text-slate-500">
+                        <span className="text-sm font-normal text-slate-500 dark:text-slate-400 dark:dark:text-slate-500">
                           · {bucket.events.length} event{bucket.events.length === 1 ? "" : "s"}
                         </span>
                       </h2>
@@ -964,7 +964,7 @@ export default function EventsClient({
                     </div>
                     {hasMore && (
                       <p className="mt-4 text-right">
-                        <span className="text-sm font-medium text-slate-500">
+                        <span className="text-sm font-medium text-slate-500 dark:text-slate-400 dark:dark:text-slate-500">
                           {bucket.events.length - preview.length} more in this bucket — refine filters to narrow down
                         </span>
                       </p>
@@ -985,12 +985,12 @@ export default function EventsClient({
                 <div
                   key={event.id}
                   onClick={() => router.push(`/events/${event.id}`)}
-                  className={`bg-white rounded-xl border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 p-5 flex flex-col gap-3.5 group cursor-pointer ${isPast ? "border-gray-100 opacity-80" : "border-gray-200"}`}
+                  className={`bg-white dark:bg-slate-800 rounded-xl border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 p-5 flex flex-col gap-3.5 group cursor-pointer ${isPast ? "border-gray-100 dark:border-slate-800 opacity-80" : "border-gray-200 dark:border-slate-700"}`}
                 >
                   <div className="flex items-start justify-between gap-2 flex-wrap">
                     <div className="flex items-center gap-2 flex-wrap">
                       {isPast && (
-                        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-500">
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400">
                           <Clock size={10} /> Past
                         </span>
                       )}
@@ -1021,31 +1021,31 @@ export default function EventsClient({
                         </span>
                       )}
                     </div>
-                    <span className="text-xs text-gray-400 shrink-0">{FORMAT_LABELS[event.format]}</span>
+                    <span className="text-xs text-gray-400 dark:text-slate-500 shrink-0">{FORMAT_LABELS[event.format]}</span>
                   </div>
 
-                  <h3 className="text-[#0f2a4a] font-semibold text-base leading-snug group-hover:text-[#4ea8de] transition-colors">
+                  <h3 className="text-[#0f2a4a] dark:text-slate-100 font-semibold text-base leading-snug group-hover:text-[#4ea8de] transition-colors">
                     {event.title}
                   </h3>
 
                   {event.description && (
-                    <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">{event.description}</p>
+                    <p className="text-gray-500 dark:text-slate-400 text-sm leading-relaxed line-clamp-2">{event.description}</p>
                   )}
 
-                  <div className="flex flex-col gap-2 mt-auto text-sm text-gray-500">
+                  <div className="flex flex-col gap-2 mt-auto text-sm text-gray-500 dark:text-slate-400">
                     <span className="flex items-center gap-2">
-                      <Calendar size={14} className="shrink-0 text-gray-400" />
+                      <Calendar size={14} className="shrink-0 text-gray-400 dark:text-slate-500" />
                       {formatDateRange(event.start_date, event.end_date)}
                     </span>
                     {event.location && (
                       <span className="flex items-center gap-2">
-                        <MapPin size={14} className="shrink-0 text-gray-400" />
+                        <MapPin size={14} className="shrink-0 text-gray-400 dark:text-slate-500" />
                         {event.location}
                       </span>
                     )}
                     {event.organization && (
                       <span className="flex items-center gap-2">
-                        <Building2 size={14} className="shrink-0 text-gray-400" />
+                        <Building2 size={14} className="shrink-0 text-gray-400 dark:text-slate-500" />
                         {event.organization}
                       </span>
                     )}
@@ -1064,7 +1064,7 @@ export default function EventsClient({
                   )}
 
                   {/* Action toolbar */}
-                  <div className="flex items-center justify-end gap-0.5 pt-2 border-t border-gray-100">
+                  <div className="flex items-center justify-end gap-0.5 pt-2 border-t border-gray-100 dark:border-slate-800">
                     <BookmarkButton
                       eventId={event.id}
                       initialSaved={savedIds.has(event.id)}

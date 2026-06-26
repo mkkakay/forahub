@@ -20,7 +20,7 @@ export default function SubmitEventBanner() {
         </p>
         <Link
           href="/events/create"
-          className="bg-white text-[#0f2a4a] rounded-2xl px-10 py-4 text-lg font-bold hover:bg-gray-100 transition-colors"
+          className="bg-white dark:bg-slate-800 text-[#0f2a4a] dark:text-slate-100 rounded-2xl px-10 py-4 text-lg font-bold hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
         >
           Submit Your Event
         </Link>

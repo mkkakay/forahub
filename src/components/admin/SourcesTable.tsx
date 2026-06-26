@@ -34,7 +34,7 @@ function ToggleSwitch({ sourceId, isActive }: { sourceId: string; isActive: bool
       disabled={pending}
       className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors disabled:opacity-50 ${active ? 'bg-[#4ea8de]' : 'bg-blue-900/60'}`}
     >
-      <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${active ? 'translate-x-5' : 'translate-x-0.5'}`} />
+      <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white dark:bg-slate-800 transition-transform ${active ? 'translate-x-5' : 'translate-x-0.5'}`} />
     </button>
   )
 }

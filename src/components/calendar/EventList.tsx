@@ -103,21 +103,21 @@ export default function EventList({
   }, [events, year, month]);
 
   return (
-    <div className="bg-white border border-slate-200 rounded-md overflow-hidden flex flex-col" style={{ maxHeight }}>
+    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md overflow-hidden flex flex-col" style={{ maxHeight }}>
       <div className="px-4 py-3 bg-blue-900 text-white">
         <h3 className="text-lg font-bold">{MONTH_NAMES[month]} {year}</h3>
       </div>
       <div className="overflow-y-auto flex-1">
         {grouped.length === 0 && (
-          <div className="p-6 text-center text-slate-500 text-sm">No events this month.</div>
+          <div className="p-6 text-center text-slate-500 dark:text-slate-400 dark:dark:text-slate-500 text-sm">No events this month.</div>
         )}
         {grouped.map((group, gi) => (
           <div key={gi}>
-            <div className="px-4 py-2.5 bg-slate-100 border-b border-slate-200 flex justify-between items-baseline">
-              <span className="text-sm font-bold text-slate-900">
+            <div className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex justify-between items-baseline">
+              <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
                 {MONTH_NAMES[group.date.getUTCMonth()]} {group.date.getUTCDate()}, {group.date.getUTCFullYear()}
               </span>
-              <span className="text-sm font-bold text-slate-900">{DAY_NAMES_FULL[group.date.getUTCDay()]}</span>
+              <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{DAY_NAMES_FULL[group.date.getUTCDay()]}</span>
             </div>
             {group.entries.map((entry) => {
               const e = entry.event;
@@ -133,8 +133,8 @@ export default function EventList({
                   onBlur={() => onEventHover?.(null)}
                   onClick={() => onEventClick?.(e.id)}
                   aria-label={`${e.title}. ${formatDateRange(e.start_date, e.end_date)}. Click for details.`}
-                  className={`w-full text-left px-4 py-3.5 border-b border-slate-100 last:border-b-0 cursor-pointer transition-colors focus:outline-none focus:bg-slate-100 ${
-                    isHovered ? 'bg-slate-50' : 'hover:bg-slate-50'
+                  className={`w-full text-left px-4 py-3.5 border-b border-slate-100 dark:border-slate-800 last:border-b-0 cursor-pointer transition-colors focus:outline-none focus:bg-slate-100 dark:focus:bg-slate-800 ${
+                    isHovered ? 'bg-slate-50 dark:bg-slate-900' : 'hover:bg-slate-50 dark:hover:bg-slate-900'
                   }`}
                 >
                   <div className="flex items-start gap-2.5">
@@ -151,7 +151,7 @@ export default function EventList({
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-slate-600 mt-1.5">
+                      <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5">
                         {entry.ongoing ? `Started ${formatShortDate(entry.originalStart)} | ` : ''}
                         {formatDateRange(e.start_date, e.end_date)}
                         {e.location ? ` | ${e.location}` : ''}

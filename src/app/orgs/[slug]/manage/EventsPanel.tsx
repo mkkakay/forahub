@@ -64,9 +64,9 @@ function statusBadge(e: EventView): { label: string; cls: string; Icon: typeof B
     return { label: "Published", cls: "bg-emerald-50 text-emerald-700 border-emerald-200", Icon: BadgeCheck };
   }
   if (e.status === "pending") {
-    return { label: "Pending review", cls: "bg-[#0f2a4a]/5 text-[#0f2a4a] border-[#0f2a4a]/15", Icon: Clock };
+    return { label: "Pending review", cls: "bg-[#0f2a4a]/5 text-[#0f2a4a] dark:text-slate-100 border-[#0f2a4a]/15", Icon: Clock };
   }
-  return { label: e.status, cls: "bg-gray-50 text-gray-700 border-gray-200", Icon: Clock };
+  return { label: e.status, cls: "bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-slate-200 border-gray-200 dark:border-slate-700", Icon: Clock };
 }
 
 export default function EventsPanel(props: Props) {
@@ -106,19 +106,19 @@ export default function EventsPanel(props: Props) {
   }, [props.events]);
 
   return (
-    <section className="bg-white rounded-2xl border border-gray-200/80 shadow-[0_1px_2px_rgba(15,42,74,0.04)]">
-      <header className="flex flex-col gap-3 p-5 md:p-6 border-b border-gray-100">
+    <section className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200/80 dark:border-slate-700/80 shadow-[0_1px_2px_rgba(15,42,74,0.04)]">
+      <header className="flex flex-col gap-3 p-5 md:p-6 border-b border-gray-100 dark:border-slate-800">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="text-lg font-bold text-[#0f2a4a]">Events</h2>
+            <h2 className="text-lg font-bold text-[#0f2a4a] dark:text-slate-100">Events</h2>
             {props.viewerCanAutoPublish ? (
-              <p className="text-xs text-gray-500 mt-1 inline-flex items-center gap-1.5">
+              <p className="text-xs text-gray-500 dark:text-slate-400 mt-1 inline-flex items-center gap-1.5">
                 <Zap className="w-3 h-3 text-emerald-600" />
-                Your submissions for <span className="font-semibold text-[#0f2a4a]">{props.orgName}</span> go live instantly.
+                Your submissions for <span className="font-semibold text-[#0f2a4a] dark:text-slate-100">{props.orgName}</span> go live instantly.
               </p>
             ) : (
-              <p className="text-xs text-gray-500 mt-1 inline-flex items-center gap-1.5">
-                <ShieldCheck className="w-3 h-3 text-gray-400" />
+              <p className="text-xs text-gray-500 dark:text-slate-400 mt-1 inline-flex items-center gap-1.5">
+                <ShieldCheck className="w-3 h-3 text-gray-400 dark:text-slate-500" />
                 Your seat publishes via review. A domain-verified manager can grant instant publishing from the Team tab.
               </p>
             )}
@@ -148,13 +148,13 @@ export default function EventsPanel(props: Props) {
                     "shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors " +
                     (isActive
                       ? "bg-[#0f2a4a] text-white"
-                      : "text-gray-600 hover:text-[#0f2a4a] hover:bg-gray-100")
+                      : "text-gray-600 dark:text-slate-300 hover:text-[#0f2a4a] dark:hover:text-slate-100 hover:bg-gray-100 dark:hover:bg-slate-800")
                   }
                 >
                   {label}
                   <span className={
                     "tabular-nums text-[10px] " +
-                    (isActive ? "text-white/70" : "text-gray-400")
+                    (isActive ? "text-white/70" : "text-gray-400 dark:text-slate-500")
                   }>
                     {c}
                   </span>
@@ -163,13 +163,13 @@ export default function EventsPanel(props: Props) {
             })}
           </div>
           <div className="relative flex-1 max-w-xs sm:ml-auto">
-            <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" aria-hidden="true" />
+            <Search className="w-3.5 h-3.5 text-gray-400 dark:text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" aria-hidden="true" />
             <input
               type="search"
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="Search events…"
-              className="w-full bg-white border border-gray-200/80 rounded-full pl-8 pr-3 py-1.5 text-xs text-gray-900 placeholder-gray-400/90 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]/30 focus:border-[#4ea8de]"
+              className="w-full bg-white dark:bg-slate-800 border border-gray-200/80 dark:border-slate-700/80 rounded-full pl-8 pr-3 py-1.5 text-xs text-gray-900 dark:text-slate-100 placeholder-gray-400/90 dark:placeholder-slate-500/90 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]/30 focus:border-[#4ea8de]"
             />
           </div>
         </div>
@@ -190,27 +190,27 @@ export default function EventsPanel(props: Props) {
         ) : filtered.length === 0 ? (
           <EmptyState orgName={props.orgName} reason="filter" />
         ) : (
-          <ul className="divide-y divide-gray-100 border border-gray-100 rounded-xl overflow-hidden">
+          <ul className="divide-y divide-gray-100 dark:divide-slate-800 border border-gray-100 dark:border-slate-800 rounded-xl overflow-hidden">
             {filtered.map(e => {
               const badge = statusBadge(e);
               const BadgeIcon = badge.Icon;
               return (
-                <li key={e.id} className="group hover:bg-gray-50/60 transition-colors">
+                <li key={e.id} className="group hover:bg-gray-50/60 dark:hover:bg-slate-900/60 transition-colors">
                   <Link href={`/events/${e.id}`} className="flex items-start justify-between gap-3 px-4 py-3.5 sm:px-5">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-gray-900 group-hover:text-[#0f2a4a] truncate inline-flex items-center gap-1.5">
+                      <p className="text-sm font-semibold text-gray-900 dark:text-slate-100 group-hover:text-[#0f2a4a] dark:group-hover:text-slate-100 truncate inline-flex items-center gap-1.5">
                         {e.title}
-                        <ExternalLink className="w-3 h-3 text-gray-300 group-hover:text-[#0f2a4a] transition-colors" />
+                        <ExternalLink className="w-3 h-3 text-gray-300 dark:text-slate-600 group-hover:text-[#0f2a4a] dark:group-hover:text-slate-100 transition-colors" />
                       </p>
-                      <div className="text-[11px] text-gray-500 mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                      <div className="text-[11px] text-gray-500 dark:text-slate-400 mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
                         <span>{fmtDate(e.start_date)}</span>
-                        {e.location && <><span className="text-gray-300">·</span><span className="truncate max-w-[200px]">{e.location}</span></>}
+                        {e.location && <><span className="text-gray-300 dark:text-slate-600">·</span><span className="truncate max-w-[200px]">{e.location}</span></>}
                         {e.format && e.format !== "in_person" && (
-                          <><span className="text-gray-300">·</span><span className="capitalize">{e.format.replace("_", " ")}</span></>
+                          <><span className="text-gray-300 dark:text-slate-600">·</span><span className="capitalize">{e.format.replace("_", " ")}</span></>
                         )}
                         {e.auto_published_at && (
                           <>
-                            <span className="text-gray-300">·</span>
+                            <span className="text-gray-300 dark:text-slate-600">·</span>
                             <span className="inline-flex items-center gap-1 text-emerald-700">
                               <Zap className="w-2.5 h-2.5" /> auto-published
                             </span>
@@ -239,14 +239,14 @@ export default function EventsPanel(props: Props) {
 
 function EmptyState({ orgName, reason }: { orgName: string; reason: "none" | "filter" }) {
   return (
-    <div className="border border-dashed border-gray-200 rounded-xl px-4 py-10 text-center">
-      <div className="mx-auto w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mb-3">
-        <CalendarDays className="w-5 h-5 text-gray-300" aria-hidden="true" />
+    <div className="border border-dashed border-gray-200 dark:border-slate-700 rounded-xl px-4 py-10 text-center">
+      <div className="mx-auto w-12 h-12 rounded-full bg-gray-50 dark:bg-slate-900 flex items-center justify-center mb-3">
+        <CalendarDays className="w-5 h-5 text-gray-300 dark:text-slate-600" aria-hidden="true" />
       </div>
       {reason === "none" ? (
         <>
-          <p className="text-sm font-bold text-[#0f2a4a]">No events yet</p>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-sm font-bold text-[#0f2a4a] dark:text-slate-100">No events yet</p>
+          <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
             Publish your first event to put <span className="font-semibold">{orgName}</span> on the map.
           </p>
           <Link
@@ -258,8 +258,8 @@ function EmptyState({ orgName, reason }: { orgName: string; reason: "none" | "fi
         </>
       ) : (
         <>
-          <p className="text-sm font-bold text-[#0f2a4a]">No matches</p>
-          <p className="text-xs text-gray-500 mt-1">Try a different filter or search term.</p>
+          <p className="text-sm font-bold text-[#0f2a4a] dark:text-slate-100">No matches</p>
+          <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">Try a different filter or search term.</p>
         </>
       )}
     </div>

@@ -30,9 +30,9 @@ interface Initial {
   linkedin_url: string;
 }
 
-const labelClass = "block text-[11px] font-semibold text-gray-600 uppercase tracking-wider mb-1.5";
+const labelClass = "block text-[11px] font-semibold text-gray-600 dark:text-slate-300 uppercase tracking-wider mb-1.5";
 const inputClass =
-  "w-full bg-white border border-gray-200/80 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400/90 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]/30 focus:border-[#4ea8de] transition-colors";
+  "w-full bg-white dark:bg-slate-800 border border-gray-200/80 dark:border-slate-700/80 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 dark:text-slate-100 placeholder-gray-400/90 dark:placeholder-slate-500/90 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]/30 focus:border-[#4ea8de] transition-colors";
 
 function looksLikeHttpsUrl(v: string): boolean {
   const t = v.trim();
@@ -97,11 +97,11 @@ export default function ManageOrgForm({ slug, initial }: { slug: string; initial
     <div className="space-y-4">
       <form
         onSubmit={handleSubmit}
-        className="bg-white rounded-2xl border border-gray-200/80 shadow-[0_1px_2px_rgba(15,42,74,0.04)] p-5 md:p-7"
+        className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200/80 dark:border-slate-700/80 shadow-[0_1px_2px_rgba(15,42,74,0.04)] p-5 md:p-7"
       >
         <header className="mb-6">
-          <h2 className="text-lg font-bold text-[#0f2a4a]">Profile</h2>
-          <p className="text-xs text-gray-500 mt-1">
+          <h2 className="text-lg font-bold text-[#0f2a4a] dark:text-slate-100">Profile</h2>
+          <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
             This information appears on your public organization page.
           </p>
         </header>
@@ -116,7 +116,7 @@ export default function ManageOrgForm({ slug, initial }: { slug: string; initial
             kind="logo"
             value={form.logo_url}
             onChange={(v) => update("logo_url", v)}
-            previewClass="w-20 h-20 rounded-xl bg-gray-50 border border-gray-200/80 flex items-center justify-center overflow-hidden shrink-0"
+            previewClass="w-20 h-20 rounded-xl bg-gray-50 dark:bg-slate-900 border border-gray-200/80 dark:border-slate-700/80 flex items-center justify-center overflow-hidden shrink-0"
             previewMode="contain"
             placeholder="Paste an https://… URL, or upload an image."
           />
@@ -124,13 +124,13 @@ export default function ManageOrgForm({ slug, initial }: { slug: string; initial
 
         <div id="field-cover" className="scroll-mt-24 mt-5">
           <label className={labelClass}>Cover image</label>
-          <p className="text-[11px] text-gray-500 mb-1.5">Recommended: 1200 × 400px or larger, landscape.</p>
+          <p className="text-[11px] text-gray-500 dark:text-slate-400 mb-1.5">Recommended: 1200 × 400px or larger, landscape.</p>
           <ImageField
             slug={slug}
             kind="cover"
             value={form.cover_image_url}
             onChange={(v) => update("cover_image_url", v)}
-            previewClass="w-32 h-16 rounded-xl bg-gray-50 border border-gray-200/80 flex items-center justify-center overflow-hidden shrink-0"
+            previewClass="w-32 h-16 rounded-xl bg-gray-50 dark:bg-slate-900 border border-gray-200/80 dark:border-slate-700/80 flex items-center justify-center overflow-hidden shrink-0"
             previewMode="cover"
             placeholder="Paste an https://… URL, or upload an image."
           />
@@ -172,7 +172,7 @@ export default function ManageOrgForm({ slug, initial }: { slug: string; initial
             placeholder="One short paragraph about your organization."
             className={inputClass}
           />
-          <p className="text-[11px] text-gray-400 mt-1">{form.description.length}/600</p>
+          <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1">{form.description.length}/600</p>
         </div>
 
         {/* ── 3. Online presence ──────────────────────────────── */}
@@ -231,7 +231,7 @@ export default function ManageOrgForm({ slug, initial }: { slug: string; initial
           </div>
         )}
 
-        <div className="flex items-center justify-end gap-3 mt-7 pt-5 border-t border-gray-100">
+        <div className="flex items-center justify-end gap-3 mt-7 pt-5 border-t border-gray-100 dark:border-slate-800">
           {saved && (
             <span className="text-xs text-emerald-700 inline-flex items-center gap-1">
               <CheckCircle2 className="w-3.5 h-3.5" /> Saved
@@ -253,9 +253,9 @@ export default function ManageOrgForm({ slug, initial }: { slug: string; initial
 
 function SectionHeader({ title, subtitle }: { title: string; subtitle: string }) {
   return (
-    <div className="mt-6 mb-4 pt-5 first:mt-0 first:pt-0 first:border-t-0 border-t border-gray-100">
-      <h3 className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">{title}</h3>
-      <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>
+    <div className="mt-6 mb-4 pt-5 first:mt-0 first:pt-0 first:border-t-0 border-t border-gray-100 dark:border-slate-800">
+      <h3 className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">{title}</h3>
+      <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">{subtitle}</p>
     </div>
   );
 }
@@ -323,12 +323,12 @@ function ImageField({
               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
             />
           ) : (
-            <ImageIcon className="w-6 h-6 text-gray-300" aria-hidden="true" />
+            <ImageIcon className="w-6 h-6 text-gray-300 dark:text-slate-600" aria-hidden="true" />
           )}
         </div>
         <div className="flex-1 min-w-0">
           <div className="relative">
-            <LinkIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <LinkIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
             <input
               type="url"
               value={value}
@@ -342,7 +342,7 @@ function ImageField({
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0f2a4a] border border-gray-200 hover:border-[#4ea8de] hover:text-[#3a95cc] disabled:opacity-60 rounded-lg px-2.5 py-1.5 transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0f2a4a] dark:text-slate-100 border border-gray-200 dark:border-slate-700 hover:border-[#4ea8de] hover:text-[#3a95cc] disabled:opacity-60 rounded-lg px-2.5 py-1.5 transition-colors"
             >
               {uploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
               {uploading ? "Uploading…" : "Upload"}
@@ -354,7 +354,7 @@ function ImageField({
               className="hidden"
               onChange={(e) => handleFile(e.target.files?.[0])}
             />
-            <span className="text-[11px] text-gray-500">JPEG, PNG, or WebP · max 5MB</span>
+            <span className="text-[11px] text-gray-500 dark:text-slate-400">JPEG, PNG, or WebP · max 5MB</span>
           </div>
         </div>
       </div>

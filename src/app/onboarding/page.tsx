@@ -63,14 +63,14 @@ export default function OnboardingPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-[#4ea8de] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans flex flex-col">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 font-sans flex flex-col">
       <nav className="bg-[#0f2a4a] shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-16">
@@ -89,21 +89,21 @@ export default function OnboardingPage() {
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
                 s < step ? "bg-green-500 text-white" :
                 s === step ? "bg-[#4ea8de] text-white" :
-                "bg-gray-200 text-gray-400"
+                "bg-gray-200 dark:bg-slate-700 text-gray-400 dark:text-slate-500"
               }`}>
                 {s < step ? <Check size={14} /> : s}
               </div>
-              {s < 3 && <div className={`w-12 h-0.5 ${s < step ? "bg-green-500" : "bg-gray-200"}`} />}
+              {s < 3 && <div className={`w-12 h-0.5 ${s < step ? "bg-green-500" : "bg-gray-200 dark:bg-slate-700"}`} />}
             </div>
           ))}
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 w-full max-w-lg">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm p-8 w-full max-w-lg">
           {/* Step 1: SDG Interests */}
           {step === 1 && (
             <>
-              <h2 className="text-xl font-bold text-[#0f2a4a] mb-1">Choose your SDG interests</h2>
-              <p className="text-gray-500 text-sm mb-6">
+              <h2 className="text-xl font-bold text-[#0f2a4a] dark:text-slate-100 mb-1">Choose your SDG interests</h2>
+              <p className="text-gray-500 dark:text-slate-400 text-sm mb-6">
                 We&apos;ll surface relevant events for you. Pick as many as you like.
               </p>
               <div className="grid grid-cols-1 gap-2 max-h-80 overflow-y-auto pr-1">
@@ -113,11 +113,11 @@ export default function OnboardingPage() {
                     onClick={() => toggleSdg(n)}
                     className={`flex items-center gap-3 px-4 py-2.5 rounded-lg border text-left text-sm transition-colors ${
                       selectedSdgs.includes(n)
-                        ? "border-[#4ea8de] bg-blue-50 text-[#0f2a4a] font-medium"
-                        : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                        ? "border-[#4ea8de] bg-blue-50 text-[#0f2a4a] dark:text-slate-100 font-medium"
+                        : "border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-900"
                     }`}
                   >
-                    <span className="w-6 h-6 shrink-0 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500">
+                    <span className="w-6 h-6 shrink-0 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold text-gray-500 dark:text-slate-400">
                       {n}
                     </span>
                     {label}
@@ -140,8 +140,8 @@ export default function OnboardingPage() {
           {/* Step 2: Email alerts */}
           {step === 2 && (
             <>
-              <h2 className="text-xl font-bold text-[#0f2a4a] mb-1">Stay in the loop</h2>
-              <p className="text-gray-500 text-sm mb-6">
+              <h2 className="text-xl font-bold text-[#0f2a4a] dark:text-slate-100 mb-1">Stay in the loop</h2>
+              <p className="text-gray-500 dark:text-slate-400 text-sm mb-6">
                 Get a weekly digest of upcoming SDG events tailored to your interests.
               </p>
               <button
@@ -149,20 +149,20 @@ export default function OnboardingPage() {
                 className={`w-full flex items-center gap-4 px-4 py-4 rounded-xl border-2 text-left transition-colors mb-3 ${
                   emailAlerts
                     ? "border-[#4ea8de] bg-blue-50"
-                    : "border-gray-200 hover:border-gray-300"
+                    : "border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600"
                 }`}
               >
                 <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
-                  emailAlerts ? "border-[#4ea8de] bg-[#4ea8de]" : "border-gray-300"
+                  emailAlerts ? "border-[#4ea8de] bg-[#4ea8de]" : "border-gray-300 dark:border-slate-600"
                 }`}>
                   {emailAlerts && <Check size={12} className="text-white" />}
                 </div>
                 <div>
-                  <p className="font-semibold text-[#0f2a4a] text-sm">Weekly digest email</p>
-                  <p className="text-gray-400 text-xs mt-0.5">Events coming up across your SDG interests</p>
+                  <p className="font-semibold text-[#0f2a4a] dark:text-slate-100 text-sm">Weekly digest email</p>
+                  <p className="text-gray-400 dark:text-slate-500 text-xs mt-0.5">Events coming up across your SDG interests</p>
                 </div>
               </button>
-              <p className="text-xs text-gray-400 mb-6">
+              <p className="text-xs text-gray-400 dark:text-slate-500 mb-6">
                 Weekly digest requires a Pro account. You can enable it now and it will activate when you upgrade.
               </p>
               <button
@@ -179,8 +179,8 @@ export default function OnboardingPage() {
           {/* Step 3: Upgrade options */}
           {step === 3 && (
             <>
-              <h2 className="text-xl font-bold text-[#0f2a4a] mb-1">Your account is ready</h2>
-              <p className="text-gray-500 text-sm mb-6">
+              <h2 className="text-xl font-bold text-[#0f2a4a] dark:text-slate-100 mb-1">Your account is ready</h2>
+              <p className="text-gray-500 dark:text-slate-400 text-sm mb-6">
                 You have a 7-day Pro trial — full access to the 24-month calendar. Here&apos;s what that unlocks:
               </p>
               <ul className="flex flex-col gap-3 mb-6">
@@ -191,15 +191,15 @@ export default function OnboardingPage() {
                   "Deadline reminders",
                   "Weekly digest email",
                 ].map(item => (
-                  <li key={item} className="flex items-center gap-2.5 text-sm text-gray-600">
+                  <li key={item} className="flex items-center gap-2.5 text-sm text-gray-600 dark:text-slate-300">
                     <Check size={15} className="text-green-500 shrink-0" />
                     {item}
                   </li>
                 ))}
               </ul>
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 text-sm">
-                <p className="text-[#0f2a4a] font-semibold mb-1">After your 7-day trial</p>
-                <p className="text-gray-500">
+                <p className="text-[#0f2a4a] dark:text-slate-100 font-semibold mb-1">After your 7-day trial</p>
+                <p className="text-gray-500 dark:text-slate-400">
                   You&apos;ll move to the free tier (30-day calendar). Upgrade to Pro Annual for $9.99/year to keep full access.
                 </p>
               </div>
@@ -212,7 +212,7 @@ export default function OnboardingPage() {
                 </Link>
                 <Link
                   href="/events"
-                  className="block text-center border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium py-3 rounded-lg text-sm transition-colors"
+                  className="block text-center border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-900 font-medium py-3 rounded-lg text-sm transition-colors"
                 >
                   Start exploring events →
                 </Link>

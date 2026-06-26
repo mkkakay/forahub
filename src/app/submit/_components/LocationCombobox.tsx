@@ -61,7 +61,7 @@ export default function LocationCombobox({ value, onChange, onPickedLocation, pl
   return (
     <div className={`relative ${className ?? ""}`} ref={wrapperRef}>
       <div className="relative">
-        <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+        <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 pointer-events-none" />
         <input
           type="text"
           value={value}
@@ -71,26 +71,26 @@ export default function LocationCombobox({ value, onChange, onPickedLocation, pl
           }}
           onFocus={() => results.length > 0 && setOpen(true)}
           placeholder={placeholder ?? "e.g. Geneva, Switzerland"}
-          className="w-full bg-white border border-gray-200 rounded-xl pl-9 pr-9 py-2 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]/40 focus:border-[#4ea8de] transition-colors"
+          className="w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl pl-9 pr-9 py-2 text-sm text-gray-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]/40 focus:border-[#4ea8de] transition-colors"
           autoComplete="off"
         />
         {loading && (
-          <Loader2 size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 animate-spin" />
+          <Loader2 size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 animate-spin" />
         )}
       </div>
       {open && results.length > 0 && (
-        <ul className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-72 overflow-y-auto">
+        <ul className="absolute z-20 mt-1 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg max-h-72 overflow-y-auto">
           {results.map((r, i) => (
             <li key={`${r.lat}-${r.lon}-${i}`}>
               <button
                 type="button"
                 onClick={() => pick(r)}
-                className="w-full text-left px-3 py-2 hover:bg-gray-50 flex items-center gap-2 text-sm border-b border-gray-100 last:border-b-0"
+                className="w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-slate-900 flex items-center gap-2 text-sm border-b border-gray-100 dark:border-slate-800 last:border-b-0"
               >
                 <span className="text-base shrink-0">{flagEmoji(r.country_code)}</span>
                 <span className="flex-1 min-w-0">
-                  <span className="font-semibold text-gray-900 block truncate">{formatLocation(r)}</span>
-                  <span className="text-[11px] text-gray-500 block truncate">{r.display_name}</span>
+                  <span className="font-semibold text-gray-900 dark:text-slate-100 block truncate">{formatLocation(r)}</span>
+                  <span className="text-[11px] text-gray-500 dark:text-slate-400 block truncate">{r.display_name}</span>
                 </span>
               </button>
             </li>

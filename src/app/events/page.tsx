@@ -118,7 +118,7 @@ export default async function EventsPage({
   const banner = await getPageBanner("events").catch(() => null);
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 font-sans">
       <Navbar />
 
       <PageHeader

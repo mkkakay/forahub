@@ -24,7 +24,7 @@ function LabeledPlatform({ label, children }: { label: string; children: React.R
   return (
     <div className="flex flex-col items-center gap-1.5">
       <div className="hover:opacity-85 transition-opacity">{children}</div>
-      <span className="text-xs text-gray-500 text-center leading-tight">{label}</span>
+      <span className="text-xs text-gray-500 dark:text-slate-400 text-center leading-tight">{label}</span>
     </div>
   );
 }
@@ -44,7 +44,7 @@ function CustomPlatform({
     </div>
   );
   const cls = "flex flex-col items-center gap-1.5 hover:opacity-85 transition-opacity";
-  const lbl = <span className="text-xs text-gray-500 text-center leading-tight">{label}</span>;
+  const lbl = <span className="text-xs text-gray-500 dark:text-slate-400 text-center leading-tight">{label}</span>;
 
   if (href) {
     return (
@@ -132,7 +132,7 @@ export default function ShareMenu({ eventId, eventTitle, startDate, location }: 
       <button
         onClick={handleTrigger}
         aria-label="Share event"
-        className="p-1.5 rounded-md text-gray-400 hover:text-[#4ea8de] transition-colors"
+        className="p-1.5 rounded-md text-gray-400 dark:text-slate-500 hover:text-[#4ea8de] transition-colors"
       >
         <Share2 size={16} />
       </button>
@@ -145,27 +145,27 @@ export default function ShareMenu({ eventId, eventTitle, startDate, location }: 
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
 
           <div
-            className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6"
+            className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm p-6"
             onClick={stopProp}
           >
             {/* Header */}
             <div className="flex items-start justify-between mb-4">
               <div className="pr-4">
-                <h3 className="font-semibold text-[#0f2a4a]">Share this event</h3>
-                <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">{eventTitle}</p>
+                <h3 className="font-semibold text-[#0f2a4a] dark:text-slate-100">Share this event</h3>
+                <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5 line-clamp-2">{eventTitle}</p>
               </div>
               <button
                 onClick={() => setOpen(false)}
-                className="p-1 rounded-md text-gray-400 hover:text-gray-600 transition-colors shrink-0"
+                className="p-1 rounded-md text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition-colors shrink-0"
               >
                 <X size={18} />
               </button>
             </div>
 
             {/* Copy link bar */}
-            <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-6">
-              <Link2 size={13} className="text-gray-400 shrink-0" />
-              <span className="text-xs text-gray-500 flex-1 truncate">{shareUrl}</span>
+            <div className="flex items-center gap-2 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 mb-6">
+              <Link2 size={13} className="text-gray-400 dark:text-slate-500 shrink-0" />
+              <span className="text-xs text-gray-500 dark:text-slate-400 flex-1 truncate">{shareUrl}</span>
               <button
                 onClick={copyLink}
                 className={`text-xs font-semibold shrink-0 transition-colors ${

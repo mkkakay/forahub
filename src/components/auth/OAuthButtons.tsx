@@ -53,8 +53,8 @@ export default function OAuthButtons({ next, large = true }: Props) {
 
   const big = "w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-colors shadow-sm";
   const microsoftBtn = `${big} bg-[#0f172a] hover:bg-[#1e293b] text-white border border-[#0f172a] disabled:opacity-60`;
-  const googleBtn = `${big} bg-white hover:bg-gray-50 text-gray-800 border border-gray-300 disabled:opacity-60`;
-  const facebookBtn = "w-full flex items-center justify-center gap-2.5 px-4 py-2 rounded-lg text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 border border-gray-200 transition-colors";
+  const googleBtn = `${big} bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-900 text-gray-800 dark:text-slate-100 border border-gray-300 dark:border-slate-600 disabled:opacity-60`;
+  const facebookBtn = "w-full flex items-center justify-center gap-2.5 px-4 py-2 rounded-lg text-xs font-medium text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-900 border border-gray-200 dark:border-slate-700 transition-colors";
 
   return (
     <div className={large ? "space-y-3" : "space-y-2"}>

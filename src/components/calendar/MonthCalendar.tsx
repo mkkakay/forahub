@@ -195,8 +195,8 @@ export default function MonthCalendar({
   };
 
   return (
-    <div className="bg-white rounded-md border border-slate-200 overflow-visible">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-white">
+    <div className="bg-white dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700 overflow-visible">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
         <h3 className="text-xl font-bold text-blue-900 uppercase tracking-wide">
           {MONTH_NAMES[month]} {year}
         </h3>
@@ -212,7 +212,7 @@ export default function MonthCalendar({
           <button
             type="button"
             onClick={goToday}
-            className="px-3 py-1.5 text-sm font-medium text-slate-700 border border-slate-300 rounded-md hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+            className="px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-600 rounded-md hover:bg-slate-50 dark:hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
           >
             Today
           </button>
@@ -227,9 +227,9 @@ export default function MonthCalendar({
         </div>
       </div>
 
-      <div className="grid grid-cols-7 border-b border-slate-200 bg-white" role="row">
+      <div className="grid grid-cols-7 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800" role="row">
         {DAY_NAMES_SHORT.map((d, i) => (
-          <div key={i} className="px-2 py-2 text-center text-sm font-medium text-slate-700" role="columnheader">
+          <div key={i} className="px-2 py-2 text-center text-sm font-medium text-slate-700 dark:text-slate-200" role="columnheader">
             {d}
           </div>
         ))}
@@ -248,7 +248,7 @@ export default function MonthCalendar({
           return (
             <div
               key={wi}
-              className="relative border-b border-slate-200 last:border-b-0"
+              className="relative border-b border-slate-200 dark:border-slate-700 last:border-b-0"
               style={{ minHeight: weekHeight }}
               role="row"
             >
@@ -257,8 +257,8 @@ export default function MonthCalendar({
                   <div
                     key={di}
                     role="gridcell"
-                    className={`px-2 py-1.5 text-sm border-r border-slate-100 last:border-r-0 ${
-                      cell.currentMonth ? 'text-slate-900' : 'text-slate-300'
+                    className={`px-2 py-1.5 text-sm border-r border-slate-100 dark:border-slate-800 last:border-r-0 ${
+                      cell.currentMonth ? 'text-slate-900 dark:text-slate-100' : 'text-slate-300'
                     }`}
                   >
                     {cell.day}
@@ -296,7 +296,7 @@ export default function MonthCalendar({
                       />
                       {isHovered && (
                         <div
-                          className="absolute w-60 max-w-xs bg-white shadow-lg rounded-md border border-slate-200 p-3 z-50 pointer-events-none whitespace-normal"
+                          className="absolute w-60 max-w-xs bg-white dark:bg-slate-800 shadow-lg rounded-md border border-slate-200 dark:border-slate-700 p-3 z-50 pointer-events-none whitespace-normal"
                           style={{
                             left: `calc(${leftPct}% + 2px)`,
                             top: `${top + 18}px`,
@@ -305,7 +305,7 @@ export default function MonthCalendar({
                           <div className="font-bold text-blue-900 text-sm leading-snug mb-1">
                             {bar.title}
                           </div>
-                          <div className="text-xs text-slate-500">
+                          <div className="text-xs text-slate-500 dark:text-slate-400 dark:dark:text-slate-500">
                             {formatDateRange(bar.start_date, bar.end_date)}
                             {bar.location ? ` | ${bar.location}` : ''}
                           </div>
@@ -329,7 +329,7 @@ export default function MonthCalendar({
                         <Link
                           key={col}
                           href={`/events?view=calendar&date=${cell.isoKey}`}
-                          className="absolute h-4 rounded-sm text-[10px] font-semibold text-slate-700 bg-slate-200 hover:bg-slate-300 pointer-events-auto flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                          className="absolute h-4 rounded-sm text-[10px] font-semibold text-slate-700 dark:text-slate-200 bg-slate-200 hover:bg-slate-300 pointer-events-auto flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
                           style={{
                             left: `calc(${leftPct}% + 2px)`,
                             width: `calc(${widthPct}% - 4px)`,

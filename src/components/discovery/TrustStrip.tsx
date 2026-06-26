@@ -27,7 +27,7 @@ export default function TrustStrip({
     <section aria-labelledby="trust-strip-heading">
       <h3
         id="trust-strip-heading"
-        className="text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500"
+        className="text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500 dark:text-slate-400"
       >
         {heading}
       </h3>
@@ -36,7 +36,7 @@ export default function TrustStrip({
           <li key={org.slug}>
             <Link
               href={`/organizations/${org.slug}`}
-              className="group flex items-center justify-center h-16 md:h-20 rounded-2xl bg-white border border-gray-200/70 hover:border-[#0f2a4a]/30 transition-colors px-4"
+              className="group flex items-center justify-center h-16 md:h-20 rounded-2xl bg-white dark:bg-slate-800 border border-gray-200/70 dark:border-slate-700/70 hover:border-[#0f2a4a]/30 transition-colors px-4"
               aria-label={`See events from ${org.name}`}
             >
               {org.logo_url ? (
@@ -48,7 +48,7 @@ export default function TrustStrip({
                   loading="lazy"
                 />
               ) : (
-                <span className="text-[11px] font-semibold text-gray-500 line-clamp-2 text-center">
+                <span className="text-[11px] font-semibold text-gray-500 dark:text-slate-400 line-clamp-2 text-center">
                   {org.name}
                 </span>
               )}

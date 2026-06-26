@@ -99,7 +99,7 @@ export default function ManageTabs({ slots, badges, defaultTab = "profile" }: Pr
       <nav
         role="tablist"
         aria-label="Manage sections"
-        className="mb-6 -mx-4 sm:mx-0 sticky top-0 z-10 bg-gray-50/95 backdrop-blur supports-[backdrop-filter]:bg-gray-50/85 border-b border-gray-200/70"
+        className="mb-6 -mx-4 sm:mx-0 sticky top-0 z-10 bg-gray-50/95 backdrop-blur supports-[backdrop-filter]:bg-gray-50/85 border-b border-gray-200/70 dark:border-slate-700/70"
       >
         <div className="px-4 sm:px-0 overflow-x-auto scrollbar-none">
           <div className="inline-flex items-center gap-1 min-w-full sm:min-w-0">
@@ -121,11 +121,11 @@ export default function ManageTabs({ slots, badges, defaultTab = "profile" }: Pr
                   className={
                     "relative shrink-0 inline-flex items-center gap-2 px-3.5 py-3 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#4ea8de]/40 rounded-md " +
                     (isActive
-                      ? "text-[#0f2a4a]"
-                      : "text-gray-500 hover:text-[#0f2a4a]")
+                      ? "text-[#0f2a4a] dark:text-slate-100"
+                      : "text-gray-500 dark:text-slate-400 hover:text-[#0f2a4a] dark:hover:text-slate-100")
                   }
                 >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? "text-[#0f2a4a]" : "text-gray-400"}`} aria-hidden="true" />
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? "text-[#0f2a4a] dark:text-slate-100" : "text-gray-400 dark:text-slate-500"}`} aria-hidden="true" />
                   <span>{label}</span>
                   {typeof count === "number" && count > 0 && (
                     <span
@@ -133,7 +133,7 @@ export default function ManageTabs({ slots, badges, defaultTab = "profile" }: Pr
                         "ml-0.5 inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full text-[10px] font-semibold tabular-nums px-1 " +
                         (isActive
                           ? "bg-[#0f2a4a] text-white"
-                          : "bg-gray-100 text-gray-500")
+                          : "bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400")
                       }
                     >
                       {count}

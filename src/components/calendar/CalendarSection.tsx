@@ -43,14 +43,14 @@ export default function CalendarSection({
   return (
     <div className="w-full">
       {/* Mobile tabs — hidden on lg+ */}
-      <div className="lg:hidden mb-4 flex gap-2 bg-slate-100 p-1 rounded-md" role="tablist">
+      <div className="lg:hidden mb-4 flex gap-2 bg-slate-100 dark:bg-slate-800 p-1 rounded-md" role="tablist">
         <button
           type="button"
           role="tab"
           aria-selected={mobileTab === 'list'}
           onClick={() => setMobileTab('list')}
           className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-semibold rounded transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
-            mobileTab === 'list' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+            mobileTab === 'list' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100'
           }`}
         >
           <List size={14} /> List
@@ -61,7 +61,7 @@ export default function CalendarSection({
           aria-selected={mobileTab === 'calendar'}
           onClick={() => setMobileTab('calendar')}
           className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-semibold rounded transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
-            mobileTab === 'calendar' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+            mobileTab === 'calendar' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100'
           }`}
         >
           <CalendarDays size={14} /> Calendar
@@ -96,7 +96,7 @@ export default function CalendarSection({
       </div>
 
       {showLegend && (
-        <div className="mt-6 flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-600 justify-center">
+        <div className="mt-6 flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-600 dark:text-slate-300 justify-center">
           {Object.entries(SDG_COLORS).map(([num, color]) => (
             <div key={num} className="flex items-center gap-1.5">
               <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: color }} />

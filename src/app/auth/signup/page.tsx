@@ -21,7 +21,7 @@ function safeNext(raw: string | null): string | null {
 
 export default function SignupPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 dark:bg-slate-900" />}>
       <SignupInner />
     </Suspense>
   );
@@ -78,7 +78,7 @@ function SignupInner() {
 
   if (confirmed) {
     return (
-      <div className="min-h-screen bg-gray-50 font-sans flex flex-col">
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-900 font-sans flex flex-col">
         <nav className="bg-[#0f2a4a] shadow-md">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center h-16">
@@ -89,12 +89,12 @@ function SignupInner() {
           </div>
         </nav>
         <div className="flex-1 flex items-center justify-center px-4 py-12">
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 w-full max-w-md text-center">
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm p-8 w-full max-w-md text-center">
             <div className="mx-auto w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mb-4">
               <Mail className="w-7 h-7 text-blue-600" />
             </div>
-            <h1 className="text-2xl font-bold text-[#0f2a4a] mb-2">Check your email</h1>
-            <p className="text-gray-500 text-sm">
+            <h1 className="text-2xl font-bold text-[#0f2a4a] dark:text-slate-100 mb-2">Check your email</h1>
+            <p className="text-gray-500 dark:text-slate-400 text-sm">
               We sent a confirmation link to <strong>{email}</strong>. Click it to activate your
               account, then{" "}
               <Link href={signinHref} className="text-[#4ea8de] hover:underline font-medium">
@@ -102,7 +102,7 @@ function SignupInner() {
               </Link>
               .
             </p>
-            <p className="text-xs text-gray-400 mt-4">
+            <p className="text-xs text-gray-400 dark:text-slate-500 mt-4">
               Corporate inboxes can take a few minutes. Tip: signing up with Microsoft 365 or Google skips this step entirely.
             </p>
           </div>
@@ -112,7 +112,7 @@ function SignupInner() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans flex flex-col">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 font-sans flex flex-col">
       <nav className="bg-[#0f2a4a] shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-16">
@@ -124,9 +124,9 @@ function SignupInner() {
       </nav>
 
       <div className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 w-full max-w-md">
-          <h1 className="text-2xl font-bold text-[#0f2a4a] mb-1">Create an account</h1>
-          <p className="text-gray-500 text-sm mb-5">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm p-8 w-full max-w-md">
+          <h1 className="text-2xl font-bold text-[#0f2a4a] dark:text-slate-100 mb-1">Create an account</h1>
+          <p className="text-gray-500 dark:text-slate-400 text-sm mb-5">
             Already have an account?{" "}
             <Link href={signinHref} className="text-[#4ea8de] hover:underline font-medium">
               Sign in
@@ -144,11 +144,11 @@ function SignupInner() {
 
           <OAuthButtons next={next} />
 
-          <div className="mt-6 border-t border-gray-100 pt-5">
+          <div className="mt-6 border-t border-gray-100 dark:border-slate-800 pt-5">
             <button
               type="button"
               onClick={() => setShowEmail(v => !v)}
-              className="w-full flex items-center justify-between text-xs font-semibold text-gray-500 hover:text-gray-700 uppercase tracking-wider"
+              className="w-full flex items-center justify-between text-xs font-semibold text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 uppercase tracking-wider"
             >
               <span>Or sign up with email</span>
               {showEmail ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -157,7 +157,7 @@ function SignupInner() {
             {showEmail && (
               <form onSubmit={handleSubmit} className="flex flex-col gap-3 mt-4">
                 <div>
-                  <label htmlFor="email" className="block text-xs font-medium text-gray-600 mb-1">
+                  <label htmlFor="email" className="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">
                     Work email
                   </label>
                   <input
@@ -166,13 +166,13 @@ function SignupInner() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4ea8de] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4ea8de] focus:border-transparent"
                     placeholder="you@yourorg.org"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="password" className="block text-xs font-medium text-gray-600 mb-1">
+                  <label htmlFor="password" className="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">
                     Password
                   </label>
                   <input
@@ -182,7 +182,7 @@ function SignupInner() {
                     minLength={6}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4ea8de] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4ea8de] focus:border-transparent"
                     placeholder="At least 6 characters"
                   />
                 </div>
@@ -200,7 +200,7 @@ function SignupInner() {
                 >
                   {loading ? "Creating account…" : "Create Account"}
                 </button>
-                <p className="text-[11px] text-gray-500 text-center">
+                <p className="text-[11px] text-gray-500 dark:text-slate-400 text-center">
                   We&apos;ll send one confirmation email. Corporate inboxes may take a few minutes to deliver it.
                 </p>
               </form>

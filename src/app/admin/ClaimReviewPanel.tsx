@@ -134,7 +134,7 @@ export default function ClaimReviewPanel({ adminSecret }: { adminSecret: string 
           <ShieldCheck size={18} className="text-emerald-300" />
           <h2 className="text-white font-semibold">Claim Review</h2>
           {count > 0 && (
-            <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] text-[11px] font-bold rounded-full bg-amber-400 text-[#0f2a4a] px-1.5">
+            <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] text-[11px] font-bold rounded-full bg-amber-400 text-[#0f2a4a] dark:text-slate-100 px-1.5">
               {count}
             </span>
           )}
@@ -196,7 +196,7 @@ export default function ClaimReviewPanel({ adminSecret }: { adminSecret: string 
                 >
                   {/* Header — org + source + submitted */}
                   <div className="flex items-start gap-3 mb-3">
-                    <div className="shrink-0 w-12 h-12 rounded-md bg-white border border-blue-900/40 flex items-center justify-center overflow-hidden">
+                    <div className="shrink-0 w-12 h-12 rounded-md bg-white dark:bg-slate-800 border border-blue-900/40 flex items-center justify-center overflow-hidden">
                       {claim.org_logo_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={claim.org_logo_url} alt="" className="max-w-full max-h-full object-contain p-1" />

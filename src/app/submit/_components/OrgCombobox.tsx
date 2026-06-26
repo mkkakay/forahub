@@ -102,7 +102,7 @@ export default function OrgCombobox({ value, onChange, onPicked, placeholder, cl
   return (
     <div className={`relative ${className ?? ""}`} ref={wrapperRef}>
       <div className="relative">
-        <Building2 size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+        <Building2 size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 pointer-events-none" />
         <input
           type="text"
           value={value}
@@ -112,20 +112,20 @@ export default function OrgCombobox({ value, onChange, onPicked, placeholder, cl
           }}
           onFocus={() => (results.length > 0 || value.trim()) && setOpen(true)}
           placeholder={placeholder ?? "e.g. World Health Organization"}
-          className="w-full bg-white border border-gray-200 rounded-xl pl-9 pr-9 py-2 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]/40 focus:border-[#4ea8de] transition-colors"
+          className="w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl pl-9 pr-9 py-2 text-sm text-gray-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]/40 focus:border-[#4ea8de] transition-colors"
           autoComplete="off"
         />
         {loading && (
-          <Loader2 size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 animate-spin" />
+          <Loader2 size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 animate-spin" />
         )}
       </div>
       {open && (results.length > 0 || showAddNew) && (
-        <ul className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-80 overflow-y-auto">
+        <ul className="absolute z-20 mt-1 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg max-h-80 overflow-y-auto">
           {tier1.map(org => (
             <ResultRow key={org.slug} org={org} onPick={() => pick(org)} />
           ))}
           {tier1.length > 0 && tierOther.length > 0 && (
-            <li className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 bg-gray-50 border-y border-gray-100">
+            <li className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 bg-gray-50 dark:bg-slate-900 border-y border-gray-100 dark:border-slate-800">
               More organizations
             </li>
           )}
@@ -138,7 +138,7 @@ export default function OrgCombobox({ value, onChange, onPicked, placeholder, cl
                 type="button"
                 onClick={handleAddNew}
                 disabled={adding}
-                className="w-full text-left px-3 py-2.5 hover:bg-amber-50 flex items-center gap-2 text-sm border-t border-gray-100 text-amber-900"
+                className="w-full text-left px-3 py-2.5 hover:bg-amber-50 flex items-center gap-2 text-sm border-t border-gray-100 dark:border-slate-800 text-amber-900"
               >
                 {adding ? (
                   <Loader2 size={14} className="animate-spin" />
@@ -164,18 +164,18 @@ function ResultRow({ org, onPick }: { org: OrgSuggestion; onPick: () => void }) 
       <button
         type="button"
         onClick={onPick}
-        className="w-full text-left px-3 py-2 hover:bg-gray-50 flex items-center gap-2 text-sm border-b border-gray-100 last:border-b-0"
+        className="w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-slate-900 flex items-center gap-2 text-sm border-b border-gray-100 dark:border-slate-800 last:border-b-0"
       >
-        <span className="shrink-0 w-8 h-8 rounded bg-gray-50 border border-gray-200 flex items-center justify-center overflow-hidden">
+        <span className="shrink-0 w-8 h-8 rounded bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 flex items-center justify-center overflow-hidden">
           {org.logo_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={org.logo_url} alt="" className="max-w-full max-h-full object-contain p-0.5" />
           ) : (
-            <span className="text-[10px] font-bold text-gray-400">{org.short.slice(0, 3).toUpperCase()}</span>
+            <span className="text-[10px] font-bold text-gray-400 dark:text-slate-500">{org.short.slice(0, 3).toUpperCase()}</span>
           )}
         </span>
         <span className="flex-1 min-w-0">
-          <span className="font-semibold text-gray-900 truncate inline-flex items-center gap-1">
+          <span className="font-semibold text-gray-900 dark:text-slate-100 truncate inline-flex items-center gap-1">
             {org.short}
             {org.is_verified && org.is_claimed && (
               <BadgeCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" aria-label="Verified organization" />
@@ -192,7 +192,7 @@ function ResultRow({ org, onPick }: { org: OrgSuggestion; onPick: () => void }) 
               </span>
             )}
           </span>
-          <span className="text-[11px] text-gray-500 block truncate">{org.name}</span>
+          <span className="text-[11px] text-gray-500 dark:text-slate-400 block truncate">{org.name}</span>
         </span>
         <span className={`shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded ${badge.className}`}>
           {badge.label}

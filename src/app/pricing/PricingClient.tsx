@@ -57,8 +57,8 @@ export default function PricingClient({ foundingCount }: { foundingCount: number
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       {/* Header */}
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-extrabold text-[#0f2a4a] mb-4">Simple, honest pricing</h1>
-        <p className="text-gray-500 text-lg max-w-xl mx-auto">
+        <h1 className="text-4xl font-extrabold text-[#0f2a4a] dark:text-slate-100 mb-4">Simple, honest pricing</h1>
+        <p className="text-gray-500 dark:text-slate-400 text-lg max-w-xl mx-auto">
           Start free. Upgrade when you need more reach.
         </p>
         {isOnTrial && (
@@ -78,22 +78,22 @@ export default function PricingClient({ foundingCount }: { foundingCount: number
       {/* Three columns */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
         {/* Free */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm p-8">
           <div className="mb-6">
-            <h2 className="text-lg font-bold text-[#0f2a4a] mb-1">Free</h2>
+            <h2 className="text-lg font-bold text-[#0f2a4a] dark:text-slate-100 mb-1">Free</h2>
             <div className="flex items-baseline gap-1">
-              <span className="text-4xl font-extrabold text-[#0f2a4a]">$0</span>
-              <span className="text-gray-400 text-sm">forever</span>
+              <span className="text-4xl font-extrabold text-[#0f2a4a] dark:text-slate-100">$0</span>
+              <span className="text-gray-400 dark:text-slate-500 text-sm">forever</span>
             </div>
-            <p className="text-gray-500 text-sm mt-2">Events in the next 30 days, always free.</p>
+            <p className="text-gray-500 dark:text-slate-400 text-sm mt-2">Events in the next 30 days, always free.</p>
           </div>
-          <ul className="flex flex-col gap-3 mb-8 text-gray-600">
+          <ul className="flex flex-col gap-3 mb-8 text-gray-600 dark:text-slate-300">
             <Checkmark text="Browse events in the next 30 days" />
             <Checkmark text="Full search and filters" />
             <Checkmark text="Event detail pages" />
             <Checkmark text="Share events" />
           </ul>
-          <div className="text-sm text-center text-gray-400 py-2.5 border border-gray-200 rounded-lg font-medium">
+          <div className="text-sm text-center text-gray-400 dark:text-slate-500 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg font-medium">
             Current plan
           </div>
         </div>
@@ -155,7 +155,7 @@ export default function PricingClient({ foundingCount }: { foundingCount: number
         </div>
 
         {/* Founding Member */}
-        <div className={`bg-white rounded-2xl border-2 shadow-sm p-8 relative ${foundingFull ? "border-gray-200 opacity-60" : "border-amber-300"}`}>
+        <div className={`bg-white dark:bg-slate-800 rounded-2xl border-2 shadow-sm p-8 relative ${foundingFull ? "border-gray-200 dark:border-slate-700 opacity-60" : "border-amber-300"}`}>
           {!foundingFull && (
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
               <span className="bg-amber-400 text-amber-900 text-xs font-bold px-4 py-1 rounded-full">
@@ -164,18 +164,18 @@ export default function PricingClient({ foundingCount }: { foundingCount: number
             </div>
           )}
           <div className="mb-6">
-            <h2 className="text-lg font-bold text-[#0f2a4a] mb-1">Founding Member</h2>
+            <h2 className="text-lg font-bold text-[#0f2a4a] dark:text-slate-100 mb-1">Founding Member</h2>
             <div className="flex items-baseline gap-1">
-              <span className="text-4xl font-extrabold text-[#0f2a4a]">$29</span>
-              <span className="text-gray-400 text-sm">one-time</span>
+              <span className="text-4xl font-extrabold text-[#0f2a4a] dark:text-slate-100">$29</span>
+              <span className="text-gray-400 dark:text-slate-500 text-sm">one-time</span>
             </div>
-            <p className="text-gray-500 text-sm mt-2">
+            <p className="text-gray-500 dark:text-slate-400 text-sm mt-2">
               {foundingFull
                 ? "All founding spots have been claimed."
                 : `First ${FOUNDING_LIMIT} users only. Pay once, Pro forever.`}
             </p>
           </div>
-          <ul className="flex flex-col gap-3 mb-8 text-gray-600">
+          <ul className="flex flex-col gap-3 mb-8 text-gray-600 dark:text-slate-300">
             <Checkmark text="Everything in Pro, forever" />
             <Checkmark text="No renewals, ever" />
             <Checkmark text="Name in ForaHub credits" />
@@ -186,7 +186,7 @@ export default function PricingClient({ foundingCount }: { foundingCount: number
               <Check className="w-4 h-4" /> You are a Founding Member
             </div>
           ) : isProOrFounding || foundingFull ? (
-            <div className="text-sm text-center text-gray-400 py-2.5 border border-gray-200 rounded-lg font-medium">
+            <div className="text-sm text-center text-gray-400 dark:text-slate-500 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg font-medium">
               {foundingFull ? "Sold out" : "Not available"}
             </div>
           ) : (
@@ -213,7 +213,7 @@ export default function PricingClient({ foundingCount }: { foundingCount: number
 
       {/* FAQ */}
       <div className="mt-16 max-w-2xl mx-auto">
-        <h2 className="text-xl font-bold text-[#0f2a4a] mb-6 text-center">Common questions</h2>
+        <h2 className="text-xl font-bold text-[#0f2a4a] dark:text-slate-100 mb-6 text-center">Common questions</h2>
         <div className="flex flex-col gap-5">
           {[
             {
@@ -233,9 +233,9 @@ export default function PricingClient({ foundingCount }: { foundingCount: number
               a: "All major credit and debit cards via Stripe. Payments are secure and encrypted.",
             },
           ].map(({ q, a }) => (
-            <div key={q} className="border-b border-gray-100 pb-5">
-              <p className="font-semibold text-[#0f2a4a] text-sm mb-1">{q}</p>
-              <p className="text-gray-500 text-sm">{a}</p>
+            <div key={q} className="border-b border-gray-100 dark:border-slate-800 pb-5">
+              <p className="font-semibold text-[#0f2a4a] dark:text-slate-100 text-sm mb-1">{q}</p>
+              <p className="text-gray-500 dark:text-slate-400 text-sm">{a}</p>
             </div>
           ))}
         </div>

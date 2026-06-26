@@ -201,7 +201,7 @@ function RewriteButton({
       className={`inline-flex items-center gap-1.5 text-xs font-semibold border rounded-full px-3 py-1.5 transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
         active
           ? "bg-gradient-to-r from-purple-500 to-violet-500 border-purple-500 text-white shadow-md"
-          : "border-gray-200 hover:border-purple-300 hover:bg-gradient-to-r hover:from-purple-50 hover:to-violet-50 text-gray-700"
+          : "border-gray-200 dark:border-slate-700 hover:border-purple-300 hover:bg-gradient-to-r hover:from-purple-50 hover:to-violet-50 text-gray-700 dark:text-slate-200"
       }`}
     >
       <span aria-hidden="true" className="inline-flex">{icon}</span> {label}
@@ -220,13 +220,13 @@ function FormSection({
   first?: boolean;
 }) {
   return (
-    <section id={id} className={`scroll-mt-32 ${first ? "" : "border-t border-gray-200 pt-8 mt-8 md:pt-10 md:mt-10"}`}>
+    <section id={id} className={`scroll-mt-32 ${first ? "" : "border-t border-gray-200 dark:border-slate-700 pt-8 mt-8 md:pt-10 md:mt-10"}`}>
       <header className="mb-5">
         <div className="flex items-center gap-2">
           <span aria-hidden="true" className="inline-flex">{icon}</span>
-          <h2 className="text-lg md:text-xl font-bold text-[#0f2a4a]">{title}</h2>
+          <h2 className="text-lg md:text-xl font-bold text-[#0f2a4a] dark:text-slate-100">{title}</h2>
         </div>
-        {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
+        {subtitle && <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">{subtitle}</p>}
       </header>
       <div className="space-y-5">{children}</div>
     </section>
@@ -258,11 +258,11 @@ function SubmitProgressBar({
   };
 
   return (
-    <div className="sticky top-16 z-30 bg-white border-b border-gray-200 shadow-sm">
+    <div className="sticky top-16 z-30 bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 shadow-sm">
       <div className="max-w-5xl mx-auto py-3 px-4 flex items-center gap-3 md:gap-4">
         <div className="shrink-0 hidden md:block">
-          <p className="text-xs font-semibold text-[#0f2a4a]">Your event submission</p>
-          <p className={`text-[11px] mt-0.5 ${allComplete ? "text-green-700 font-semibold" : "text-gray-500"} inline-flex items-center gap-1`}>
+          <p className="text-xs font-semibold text-[#0f2a4a] dark:text-slate-100">Your event submission</p>
+          <p className={`text-[11px] mt-0.5 ${allComplete ? "text-green-700 font-semibold" : "text-gray-500 dark:text-slate-400"} inline-flex items-center gap-1`}>
             {allComplete ? (
               <>
                 Ready to submit <Sparkles className="w-3 h-3 text-purple-600" />
@@ -274,13 +274,13 @@ function SubmitProgressBar({
         </div>
 
         <div className="flex-1 min-w-0 flex items-center gap-2 md:gap-3">
-          <div className={`flex-1 h-1.5 rounded-full overflow-hidden ${allComplete ? "bg-green-100" : "bg-gray-100"}`}>
+          <div className={`flex-1 h-1.5 rounded-full overflow-hidden ${allComplete ? "bg-green-100" : "bg-gray-100 dark:bg-slate-800"}`}>
             <div
               className={`h-full transition-all duration-500 ${allComplete ? "bg-green-500" : "bg-blue-500"}`}
               style={{ width: `${pct}%` }}
             />
           </div>
-          <span className={`md:hidden text-[11px] font-semibold shrink-0 inline-flex items-center gap-1 ${allComplete ? "text-green-700" : "text-gray-600"}`}>
+          <span className={`md:hidden text-[11px] font-semibold shrink-0 inline-flex items-center gap-1 ${allComplete ? "text-green-700" : "text-gray-600 dark:text-slate-300"}`}>
             {allComplete ? (
               <>
                 Ready <Sparkles className="w-3 h-3 text-purple-600" />
@@ -299,14 +299,14 @@ function SubmitProgressBar({
               ? "text-green-700"
               : isCurrent
               ? "text-blue-700 font-bold border-b-2 border-blue-500 rounded-none"
-              : "text-gray-400";
+              : "text-gray-400 dark:text-slate-500";
             return (
               <li key={s.id}>
                 <button
                   type="button"
                   onClick={() => handleScrollTo(s.id)}
                   aria-current={isCurrent ? "true" : undefined}
-                  className={`${base} ${stateClass} hover:bg-gray-50`}
+                  className={`${base} ${stateClass} hover:bg-gray-50 dark:hover:bg-slate-900`}
                 >
                   <span aria-hidden="true" className="inline-flex">{s.icon}</span>
                   <span className="hidden lg:inline">{s.name}</span>
@@ -393,16 +393,16 @@ function TimezoneStrip({ localInput, sourceTimezone }: { localInput: string; sou
   })).filter(r => r.text);
   if (rows.length === 0) return null;
   return (
-    <div className="mt-2 bg-gray-50 border border-gray-200 rounded-xl p-3">
-      <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5 inline-flex items-center gap-1.5">
+    <div className="mt-2 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-3">
+      <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400 mb-1.5 inline-flex items-center gap-1.5">
         <Globe className="w-3.5 h-3.5 text-emerald-600" />
         Time in major timezones
       </p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-0.5 text-xs text-gray-700">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-0.5 text-xs text-gray-700 dark:text-slate-200">
         {rows.map(r => (
           <div key={r.city} className="flex justify-between">
             <span className="font-medium">{r.city}</span>
-            <span className="tabular-nums text-gray-600">{r.text}</span>
+            <span className="tabular-nums text-gray-600 dark:text-slate-300">{r.text}</span>
           </div>
         ))}
       </div>
@@ -484,7 +484,7 @@ export default function SubmitPage() {
     const finalComplete = userId ? true : !!form.submitter_email.trim();
 
     return [
-      { id: "section-basics", icon: <ClipboardList className="w-4 h-4 text-slate-600" />, name: "Basics", complete: basicsComplete },
+      { id: "section-basics", icon: <ClipboardList className="w-4 h-4 text-slate-600 dark:text-slate-300" />, name: "Basics", complete: basicsComplete },
       { id: "section-when-where", icon: <Calendar className="w-4 h-4 text-blue-600" />, name: "When & Where", complete: whenWhereComplete },
       { id: "section-cost-audience", icon: <Ticket className="w-4 h-4 text-amber-600" />, name: "Cost & Audience", complete: costComplete },
       { id: "section-partners-speakers", icon: <Users className="w-4 h-4 text-violet-600" />, name: "Partners & Speakers", complete: partnersComplete },
@@ -1089,9 +1089,9 @@ export default function SubmitPage() {
     }
   }
 
-  const labelClass = "block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1";
+  const labelClass = "block text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-slate-300 mb-1";
   const inputClass =
-    "w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-800 placeholder-gray-400 hover:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-colors";
+    "w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-gray-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 hover:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-colors";
 
   const aiBadge = (
     <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-purple-50 border border-purple-200 rounded-full px-1.5 py-0.5 ml-1.5 shadow-sm">
@@ -1102,15 +1102,15 @@ export default function SubmitPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
         <Navbar />
         <main className="max-w-2xl mx-auto px-4 py-16">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 md:p-10 text-center">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-700 p-8 md:p-10 text-center">
             <CheckCircle2 size={56} className="text-green-500 mx-auto mb-4" />
-            <h1 className="text-2xl md:text-3xl font-extrabold text-[#0f2a4a] mb-3">
+            <h1 className="text-2xl md:text-3xl font-extrabold text-[#0f2a4a] dark:text-slate-100 mb-3">
               Your event has been submitted!
             </h1>
-            <p className="text-base text-gray-600 mb-6 max-w-md mx-auto">{success.message}</p>
+            <p className="text-base text-gray-600 dark:text-slate-300 mb-6 max-w-md mx-auto">{success.message}</p>
             <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
               {success.auto_approved && (
                 <Link
@@ -1128,12 +1128,12 @@ export default function SubmitPage() {
                   setUrlInput("");
                   setTab("flyer");
                 }}
-                className="inline-flex items-center gap-2 border border-gray-300 hover:border-[#0f2a4a] text-[#0f2a4a] font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors"
+                className="inline-flex items-center gap-2 border border-gray-300 dark:border-slate-600 hover:border-[#0f2a4a] text-[#0f2a4a] dark:text-slate-100 font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors"
               >
                 Submit another event
               </button>
             </div>
-            <div className="border-t border-gray-100 pt-6 text-sm text-gray-500">
+            <div className="border-t border-gray-100 dark:border-slate-800 pt-6 text-sm text-gray-500 dark:text-slate-400">
               {userId ? (
                 <>
                   Manage your submissions in{" "}
@@ -1159,15 +1159,15 @@ export default function SubmitPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       <Navbar />
       <SubmitProgressBar sections={progressSections} currentSectionId={currentSectionId} />
       <main className="max-w-3xl mx-auto px-4 py-8 md:py-12">
         <header className="mb-6 text-center md:text-left">
-          <h1 className="text-3xl md:text-4xl font-extrabold text-[#0f2a4a] tracking-tight">
+          <h1 className="text-3xl md:text-4xl font-extrabold text-[#0f2a4a] dark:text-slate-100 tracking-tight">
             List your event on ForaHub
           </h1>
-          <p className="text-base text-gray-600 mt-2 mb-3">
+          <p className="text-base text-gray-600 dark:text-slate-300 mt-2 mb-3">
             Share your event with thousands of development professionals worldwide.
             We&apos;ll review and publish within 24 hours.
           </p>
@@ -1202,8 +1202,8 @@ export default function SubmitPage() {
         )}
 
         {userId && pastEvents.length > 0 && (
-          <div className="mb-5 bg-white border border-gray-200 rounded-xl px-4 py-3">
-            <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">
+          <div className="mb-5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400 mb-2">
               Quick start: duplicate one of your past events
             </p>
             <div className="flex flex-wrap gap-2">
@@ -1211,7 +1211,7 @@ export default function SubmitPage() {
                 <button
                   key={ev.id}
                   onClick={() => applyPastEvent(ev)}
-                  className="text-xs font-medium border border-gray-200 hover:border-[#4ea8de] hover:bg-[#4ea8de]/5 rounded-full px-3 py-1.5 transition-colors text-gray-700 hover:text-[#0f2a4a]"
+                  className="text-xs font-medium border border-gray-200 dark:border-slate-700 hover:border-[#4ea8de] hover:bg-[#4ea8de]/5 rounded-full px-3 py-1.5 transition-colors text-gray-700 dark:text-slate-200 hover:text-[#0f2a4a] dark:hover:text-slate-100"
                 >
                   {ev.title.slice(0, 60)}{ev.title.length > 60 ? "…" : ""}
                 </button>
@@ -1221,8 +1221,8 @@ export default function SubmitPage() {
         )}
 
         {/* Tabs */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-5">
-          <div className="grid grid-cols-3 gap-1 p-1 bg-gray-50">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm overflow-hidden mb-5">
+          <div className="grid grid-cols-3 gap-1 p-1 bg-gray-50 dark:bg-slate-900">
             {(["flyer", "url", "manual"] as const).map(t => (
               <button
                 key={t}
@@ -1230,7 +1230,7 @@ export default function SubmitPage() {
                 className={`relative px-3 py-3 text-xs md:text-sm font-semibold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 rounded-lg ${
                   tab === t
                     ? "bg-blue-600 text-white shadow-md"
-                    : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                    : "bg-gray-50 dark:bg-slate-900 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800"
                 }`}
               >
                 {t === "flyer" && <Upload size={16} />}
@@ -1239,7 +1239,7 @@ export default function SubmitPage() {
                 <span>{t === "flyer" ? "Upload Flyer" : t === "url" ? "Paste URL" : "Enter Manually"}</span>
                 {t === "flyer" && (
                   <span className={`hidden sm:inline-flex items-center gap-0.5 absolute -top-1 -right-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full shadow-sm ${
-                    tab === t ? "bg-white text-purple-600" : "bg-gradient-to-r from-purple-500 to-violet-500 text-white"
+                    tab === t ? "bg-white dark:bg-slate-800 text-purple-600" : "bg-gradient-to-r from-purple-500 to-violet-500 text-white"
                   }`}>
                     <Sparkles className="w-2.5 h-2.5" /> Recommended
                   </span>
@@ -1261,11 +1261,11 @@ export default function SubmitPage() {
                     if (f) handleFlyerFile(f);
                   }}
                   className={`block border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
-                    dragOver ? "border-[#4ea8de] bg-[#4ea8de]/5" : "border-gray-300 hover:border-[#4ea8de] hover:bg-gray-50"
+                    dragOver ? "border-[#4ea8de] bg-[#4ea8de]/5" : "border-gray-300 dark:border-slate-600 hover:border-[#4ea8de] hover:bg-gray-50 dark:hover:bg-slate-900"
                   }`}
                 >
                   {extracting ? (
-                    <div className="flex flex-col items-center gap-2 text-gray-600">
+                    <div className="flex flex-col items-center gap-2 text-gray-600 dark:text-slate-300">
                       <Loader2 size={28} className="animate-spin text-purple-600" />
                       <p className="text-sm font-medium inline-flex items-center gap-1.5">
                         <Sparkles className="w-4 h-4 text-purple-600" />
@@ -1274,11 +1274,11 @@ export default function SubmitPage() {
                     </div>
                   ) : (
                     <>
-                      <Upload size={28} className="text-gray-400 mx-auto mb-2" />
-                      <p className="text-sm font-semibold text-gray-700">
+                      <Upload size={28} className="text-gray-400 dark:text-slate-500 mx-auto mb-2" />
+                      <p className="text-sm font-semibold text-gray-700 dark:text-slate-200">
                         Drop a flyer or poster here, or click to choose
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">JPG, PNG, or PDF — max 10MB</p>
+                      <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">JPG, PNG, or PDF — max 10MB</p>
                     </>
                   )}
                   <input
@@ -1298,7 +1298,7 @@ export default function SubmitPage() {
 
             {tab === "url" && (
               <div className="space-y-3">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 dark:text-slate-300">
                   Paste a link to your event page — Eventbrite, your university calendar, your org&apos;s site, anywhere.
                 </p>
                 <div className="flex gap-2">
@@ -1319,7 +1319,7 @@ export default function SubmitPage() {
                     {extracting ? "Reading…" : "Extract"}
                   </button>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">We&apos;ll read the page and fill in the form automatically.</p>
+                <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">We&apos;ll read the page and fill in the form automatically.</p>
 
                 {pasteFallback && (
                   <div className="mt-2 border border-amber-200 bg-amber-50 rounded-xl p-4 space-y-3">
@@ -1345,7 +1345,7 @@ export default function SubmitPage() {
                         onChange={e => setPasteText(e.target.value)}
                         rows={8}
                         placeholder="Title, hosting org, date and time, location, registration link, short description…"
-                        className="w-full bg-white border border-amber-200 rounded-xl px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400/60 focus:border-amber-400 transition-colors"
+                        className="w-full bg-white dark:bg-slate-800 border border-amber-200 rounded-xl px-3 py-2 text-sm text-gray-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400/60 focus:border-amber-400 transition-colors"
                       />
                       <p className="text-[11px] text-amber-700 mt-1">{pasteText.length}/8000 characters</p>
                     </div>
@@ -1364,10 +1364,10 @@ export default function SubmitPage() {
 
             {tab === "manual" && (
               <div className="space-y-1">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 dark:text-slate-300">
                   Just fill in the form below — no extraction needed.
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-slate-400">
                   Fill in event details — fields auto-suggest as you type.
                 </p>
               </div>
@@ -1386,8 +1386,8 @@ export default function SubmitPage() {
         )}
 
         {/* The shared verify-and-submit form */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 md:p-8">
-          <FormSection id="section-basics" first icon={<ClipboardList className="w-5 h-5 text-slate-600" />} title="The Basics" subtitle="What is your event and who is hosting it?">
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm p-5 md:p-8">
+          <FormSection id="section-basics" first icon={<ClipboardList className="w-5 h-5 text-slate-600 dark:text-slate-300" />} title="The Basics" subtitle="What is your event and who is hosting it?">
 
           <div>
             <label className={labelClass}>
@@ -1424,7 +1424,7 @@ export default function SubmitPage() {
                     className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${
                       active
                         ? "border-transparent text-white"
-                        : "border-slate-300 text-slate-700 bg-white hover:bg-slate-50"
+                        : "border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900"
                     }`}
                     style={active ? { backgroundColor: cat.color } : undefined}
                     title={cat.description}
@@ -1437,13 +1437,13 @@ export default function SubmitPage() {
             </div>
             {categorySuggestion && !form.category && (
               <div className="mt-2 flex items-center gap-2 text-xs">
-                <span className="text-gray-600 inline-flex items-center gap-1">
+                <span className="text-gray-600 dark:text-slate-300 inline-flex items-center gap-1">
                   <Sparkles className="w-3 h-3 text-purple-600" />
                   AI suggests:{" "}
                   <span className="font-semibold">
                     {EVENT_CATEGORIES.find(c => c.key === categorySuggestion.category)?.label}
                   </span>
-                  <span className="text-gray-400">
+                  <span className="text-gray-400 dark:text-slate-500">
                     ({Math.round(categorySuggestion.confidence * 100)}% confident)
                   </span>
                 </span>
@@ -1460,7 +1460,7 @@ export default function SubmitPage() {
                 <button
                   type="button"
                   onClick={() => setCategorySuggestion(null)}
-                  className="text-gray-400 hover:text-gray-600 text-[11px]"
+                  className="text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 text-[11px]"
                 >
                   Dismiss
                 </button>
@@ -1479,7 +1479,7 @@ export default function SubmitPage() {
                 onChange={v => { setForm(f => ({ ...f, organization: v })); setAiFilled(a => ({ ...a, organization: false })); }}
                 placeholder="Start typing your organization..."
               />
-              <p className="text-xs text-gray-500 mt-1">Type at least 2 characters to see suggestions.</p>
+              <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">Type at least 2 characters to see suggestions.</p>
             </div>
             <div>
               <label className={labelClass}>Primary SDG (optional){aiFilled.primary_sdg && aiBadge}</label>
@@ -1495,7 +1495,7 @@ export default function SubmitPage() {
               </select>
               {sdgSuggestion && (
                 <div className="mt-2 flex items-center gap-2 text-xs">
-                  <span className="text-gray-600 inline-flex items-center gap-1">
+                  <span className="text-gray-600 dark:text-slate-300 inline-flex items-center gap-1">
                     <Sparkles className="w-3 h-3 text-purple-600" />
                     AI suggests: <span className="font-semibold">SDG {sdgSuggestion.sdg} — {sdgSuggestion.label}</span>
                   </span>
@@ -1513,7 +1513,7 @@ export default function SubmitPage() {
                   <button
                     type="button"
                     onClick={() => setSdgSuggestion(null)}
-                    className="text-gray-400 hover:text-gray-600 text-[11px]"
+                    className="text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 text-[11px]"
                   >
                     Dismiss
                   </button>
@@ -1536,8 +1536,8 @@ export default function SubmitPage() {
               className={inputClass}
             />
             <div className="flex items-center justify-between mt-1">
-              <p className="text-[11px] text-gray-400">{form.description.length}/500</p>
-              <p className="text-[11px] text-gray-400">{rewriteCount}/{MAX_REWRITES} AI rewrites used</p>
+              <p className="text-[11px] text-gray-400 dark:text-slate-500">{form.description.length}/500</p>
+              <p className="text-[11px] text-gray-400 dark:text-slate-500">{rewriteCount}/{MAX_REWRITES} AI rewrites used</p>
             </div>
 
             {/* AI Polish toolbar */}
@@ -1550,12 +1550,12 @@ export default function SubmitPage() {
                   type="button"
                   onClick={() => setTranslateOpen(o => !o)}
                   disabled={!!rewriting || rewriteCount >= MAX_REWRITES}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold border border-gray-200 hover:border-[#4ea8de] hover:bg-[#4ea8de]/5 disabled:opacity-40 disabled:cursor-not-allowed rounded-full px-2.5 py-1 text-gray-700 transition-colors"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold border border-gray-200 dark:border-slate-700 hover:border-[#4ea8de] hover:bg-[#4ea8de]/5 disabled:opacity-40 disabled:cursor-not-allowed rounded-full px-2.5 py-1 text-gray-700 dark:text-slate-200 transition-colors"
                 >
-                  <Globe className="w-3.5 h-3.5 text-purple-600" /> Translate <ChevronDown className="w-3 h-3 text-slate-500" />
+                  <Globe className="w-3.5 h-3.5 text-purple-600" /> Translate <ChevronDown className="w-3 h-3 text-slate-500 dark:text-slate-400 dark:dark:text-slate-500" />
                 </button>
                 {translateOpen && (
-                  <ul className="absolute z-10 mt-1 right-0 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden min-w-[160px]">
+                  <ul className="absolute z-10 mt-1 right-0 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden min-w-[160px]">
                     {([
                       { m: "translate_en" as const, label: "To English" },
                       { m: "translate_fr" as const, label: "À Français" },
@@ -1566,7 +1566,7 @@ export default function SubmitPage() {
                         <button
                           type="button"
                           onClick={() => rewriteDescription(opt.m)}
-                          className="w-full text-left px-3 py-2 text-xs hover:bg-gray-50 text-gray-700 border-b border-gray-100 last:border-b-0"
+                          className="w-full text-left px-3 py-2 text-xs hover:bg-gray-50 dark:hover:bg-slate-900 text-gray-700 dark:text-slate-200 border-b border-gray-100 dark:border-slate-800 last:border-b-0"
                         >
                           {opt.label}
                         </button>
@@ -1576,7 +1576,7 @@ export default function SubmitPage() {
                 )}
               </div>
               {rewriting && (
-                <span className="inline-flex items-center gap-1.5 text-xs text-gray-500">
+                <span className="inline-flex items-center gap-1.5 text-xs text-gray-500 dark:text-slate-400">
                   <Loader2 size={12} className="animate-spin text-purple-600" />
                   <Sparkles className="w-3 h-3 text-purple-600" />
                   Rewriting…
@@ -1649,7 +1649,7 @@ export default function SubmitPage() {
                   className={`cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition-colors ${
                     form.format === f
                       ? "bg-[#0f2a4a] text-white border-[#0f2a4a]"
-                      : "bg-white text-gray-700 border-gray-200 hover:border-[#0f2a4a]"
+                      : "bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-200 border-gray-200 dark:border-slate-700 hover:border-[#0f2a4a]"
                   }`}
                 >
                   <input
@@ -1678,7 +1678,7 @@ export default function SubmitPage() {
                 onPickedLocation={handleLocationPicked}
                 placeholder="Start typing city or country..."
               />
-              <p className="text-xs text-gray-500 mt-1">Type at least 2 characters to see suggestions.</p>
+              <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">Type at least 2 characters to see suggestions.</p>
             </div>
           )}
 
@@ -1689,7 +1689,7 @@ export default function SubmitPage() {
                 Meeting link / Online URL {form.format === "virtual" && <span className="text-red-500">*</span>}
               </label>
               <div className="relative">
-                <LinkIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <LinkIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
                 <input
                   type="url"
                   value={form.online_url}
@@ -1698,7 +1698,7 @@ export default function SubmitPage() {
                   className={`${inputClass} pl-9`}
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-1">Zoom, Teams, Webex, or any meeting link.</p>
+              <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">Zoom, Teams, Webex, or any meeting link.</p>
             </div>
           )}
 
@@ -1711,7 +1711,7 @@ export default function SubmitPage() {
               placeholder="e.g. America/New_York"
               className={inputClass}
             />
-            <p className="text-[11px] text-gray-400 mt-1">Auto-set from the selected location. Override if needed.</p>
+            <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1">Auto-set from the selected location. Override if needed.</p>
           </div>
 
           {/* ── Registration deadline ────────────────────────────── */}
@@ -1723,7 +1723,7 @@ export default function SubmitPage() {
               onChange={e => { deadlineTouchedRef.current = true; setForm(f => ({ ...f, registration_deadline: e.target.value })); setAiFilled(a => ({ ...a, registration_deadline: false })); }}
               className={inputClass}
             />
-            <p className="text-[11px] text-gray-400 mt-1">Default: 7 days before the event start. Adjust or clear if not applicable.</p>
+            <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1">Default: 7 days before the event start. Adjust or clear if not applicable.</p>
           </div>
           </FormSection>
 
@@ -1739,7 +1739,7 @@ export default function SubmitPage() {
                   className={`cursor-pointer inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border text-sm font-medium transition-colors ${
                     form.cost_type === o.value
                       ? "bg-[#0f2a4a] text-white border-[#0f2a4a]"
-                      : "bg-white text-gray-700 border-gray-200 hover:border-[#0f2a4a]"
+                      : "bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-200 border-gray-200 dark:border-slate-700 hover:border-[#0f2a4a]"
                   }`}
                 >
                   <input
@@ -1769,7 +1769,7 @@ export default function SubmitPage() {
             <label className={labelClass}>Target audience {aiFilled.target_audience && aiBadge}</label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
               {AUDIENCE_OPTIONS.map(o => (
-                <label key={o.value} className="flex items-center gap-2 text-sm text-gray-700 px-2 py-1 rounded hover:bg-gray-50">
+                <label key={o.value} className="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-200 px-2 py-1 rounded hover:bg-gray-50 dark:hover:bg-slate-900">
                   <input
                     type="checkbox"
                     checked={form.target_audience.includes(o.value)}
@@ -1788,12 +1788,12 @@ export default function SubmitPage() {
                 </label>
               ))}
             </div>
-            <p className="text-[11px] text-gray-400 mt-1">Leave all unchecked = open to everyone (default).</p>
+            <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1">Leave all unchecked = open to everyone (default).</p>
           </div>
 
           {/* ── Capacity ─────────────────────────────────────────── */}
           <div>
-            <label className={labelClass}>Capacity <span className="text-gray-400 font-normal normal-case tracking-normal">(optional)</span></label>
+            <label className={labelClass}>Capacity <span className="text-gray-400 dark:text-slate-500 font-normal normal-case tracking-normal">(optional)</span></label>
             <input
               type="number"
               min={1}
@@ -1802,7 +1802,7 @@ export default function SubmitPage() {
               placeholder="Leave blank for unlimited"
               className={inputClass}
             />
-            <p className="text-[11px] text-gray-400 mt-1">Maximum attendees. Helps attendees know if there&apos;s a registration cap.</p>
+            <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1">Maximum attendees. Helps attendees know if there&apos;s a registration cap.</p>
           </div>
           </FormSection>
 
@@ -1816,7 +1816,7 @@ export default function SubmitPage() {
               onChange={v => { setForm(f => ({ ...f, co_organizers: v })); setAiFilled(a => ({ ...a, co_organizers: false })); }}
               placeholder="Start typing to add partner organizations..."
             />
-            <p className="text-xs text-gray-500 mt-1">Type at least 2 characters to see suggestions. Press Enter to add a free-form name.</p>
+            <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">Type at least 2 characters to see suggestions. Press Enter to add a free-form name.</p>
           </div>
 
           {/* ── Speakers / panelists ─────────────────────────────── */}
@@ -1829,7 +1829,7 @@ export default function SubmitPage() {
               rows={3}
               className={inputClass}
             />
-            <p className="text-[11px] text-gray-400 mt-1">One per line or comma-separated.</p>
+            <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1">One per line or comma-separated.</p>
           </div>
           </FormSection>
 
@@ -1861,12 +1861,12 @@ export default function SubmitPage() {
               </label>
             </div>
             {form.banner_image_url && (
-              <div className="mt-2 rounded-xl border border-gray-200 overflow-hidden bg-white">
+              <div className="mt-2 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-800">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={form.banner_image_url} alt="Banner preview" className="w-full max-h-48 object-cover" />
               </div>
             )}
-            <p className="text-[11px] text-gray-400 mt-1 inline-flex items-start gap-1.5">
+            <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1 inline-flex items-start gap-1.5">
               {form.uploaded_flyer_url && form.banner_image_url === form.uploaded_flyer_url ? (
                 <>
                   <Sparkles className="w-3 h-3 text-purple-600 mt-0.5 shrink-0" />
@@ -1880,8 +1880,8 @@ export default function SubmitPage() {
 
           {/* ── Recording / livestream ───────────────────────────── */}
           <div>
-            <label className={labelClass}>Recording <span className="text-gray-400 font-normal normal-case tracking-normal">(optional)</span></label>
-            <label className="flex items-center gap-2 text-sm text-gray-700">
+            <label className={labelClass}>Recording <span className="text-gray-400 dark:text-slate-500 font-normal normal-case tracking-normal">(optional)</span></label>
+            <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-200">
               <input
                 type="checkbox"
                 checked={form.will_be_recorded}
@@ -1899,7 +1899,7 @@ export default function SubmitPage() {
                 className={`${inputClass} mt-2`}
               />
             )}
-            <p className="text-[11px] text-gray-400 mt-1">Help attendees who can&apos;t join live.</p>
+            <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1">Help attendees who can&apos;t join live.</p>
           </div>
 
           {/* ── Event languages ──────────────────────────────────── */}
@@ -1907,7 +1907,7 @@ export default function SubmitPage() {
             <label className={labelClass}>Event language(s) {aiFilled.event_languages && aiBadge}</label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
               {LANGUAGE_OPTIONS.map(o => (
-                <label key={o.code} className="flex items-center gap-2 text-sm text-gray-700 px-2 py-1 rounded hover:bg-gray-50">
+                <label key={o.code} className="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-200 px-2 py-1 rounded hover:bg-gray-50 dark:hover:bg-slate-900">
                   <input
                     type="checkbox"
                     checked={form.event_languages.includes(o.code)}
@@ -1938,7 +1938,7 @@ export default function SubmitPage() {
           <div>
             <label className={labelClass}>Registration / info URL {aiFilled.registration_url && aiBadge}</label>
             <div className="relative">
-              <LinkIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <LinkIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
               <input
                 type="url"
                 value={form.registration_url}
@@ -1950,7 +1950,7 @@ export default function SubmitPage() {
           </div>
 
           {!userId && (
-            <div className="border-t border-gray-100 pt-5">
+            <div className="border-t border-gray-100 dark:border-slate-800 pt-5">
               <label className={labelClass}>
                 Your email <span className="text-red-500">*</span>
               </label>
@@ -1961,7 +1961,7 @@ export default function SubmitPage() {
                 placeholder="you@example.com"
                 className={inputClass}
               />
-              <p className="text-[11px] text-gray-500 mt-1">
+              <p className="text-[11px] text-gray-500 dark:text-slate-400 mt-1">
                 We&apos;ll email you when your event is approved.{" "}
                 <Link href="/auth/signup" className="text-[#4ea8de] hover:underline font-medium">
                   Or sign up
@@ -1979,8 +1979,8 @@ export default function SubmitPage() {
             </div>
           )}
 
-          <div className="border-t border-gray-100 pt-6 flex flex-col md:flex-row md:items-center gap-3 md:justify-between">
-            <p className="text-[11px] text-gray-400 flex items-center gap-1">
+          <div className="border-t border-gray-100 dark:border-slate-800 pt-6 flex flex-col md:flex-row md:items-center gap-3 md:justify-between">
+            <p className="text-[11px] text-gray-400 dark:text-slate-500 flex items-center gap-1">
               <Globe size={11} /> Drafts auto-save every 10 seconds.
             </p>
             <button
@@ -2001,7 +2001,7 @@ export default function SubmitPage() {
             onClick={() => setDuplicateModalOpen(false)}
           >
             <div
-              className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6"
+              className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-lg w-full p-6"
               onClick={e => e.stopPropagation()}
             >
               <div className="flex items-start gap-3 mb-3">
@@ -2009,20 +2009,20 @@ export default function SubmitPage() {
                   <AlertTriangle className="w-5 h-5 text-amber-600" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-bold text-[#0f2a4a]">We may already have this event</h3>
-                  <p className="text-sm text-gray-600 mt-0.5">
+                  <h3 className="text-lg font-bold text-[#0f2a4a] dark:text-slate-100">We may already have this event</h3>
+                  <p className="text-sm text-gray-600 dark:text-slate-300 mt-0.5">
                     These events on ForaHub look similar to what you&apos;re about to submit. Mind taking a look first?
                   </p>
                 </div>
               </div>
               <ul className="space-y-2 mb-5">
                 {duplicates.map(d => (
-                  <li key={d.id} className="border border-gray-200 rounded-xl p-3 flex items-start justify-between gap-3">
+                  <li key={d.id} className="border border-gray-200 dark:border-slate-700 rounded-xl p-3 flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-gray-900 leading-snug line-clamp-2">{d.title}</p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-sm font-semibold text-gray-900 dark:text-slate-100 leading-snug line-clamp-2">{d.title}</p>
+                      <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
                         {d.organization ?? "—"} · {new Date(d.start_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" })}
-                        <span className="ml-2 text-gray-400">{Math.round(d.similarity_score * 100)}% match</span>
+                        <span className="ml-2 text-gray-400 dark:text-slate-500">{Math.round(d.similarity_score * 100)}% match</span>
                       </p>
                     </div>
                     <a
@@ -2040,7 +2040,7 @@ export default function SubmitPage() {
                 <button
                   type="button"
                   onClick={() => setDuplicateModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-gray-300 text-gray-700 text-sm font-semibold hover:bg-gray-50"
+                  className="px-4 py-2 rounded-xl border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-200 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-slate-900"
                 >
                   Cancel — I&apos;ll check first
                 </button>

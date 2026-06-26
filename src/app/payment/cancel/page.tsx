@@ -4,15 +4,15 @@ import Navbar from "@/components/Navbar";
 
 export default function PaymentCancelPage() {
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 font-sans">
       <Navbar />
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] px-4 py-16 text-center">
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-10 max-w-md w-full">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-lg p-10 max-w-md w-full">
           <div className="mx-auto w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mb-4">
             <Hand className="w-7 h-7 text-blue-600" />
           </div>
-          <h1 className="text-2xl font-bold text-[#0f2a4a] mb-2">No worries</h1>
-          <p className="text-gray-500 mb-8">You can upgrade anytime. The free tier still gives you full access to events in the next 30 days.</p>
+          <h1 className="text-2xl font-bold text-[#0f2a4a] dark:text-slate-100 mb-2">No worries</h1>
+          <p className="text-gray-500 dark:text-slate-400 mb-8">You can upgrade anytime. The free tier still gives you full access to events in the next 30 days.</p>
           <div className="flex flex-col gap-3">
             <Link
               href="/pricing"
@@ -22,7 +22,7 @@ export default function PaymentCancelPage() {
             </Link>
             <Link
               href="/events"
-              className="border border-gray-200 text-gray-700 hover:bg-gray-50 font-medium px-6 py-3 rounded-lg transition-colors"
+              className="border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-900 font-medium px-6 py-3 rounded-lg transition-colors"
             >
               Browse Events
             </Link>
