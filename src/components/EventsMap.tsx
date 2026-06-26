@@ -13,6 +13,9 @@ export type ShowFilter = "all" | "this-week" | "this-month" | "featured";
 
 export interface MapPin {
   id: string;
+  /** Accessible name for the marker — Leaflet markers carry
+   *  role="button" and need a name to pass aria-command-name. */
+  title: string;
   lat: number;
   lng: number;
   sdg: number | null;
@@ -286,9 +289,27 @@ export default function EventsMap({
 
     // Build all markers first, then add as a batch — markercluster does its
     // own bulk-load optimisation when given an array via addLayers().
+    //
+    // Accessibility note: each marker's icon element is rendered with
+    // role="button" by Leaflet. Without an accessible name Lighthouse fails
+    // aria-command-name and screen readers announce only "button". We set
+    // the marker's `title` (Leaflet writes this to the icon element's
+    // title attribute — also gives a hover tooltip) and, after the
+    // element exists on the DOM, set `aria-label` directly so the
+    // accessible name comes from a stable a11y attribute even when AT
+    // doesn't fall back to `title`.
     const markers: L.Marker[] = [];
     for (const p of pins) {
-      const marker = L.marker([p.lat, p.lng], { icon: buildPinIcon(p, mobile) });
+      const marker = L.marker([p.lat, p.lng], {
+        icon: buildPinIcon(p, mobile),
+        title: p.title,
+        alt: p.title,
+        keyboard: true,
+      });
+      marker.on("add", () => {
+        const el = marker.getElement();
+        if (el) el.setAttribute("aria-label", p.title);
+      });
       marker.on("click", async () => {
         const detail = await fetchEventDetail(p.id);
         if (detail) {

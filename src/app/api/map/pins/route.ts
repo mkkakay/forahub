@@ -28,6 +28,7 @@ type ColorMode = "sdg" | "date" | "format";
 
 interface PinRow {
   id: string;
+  title: string;
   latitude: number | null;
   longitude: number | null;
   sdg_goals: number[] | null;
@@ -91,7 +92,11 @@ export async function GET(req: NextRequest) {
 
   let query = adminSupabase
     .from("events")
-    .select("id, latitude, longitude, sdg_goals, start_date, format")
+    // `title` is included so each marker can render an accessible name
+    // at paint time (without it Leaflet markers fail aria-command-name).
+    // Worst-case payload growth: ~50 KB gzipped at the PIN_CAP of 5K
+    // pins — acceptable for the map page.
+    .select("id, title, latitude, longitude, sdg_goals, start_date, format")
     .not("latitude", "is", null)
     .not("longitude", "is", null)
     .in("format", ["in_person", "hybrid"])
@@ -133,6 +138,7 @@ export async function GET(req: NextRequest) {
     return {
       type: "pin" as const,
       id: r.id,
+      title: r.title,
       lat: r.latitude as number,
       lng: r.longitude as number,
       sdg: r.sdg_goals?.[0] ?? null,
