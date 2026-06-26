@@ -42,14 +42,20 @@ export default function AIWidget() {
           We park the bubble at safe-area + 7rem (112px) so it always sits
           above BottomNav AND clears CookieConsent without overlap. Desktop
           uses the flat bottom-6 corner as before. */}
+      {/* Accessible name must contain the visible label "Ask AI" to
+          satisfy WCAG 2.5.3 / Lighthouse's label-content-name-mismatch
+          rule. On sm+ the text is shown; on mobile it's hidden, so we
+          duplicate the label in a visually-hidden span so screen
+          readers and Lighthouse both pick up the same name across
+          breakpoints. */}
       <button
         onClick={() => setOpen(true)}
-        aria-label="Open AI assistant"
         aria-expanded={open}
         className={`fixed right-4 md:right-6 bottom-[calc(env(safe-area-inset-bottom,0px)+7rem)] md:bottom-6 z-40 flex items-center gap-2 bg-[#4ea8de] hover:bg-[#3a95cc] text-white rounded-full shadow-lg transition-all px-4 py-3 ${open ? "hidden" : ""}`}
       >
         <Sparkles size={16} aria-hidden="true" />
         <span className="text-sm font-semibold hidden sm:inline">Ask AI</span>
+        <span className="sr-only sm:hidden">Ask AI</span>
       </button>
 
       {/* Drawer */}

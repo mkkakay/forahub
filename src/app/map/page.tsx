@@ -23,7 +23,9 @@ export default async function MapPage() {
         variant="slim"
         banner={banner}
       />
-      <MapPageClient />
+      <main id="main-content">
+        <MapPageClient />
+      </main>
     </div>
   );
 }

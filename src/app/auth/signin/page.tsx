@@ -56,7 +56,7 @@ function SignInInner() {
           <Link href="/" className="text-white text-xl font-bold tracking-tight">Fora<span className="text-[#4ea8de]">Hub</span></Link>
         </div>
       </nav>
-      <div className="flex-1 flex items-center justify-center px-4 py-12">
+      <main id="main-content" className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm p-8 w-full max-w-md">
           <h1 className="text-2xl font-bold text-[#0f2a4a] dark:text-white mb-1">{t(lang, "auth.signin")}</h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm mb-5">
@@ -111,7 +111,7 @@ function SignInInner() {
             )}
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

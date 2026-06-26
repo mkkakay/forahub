@@ -174,21 +174,23 @@ export default async function EventsPage({
         banner={banner}
       />
 
-      <EventsClient
-        events={events}
-        initialSearch={searchQuery}
-        today={today}
-        featured={featuredForStrip}
-        nearby={nearby}
-        nearbyCountryName={location?.country_name ?? null}
-        orgLogos={orgLogos}
-        initialUpcomingLoaded={upcomingLoaded}
-        initialPastLoaded={pastLoaded}
-        upcomingHasMore={upcomingLoaded === UPCOMING_PAGE_SIZE}
-        pastHasMore={pastLoaded === PAST_PAGE_SIZE}
-        windowStartIso={twoYearsAgo}
-        windowEndIso={endOf2030}
-      />
+      <main id="main-content">
+        <EventsClient
+          events={events}
+          initialSearch={searchQuery}
+          today={today}
+          featured={featuredForStrip}
+          nearby={nearby}
+          nearbyCountryName={location?.country_name ?? null}
+          orgLogos={orgLogos}
+          initialUpcomingLoaded={upcomingLoaded}
+          initialPastLoaded={pastLoaded}
+          upcomingHasMore={upcomingLoaded === UPCOMING_PAGE_SIZE}
+          pastHasMore={pastLoaded === PAST_PAGE_SIZE}
+          windowStartIso={twoYearsAgo}
+          windowEndIso={endOf2030}
+        />
+      </main>
     </div>
   );
 }

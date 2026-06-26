@@ -31,7 +31,7 @@ export default function ResetPasswordPage() {
           <Link href="/" className="text-white text-xl font-bold">Fora<span className="text-[#4ea8de]">Hub</span></Link>
         </div>
       </nav>
-      <div className="flex-1 flex items-center justify-center px-4 py-12">
+      <main id="main-content" className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm p-8 w-full max-w-md">
           {done ? (
             <div className="text-center">
@@ -67,7 +67,7 @@ export default function ResetPasswordPage() {
             </>
           )}
         </div>
-      </div>
+      </main>
     </div>
   );
 }

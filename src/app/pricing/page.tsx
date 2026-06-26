@@ -16,7 +16,9 @@ export default async function PricingPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900 font-sans">
       <Navbar />
-      <PricingClient foundingCount={foundingCount} />
+      <main id="main-content">
+        <PricingClient foundingCount={foundingCount} />
+      </main>
       <footer className="bg-[#0f2a4a] py-8 px-4 text-center">
         <p className="text-blue-300 text-sm">
           © {new Date().getFullYear()} ForaHub. All rights reserved.

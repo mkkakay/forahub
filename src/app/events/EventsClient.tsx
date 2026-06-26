@@ -510,7 +510,7 @@ export default function EventsClient({
                 </span>
               )}
             </div>
-            <span className="text-xs text-gray-400 dark:text-slate-500 shrink-0">{FORMAT_LABELS[event.format]}</span>
+            <span className="text-xs text-gray-600 dark:text-slate-400 shrink-0">{FORMAT_LABELS[event.format]}</span>
           </div>
           <h3 className="text-[#0f2a4a] dark:text-slate-100 font-semibold text-base leading-snug group-hover:text-[#4ea8de] transition-colors">
             {event.title}
@@ -777,6 +777,7 @@ export default function EventsClient({
               <select
                 value={categoryFilter ?? ""}
                 onChange={e => setCategoryFilter(isCategoryKey(e.target.value) ? e.target.value : null)}
+                aria-label="Filter events by category"
                 className={`text-sm h-9 px-3 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#4ea8de] transition-colors border ${
                   categoryFilter !== null ? "bg-blue-50/50" : "border-slate-200 dark:border-slate-700"
                 }`}
@@ -792,6 +793,7 @@ export default function EventsClient({
               <select
                 value={sdgFilter ?? ""}
                 onChange={e => setSdgFilter(e.target.value ? Number(e.target.value) : null)}
+                aria-label="Filter events by SDG"
                 className={`text-sm h-9 px-3 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#4ea8de] transition-colors border ${
                   sdgFilter !== null ? "border-[#4ea8de] bg-blue-50/50" : "border-slate-200 dark:border-slate-700"
                 }`}
@@ -806,6 +808,7 @@ export default function EventsClient({
               <select
                 value={formatFilter ?? ""}
                 onChange={e => setFormatFilter(e.target.value || null)}
+                aria-label="Filter events by format"
                 className={`text-sm h-9 px-3 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#4ea8de] transition-colors border ${
                   formatFilter !== null ? "border-[#4ea8de] bg-blue-50/50" : "border-slate-200 dark:border-slate-700"
                 }`}
@@ -820,6 +823,7 @@ export default function EventsClient({
               <select
                 value={typeFilter ?? ""}
                 onChange={e => setTypeFilter(e.target.value || null)}
+                aria-label="Filter events by type"
                 className={`text-sm h-9 px-3 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#4ea8de] transition-colors border ${
                   typeFilter !== null ? "border-[#4ea8de] bg-blue-50/50" : "border-slate-200 dark:border-slate-700"
                 }`}
@@ -834,6 +838,7 @@ export default function EventsClient({
               <select
                 value={regionFilter ?? ""}
                 onChange={e => setRegionFilter(e.target.value || null)}
+                aria-label="Filter events by region"
                 className={`text-sm h-9 px-3 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#4ea8de] transition-colors border ${
                   regionFilter !== null ? "border-[#4ea8de] bg-blue-50/50" : "border-slate-200 dark:border-slate-700"
                 }`}
@@ -986,7 +991,7 @@ export default function EventsClient({
                 <p className="text-gray-500 dark:text-slate-400 text-lg font-medium">
                   No events found for &ldquo;{activeSearch}&rdquo;.
                 </p>
-                <p className="text-gray-400 dark:text-slate-500 text-sm mt-2 max-w-sm">
+                <p className="text-gray-600 dark:text-slate-400 text-sm mt-2 max-w-sm">
                   Try broader search terms like health, climate, education, or water.
                 </p>
               </>
@@ -1098,7 +1103,7 @@ export default function EventsClient({
                         </span>
                       )}
                     </div>
-                    <span className="text-xs text-gray-400 dark:text-slate-500 shrink-0">{FORMAT_LABELS[event.format]}</span>
+                    <span className="text-xs text-gray-600 dark:text-slate-400 shrink-0">{FORMAT_LABELS[event.format]}</span>
                   </div>
 
                   <h3 className="text-[#0f2a4a] dark:text-slate-100 font-semibold text-base leading-snug group-hover:text-[#4ea8de] transition-colors">

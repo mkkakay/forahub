@@ -128,7 +128,7 @@ function SignupInner() {
         </div>
       </nav>
 
-      <div className="flex-1 flex items-center justify-center px-4 py-12">
+      <main id="main-content" className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm p-8 w-full max-w-md">
           <h1 className="text-2xl font-bold text-[#0f2a4a] dark:text-slate-100 mb-1">Create an account</h1>
           <p className="text-gray-500 dark:text-slate-400 text-sm mb-5">
@@ -212,7 +212,7 @@ function SignupInner() {
             )}
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

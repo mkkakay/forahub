@@ -81,7 +81,7 @@ export default function OnboardingPage() {
         </div>
       </nav>
 
-      <div className="flex-1 flex flex-col items-center justify-center px-4 py-12">
+      <main id="main-content" className="flex-1 flex flex-col items-center justify-center px-4 py-12">
         {/* Step indicator */}
         <div className="flex items-center gap-2 mb-8">
           {[1, 2, 3].map(s => (
@@ -220,7 +220,7 @@ export default function OnboardingPage() {
             </>
           )}
         </div>
-      </div>
+      </main>
     </div>
   );
 }

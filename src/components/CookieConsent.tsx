@@ -41,11 +41,17 @@ export default function CookieConsent() {
       >
         <p className="text-[13px] leading-snug text-gray-700 dark:text-slate-200 flex-1">
           {t(lang, "cookie.message")}{" "}
-          <Link href="/privacy#analytics" className="text-[#0f2a4a] dark:text-slate-100 hover:underline whitespace-nowrap">
+          <Link
+            href="/privacy#analytics"
+            className="text-[#0f2a4a] dark:text-slate-100 underline underline-offset-2 decoration-gray-400 dark:decoration-slate-500 hover:decoration-current whitespace-nowrap"
+          >
             What we log
           </Link>
           <span className="text-gray-300 dark:text-slate-600 mx-1" aria-hidden="true">·</span>
-          <Link href="/profile#privacy" className="text-[#0f2a4a] dark:text-slate-100 hover:underline whitespace-nowrap">
+          <Link
+            href="/profile#privacy"
+            className="text-[#0f2a4a] dark:text-slate-100 underline underline-offset-2 decoration-gray-400 dark:decoration-slate-500 hover:decoration-current whitespace-nowrap"
+          >
             Change later
           </Link>
         </p>
