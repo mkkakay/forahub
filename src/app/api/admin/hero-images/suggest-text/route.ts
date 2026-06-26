@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { safeEqual } from "@/lib/security/timing";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,8 +24,7 @@ function unauthorized() {
 
 function checkAuth(req: NextRequest): boolean {
   const key = req.headers.get("x-admin-key");
-  const expected = process.env.ADMIN_SECRET;
-  return !!expected && key === expected;
+  return safeEqual(key, process.env.ADMIN_SECRET);
 }
 
 function extractFirstText(message: Anthropic.Message): string {

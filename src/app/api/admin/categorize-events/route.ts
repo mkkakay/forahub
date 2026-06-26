@@ -16,6 +16,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { buildAnthropicClient, classifyEvent } from "@/lib/categories/classify";
 import type { CategorySource } from "@/lib/categories";
+import { safeEqual } from "@/lib/security/timing";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,9 +26,7 @@ const BATCH_SIZE = 50;
 const LOW_CONFIDENCE = 0.6;
 
 function isAuthorized(req: NextRequest): boolean {
-  const expected = process.env.ADMIN_SECRET;
-  const key = req.headers.get("x-admin-key");
-  return !!expected && key === expected;
+  return safeEqual(req.headers.get("x-admin-key"), process.env.ADMIN_SECRET);
 }
 
 // GET /api/admin/categorize-events?stats=1

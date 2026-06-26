@@ -21,6 +21,7 @@ import { adminSupabase } from "@/lib/supabase/admin";
 import { fetchRorPage } from "@/lib/orgs/rorImport";
 import { fetchIatiSlice } from "@/lib/orgs/iatiImport";
 import { upsertImportedOrg } from "@/lib/orgs/upsertImported";
+import { safeEqual } from "@/lib/security/timing";
 
 // IATI rows-per-call. The bulk file is ~2K rows total, so the admin
 // auto-loop drains in ~10 POSTs at 200 rows each, with the per-process
@@ -38,9 +39,7 @@ const MAX_PAGES_PER_CALL = 50;
 const INTER_PAGE_DELAY_MS = 50;
 
 function isAuthorized(req: NextRequest): boolean {
-  const adminSecret = process.env.ADMIN_SECRET;
-  const adminKey = req.headers.get("x-admin-key");
-  return !!adminSecret && adminKey === adminSecret;
+  return safeEqual(req.headers.get("x-admin-key"), process.env.ADMIN_SECRET);
 }
 
 interface Counters {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { fetchEventBannerDetailed, type BannerSource } from "@/lib/events/fetchEventBanner";
+import { safeEqual } from "@/lib/security/timing";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,13 +11,10 @@ const BATCH_SIZE = 50;
 const PACING_MS = 600;
 
 function isAuthorized(req: NextRequest): boolean {
-  const cronSecret = process.env.CRON_SECRET;
-  const auth = req.headers.get("authorization");
-  if (cronSecret && auth === `Bearer ${cronSecret}`) return true;
-
-  const adminSecret = process.env.ADMIN_SECRET;
-  const adminKey = req.headers.get("x-admin-key");
-  return !!adminSecret && adminKey === adminSecret;
+  const auth = req.headers.get("authorization") ?? "";
+  const bearer = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+  if (safeEqual(bearer, process.env.CRON_SECRET)) return true;
+  return safeEqual(req.headers.get("x-admin-key"), process.env.ADMIN_SECRET);
 }
 
 interface CandidateEvent {

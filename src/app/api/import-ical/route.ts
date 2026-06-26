@@ -5,6 +5,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import ICAL from 'ical.js';
 import { adminSupabase } from '@/lib/supabase/admin';
 import { classifyEventSync } from '@/lib/categories/classify';
+import { safeEqual } from '@/lib/security/timing';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 120;
@@ -144,8 +145,7 @@ function icalDateToISO(prop: ICAL.Property | null): string | null {
 // ── Main handler ──────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
-  const adminKey = req.headers.get('x-admin-key');
-  if (adminKey !== process.env.ADMIN_SECRET) {
+  if (!safeEqual(req.headers.get('x-admin-key'), process.env.ADMIN_SECRET)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { buildAnthropicClient } from "@/lib/categories/classify";
+import { safeEqual } from "@/lib/security/timing";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -26,9 +27,7 @@ const PRICE_IN_PER_MTOK = 1.0;
 const PRICE_OUT_PER_MTOK = 5.0;
 
 function isAuthorized(req: NextRequest): boolean {
-  const adminSecret = process.env.ADMIN_SECRET;
-  const adminKey = req.headers.get("x-admin-key");
-  return !!adminSecret && adminKey === adminSecret;
+  return safeEqual(req.headers.get("x-admin-key"), process.env.ADMIN_SECRET);
 }
 
 interface Candidate {

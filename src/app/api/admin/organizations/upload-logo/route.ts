@@ -7,6 +7,7 @@ import {
   EXT_BY_MIME,
   type AllowedMime,
 } from "@/lib/admin/imageUpload";
+import { safeEqual } from "@/lib/security/timing";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,8 +18,7 @@ const ALLOWED = new Set<AllowedMime>(["image/jpeg", "image/png", "image/webp", "
 
 function checkAuth(req: NextRequest): boolean {
   const key = req.headers.get("x-admin-key");
-  const expected = process.env.ADMIN_SECRET;
-  return !!expected && key === expected;
+  return safeEqual(key, process.env.ADMIN_SECRET);
 }
 
 export async function POST(req: NextRequest) {

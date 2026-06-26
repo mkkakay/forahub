@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchRegionBanner } from "@/lib/regions/fetchRegionBanner";
+import { safeEqual } from "@/lib/security/timing";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -7,8 +8,7 @@ export const maxDuration = 30;
 
 function checkAuth(req: NextRequest): boolean {
   const key = req.headers.get("x-admin-key");
-  const expected = process.env.ADMIN_SECRET;
-  return !!expected && key === expected;
+  return safeEqual(key, process.env.ADMIN_SECRET);
 }
 
 export async function POST(req: NextRequest) {

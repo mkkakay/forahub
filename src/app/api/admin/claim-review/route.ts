@@ -13,14 +13,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { addOrgManager } from "@/lib/orgs/managers";
 import { renderClaimDeniedEmail } from "@/lib/email/claimDenied";
+import { safeEqual } from "@/lib/security/timing";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 function isAuthorized(req: NextRequest): boolean {
-  const adminSecret = process.env.ADMIN_SECRET;
-  const adminKey = req.headers.get("x-admin-key");
-  return !!adminSecret && adminKey === adminSecret;
+  return safeEqual(req.headers.get("x-admin-key"), process.env.ADMIN_SECRET);
 }
 
 interface PendingClaimRow {

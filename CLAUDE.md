@@ -148,4 +148,4 @@ A task is only complete when it works technically, looks visually correct, feels
 - Full scrape runs from forahub.org/admin clicking Run Full Scrape button
 - Automated 6 hour cron job to be set up in next session via Supabase Edge Function
 - Batch size: 5 sources per batch with 5 second delay between batches
-- Admin key: forahub_admin_2026
+- Admin key: set `ADMIN_SECRET` in Vercel + `.env.local`; never write the value into source. Rotate via the Vercel dashboard when sharing repo access changes.

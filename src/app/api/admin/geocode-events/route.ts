@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { geocodeLocation, isLocationIqConfigured } from "@/lib/geo/geocode";
+import { safeEqual } from "@/lib/security/timing";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,9 +15,7 @@ const BATCH_SIZE = 100;
 const PACING_MS = 500;
 
 function isAuthorized(req: NextRequest): boolean {
-  const adminSecret = process.env.ADMIN_SECRET;
-  const adminKey = req.headers.get("x-admin-key");
-  return !!adminSecret && adminKey === adminSecret;
+  return safeEqual(req.headers.get("x-admin-key"), process.env.ADMIN_SECRET);
 }
 
 interface CandidateEvent {

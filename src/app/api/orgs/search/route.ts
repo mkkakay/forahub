@@ -63,9 +63,17 @@ function rankScore(s: { name: string; short: string; slug: string; aliases?: str
   return 99;
 }
 
+// Cap matches the longest plausible org name on the directory (~80 chars).
+// Anything longer is almost certainly garbage / abuse and risks blowing
+// the ILIKE plan, so reject early.
+const MAX_Q_LENGTH = 100;
+
 export async function GET(req: NextRequest) {
   const q = (req.nextUrl.searchParams.get("q") ?? "").trim();
   if (q.length < 1) return NextResponse.json({ data: [] });
+  if (q.length > MAX_Q_LENGTH) {
+    return NextResponse.json({ error: "query_too_long" }, { status: 400 });
+  }
 
   const cacheKey = q.toLowerCase();
   const cached = respCache.get(cacheKey);

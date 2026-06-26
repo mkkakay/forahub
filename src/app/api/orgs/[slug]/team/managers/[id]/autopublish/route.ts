@@ -13,7 +13,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { isDomainVerified } from "@/lib/orgs/managers";
+import { isDomainVerified, isOrgManager } from "@/lib/orgs/managers";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -31,6 +31,13 @@ export async function PATCH(req: NextRequest, ctx: { params: { slug: string; id:
   const { data: u } = await sb.auth.getUser();
   const user = u.user;
   if (!user) return NextResponse.json({ error: "signin_required" }, { status: 401 });
+
+  // Explicit gate: must be a manager of THIS org before we touch any seat.
+  // The deeper "must be domain-verified" check still runs below; this is
+  // belt-and-suspenders so non-managers can't probe the seat list.
+  if (!(await isOrgManager(ctx.params.slug, user.id))) {
+    return NextResponse.json({ error: "not_a_manager" }, { status: 403 });
+  }
 
   let body: { can_autopublish?: unknown };
   try { body = await req.json(); } catch { body = {}; }

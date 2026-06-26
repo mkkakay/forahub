@@ -5,6 +5,7 @@ import { getActiveSources } from '@/lib/scraper/sources';
 import { fetchSource } from '@/lib/scraper/fetchSources';
 import { deduplicateAndUpsert } from '@/lib/scraper/deduplicateAndUpsert';
 import type { ExtractedEvent, Region, ScraperSource } from '@/lib/scraper/types';
+import { safeEqual } from "@/lib/security/timing";
 
 export const dynamic = 'force-dynamic';
 // Increase timeout for Vercel Pro / self-hosted. On hobby plan requests are capped at 10s.
@@ -203,8 +204,7 @@ function mapToExtracted(
 export async function POST(req: NextRequest) {
   // ── Auth ──────────────────────────────────────────────────────────────────
   const adminKey = req.headers.get('x-admin-key');
-  const expected = process.env.ADMIN_SECRET;
-  if (!expected || adminKey !== expected) {
+  if (!safeEqual(adminKey, process.env.ADMIN_SECRET)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

@@ -20,6 +20,7 @@ import { fetchIatiBulk } from "@/lib/orgs/iatiImport";
 import { upsertImportedOrg } from "@/lib/orgs/upsertImported";
 import { rollSeriesHorizons } from "@/lib/series/rollHorizons";
 import { pruneOldAnalytics } from "@/lib/analytics/prune";
+import { safeEqual } from "@/lib/security/timing";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -42,12 +43,10 @@ const IATI_DAILY_CHUNK = 400;
 const INTER_PAGE_DELAY_MS = 50;
 
 function authorized(req: NextRequest): boolean {
-  const cronSecret = process.env.CRON_SECRET;
-  const adminSecret = process.env.ADMIN_SECRET;
   const auth = req.headers.get("authorization") ?? "";
-  const adminKey = req.headers.get("x-admin-key") ?? "";
-  if (cronSecret && auth === `Bearer ${cronSecret}`) return true;
-  if (adminSecret && adminKey === adminSecret) return true;
+  const bearer = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+  if (safeEqual(bearer, process.env.CRON_SECRET)) return true;
+  if (safeEqual(req.headers.get("x-admin-key"), process.env.ADMIN_SECRET)) return true;
   return false;
 }
 

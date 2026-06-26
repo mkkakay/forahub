@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/supabase/admin";
 import { getAllResolvedOrgs } from "@/lib/organizations/getResolvedOrg";
+import { safeEqual } from "@/lib/security/timing";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,8 +20,7 @@ const ALLOWED_FIELDS = new Set([
 
 function checkAuth(req: NextRequest): boolean {
   const key = req.headers.get("x-admin-key");
-  const expected = process.env.ADMIN_SECRET;
-  return !!expected && key === expected;
+  return safeEqual(key, process.env.ADMIN_SECRET);
 }
 
 export async function GET(req: NextRequest) {
