@@ -202,6 +202,14 @@ function CollectionDropdown({
   );
 }
 
+// Pagination: load the first 50 saved events, then a "Load more" button
+// appends the next 50. Keep PAGE_SIZE — removing it reintroduces the
+// "fetch every saved row" behaviour that breaks for power users.
+// NOTE on collection filtering: filtering is client-side over the
+// already-loaded set, so an event saved 200 rows back into a collection
+// will only show up after the user has loaded that page.
+const PAGE_SIZE = 50;
+
 export default function SavedEventsClient() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -212,6 +220,8 @@ export default function SavedEventsClient() {
   const [newCollectionName, setNewCollectionName] = useState("");
   const [expandedNotes, setExpandedNotes] = useState<Set<string>>(new Set());
   const [pendingNotes, setPendingNotes] = useState<Record<string, string>>({});
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -227,18 +237,38 @@ export default function SavedEventsClient() {
           .from("saved_events")
           .select("*, event:events(*)")
           .eq("user_id", uid)
-          .order("created_at", { ascending: false }),
+          .order("created_at", { ascending: false })
+          .range(0, PAGE_SIZE - 1),
         supabase
           .from("user_collections")
           .select("*, collection_events(event_id)")
           .eq("user_id", uid),
       ]);
 
-      if (savedData) setSavedEvents(savedData as SavedWithEvent[]);
+      if (savedData) {
+        setSavedEvents(savedData as SavedWithEvent[]);
+        setHasMore(savedData.length === PAGE_SIZE);
+      }
       if (collData) setCollections(collData as CollectionWithEvents[]);
       setLoading(false);
     });
   }, [router]);
+
+  async function loadMore() {
+    if (!userId || loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    const from = savedEvents.length;
+    const { data } = await supabase
+      .from("saved_events")
+      .select("*, event:events(*)")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .range(from, from + PAGE_SIZE - 1);
+    const rows = (data as SavedWithEvent[] | null) ?? [];
+    setSavedEvents(prev => [...prev, ...rows]);
+    setHasMore(rows.length === PAGE_SIZE);
+    setLoadingMore(false);
+  }
 
   async function updateStatus(savedEventId: string, status: AttendanceStatus) {
     setSavedEvents(prev =>
@@ -623,6 +653,22 @@ export default function SavedEventsClient() {
                 </div>
               );
             })}
+            {/* "Load more" is shown only on the All-saved view. When a
+                collection is selected the visible set is filtered
+                client-side, and pulling more raw saves wouldn't change
+                the visible list reliably. */}
+            {hasMore && selectedCollectionId === null && (
+              <div className="flex justify-center pt-2">
+                <button
+                  onClick={loadMore}
+                  disabled={loadingMore}
+                  className="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 text-[#0f2a4a] dark:text-slate-100 hover:border-[#4ea8de] hover:text-[#3a95cc] disabled:opacity-60 transition-colors"
+                >
+                  {loadingMore && <Loader2 size={14} className="animate-spin" />}
+                  {loadingMore ? "Loading…" : "Load more saved events"}
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

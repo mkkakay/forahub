@@ -25,6 +25,14 @@ export default async function AdminAnalyticsPage() {
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
   const since = sixMonthsAgo.toISOString()
 
+  // Hard ceilings on the three "shipping raw rows" queries below. The page
+  // only needs month-bucket counts and a top-10 saved list, so a 10k cap is
+  // generous for the 6-month window and keeps memory + transfer bounded as
+  // the tables grow. If we ever exceed these caps the right move is a SQL
+  // view / RPC that returns pre-aggregated counts — not raising the limit.
+  // Keep .limit() — do not remove.
+  const ROW_CAP = 10_000;
+
   const [
     { data: profiles },
     { data: events },
@@ -32,9 +40,11 @@ export default async function AdminAnalyticsPage() {
     { data: proCount },
     { data: totalProfiles },
   ] = await Promise.all([
-    adminSupabase.from('profiles').select('created_at').gte('created_at', since),
-    adminSupabase.from('events').select('created_at, status, sdg_goals').gte('created_at', since),
-    adminSupabase.from('saved_events').select('event_id'),
+    adminSupabase.from('profiles').select('created_at').gte('created_at', since).limit(ROW_CAP),
+    adminSupabase.from('events').select('created_at, status, sdg_goals').gte('created_at', since).limit(ROW_CAP),
+    // Save-event counts: bound rows; over the cap, top-10 ranking still surfaces
+    // the heavy hitters because saves cluster on a small head.
+    adminSupabase.from('saved_events').select('event_id').limit(ROW_CAP),
     adminSupabase.from('profiles').select('id', { count: 'exact', head: true }).eq('subscription_tier', 'pro'),
     adminSupabase.from('profiles').select('id', { count: 'exact', head: true }),
   ])

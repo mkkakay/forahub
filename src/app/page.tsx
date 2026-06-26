@@ -113,11 +113,15 @@ export default async function Home() {
         .from("events")
         .select("*", { count: "exact", head: true })
         .gte("start_date", today),
+      // HeroSection only renders the first few slides; cap at 20 so the
+      // table can't accidentally ship hundreds of inactive-leaning rows.
+      // Keep .limit() — removing it reintroduces the unbounded query.
       supabase
         .from("hero_images")
         .select("id, public_url, title, subtitle, cta_text, cta_url, display_order")
         .eq("is_active", true)
-        .order("display_order", { ascending: true }),
+        .order("display_order", { ascending: true })
+        .limit(20),
     ]),
   ]);
 

@@ -124,14 +124,24 @@ const ALL_REGIONS = ["Africa", "Americas", "Asia-Pacific", "Europe", "Middle Eas
 
 type QuickFilter = "free" | "online";
 
+// Page size for the cursor-based "Load more" button. Matches the SSR
+// caps in src/app/events/page.tsx so each click pulls one screenful.
+const LOAD_MORE_PAGE_SIZE = 100;
+
 export default function EventsClient({
-  events,
+  events: initialEvents,
   initialSearch = "",
   today,
   featured = [],
   nearby = [],
   nearbyCountryName = null,
   orgLogos = {},
+  initialUpcomingLoaded = 0,
+  initialPastLoaded = 0,
+  upcomingHasMore: initialUpcomingHasMore = false,
+  pastHasMore: initialPastHasMore = false,
+  windowStartIso,
+  windowEndIso,
 }: {
   events: EventRow[];
   initialSearch?: string;
@@ -140,7 +150,23 @@ export default function EventsClient({
   nearby?: EventRow[];
   nearbyCountryName?: string | null;
   orgLogos?: Record<string, string>;
+  // Pagination wiring — see src/app/events/page.tsx for where these flow
+  // in. The client knows it can ask for more rows whenever
+  // upcomingHasMore / pastHasMore is true, and the offset to ask from.
+  initialUpcomingLoaded?: number;
+  initialPastLoaded?: number;
+  upcomingHasMore?: boolean;
+  pastHasMore?: boolean;
+  windowStartIso?: string;
+  windowEndIso?: string;
 }) {
+  // Local mutable state so "Load more" can append without re-routing.
+  const [events, setEvents] = useState<EventRow[]>(initialEvents);
+  const [upcomingLoaded, setUpcomingLoaded] = useState(initialUpcomingLoaded);
+  const [pastLoaded, setPastLoaded] = useState(initialPastLoaded);
+  const [upcomingHasMore, setUpcomingHasMore] = useState(initialUpcomingHasMore);
+  const [pastHasMore, setPastHasMore] = useState(initialPastHasMore);
+  const [loadingMore, setLoadingMore] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -202,6 +228,56 @@ export default function EventsClient({
     supabase.from("saved_events").select("event_id").eq("user_id", ctxUserId)
       .then(({ data }) => { if (data) setSavedIds(new Set(data.map(s => s.event_id))); });
   }, [ctxUserId]);
+
+  // Cursor-based "Load more". We page upcoming and past independently so
+  // each tab pulls only the data it actually shows. New rows are merged
+  // into the events array; the existing filter/search/sort logic above
+  // recomputes automatically.
+  async function loadMore(kind: "upcoming" | "past") {
+    if (loadingMore) return;
+    if (kind === "upcoming" && !upcomingHasMore) return;
+    if (kind === "past" && !pastHasMore) return;
+    setLoadingMore(true);
+    const from = kind === "upcoming" ? upcomingLoaded : pastLoaded;
+    const to = from + LOAD_MORE_PAGE_SIZE - 1;
+    const q = supabase.from("events").select("*");
+    const ranged = kind === "upcoming"
+      ? q.gte("start_date", today)
+         .lte("start_date", windowEndIso ?? "2030-12-31T23:59:59.999Z")
+         .order("start_date", { ascending: true })
+         .range(from, to)
+      : q.gte("start_date", windowStartIso ?? today)
+         .lt("start_date", today)
+         .order("start_date", { ascending: false })
+         .range(from, to);
+    const { data } = await ranged;
+    const rows = (data as EventRow[] | null) ?? [];
+    if (rows.length > 0) {
+      // Dedup by id in case range overlaps with a recently-inserted row.
+      setEvents(prev => {
+        const seen = new Set(prev.map(e => e.id));
+        const incoming = rows.filter(r => !seen.has(r.id));
+        return [...prev, ...incoming];
+      });
+    }
+    if (kind === "upcoming") {
+      setUpcomingLoaded(prev => prev + rows.length);
+      setUpcomingHasMore(rows.length === LOAD_MORE_PAGE_SIZE);
+    } else {
+      setPastLoaded(prev => prev + rows.length);
+      setPastHasMore(rows.length === LOAD_MORE_PAGE_SIZE);
+    }
+    setLoadingMore(false);
+  }
+
+  // Which "Load more" button is relevant given the current view/time.
+  // Calendar view is server-windowed already; no button there.
+  const loadMoreKind: "upcoming" | "past" | null = (() => {
+    if (viewMode === "calendar") return null;
+    if (timeView === "past") return pastHasMore ? "past" : null;
+    // upcoming + all both end with the upcoming tail
+    return upcomingHasMore ? "upcoming" : null;
+  })();
 
   const upcomingEvents = useMemo(() => events.filter(e => e.start_date >= today), [events, today]);
   const pastEvents = useMemo(() => events.filter(e => e.start_date < today), [events, today]);
@@ -973,6 +1049,17 @@ export default function EventsClient({
                 );
               })
             )}
+            {loadMoreKind && (
+              <div className="flex justify-center pt-8">
+                <button
+                  onClick={() => loadMore(loadMoreKind)}
+                  disabled={loadingMore}
+                  className="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 text-[#0f2a4a] dark:text-slate-100 hover:border-[#4ea8de] hover:text-[#3a95cc] disabled:opacity-60 transition-colors"
+                >
+                  {loadingMore ? "Loading…" : `Load more ${loadMoreKind === "past" ? "past " : ""}events`}
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1088,6 +1175,17 @@ export default function EventsClient({
                 </div>
               );
             })}
+            {loadMoreKind && (
+              <div className="sm:col-span-2 lg:col-span-3 flex justify-center pt-4">
+                <button
+                  onClick={() => loadMore(loadMoreKind)}
+                  disabled={loadingMore}
+                  className="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 text-[#0f2a4a] dark:text-slate-100 hover:border-[#4ea8de] hover:text-[#3a95cc] disabled:opacity-60 transition-colors"
+                >
+                  {loadingMore ? "Loading…" : `Load more ${loadMoreKind === "past" ? "past " : ""}events`}
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

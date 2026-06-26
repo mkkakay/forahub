@@ -126,18 +126,26 @@ async function loadEventsForOrg(org: ResolvedOrg): Promise<EventRow[]> {
   if (namePattern) orClauses.push(`organization.ilike.%${namePattern}%`);
   for (const p of curatedPatterns) orClauses.push(`organization.ilike.%${p}%`);
 
+  // Hard cap: active orgs (WHO, World Bank) can match hundreds of events
+  // via the org_slug + name-pattern OR. The public page shows Upcoming +
+  // Past sections; 100 covers the typical org and we surface a
+  // "Browse all events" link in the UI when we hit the cap.
+  // Keep .limit() — do not remove.
   const { data } = await supabase
     .from("events")
     .select(COLS)
     .or(orClauses.join(","))
     .eq("status", "published") // public page = published only; cancelled / pending live in admin
-    .order("start_date", { ascending: true });
+    .order("start_date", { ascending: true })
+    .limit(ORG_EVENTS_PAGE_CAP);
 
   const rows = (data as EventRow[] | null) ?? [];
   // Dedup by id (org_slug + ILIKE can intersect).
   const seen = new Set<string>();
   return rows.filter(e => (seen.has(e.id) ? false : (seen.add(e.id), true)));
 }
+
+const ORG_EVENTS_PAGE_CAP = 100;
 
 // ─── SEO + Open Graph + Twitter Card ─────────────────────────────────
 
@@ -195,6 +203,7 @@ export default async function OrganizationPage({
   if (!org) notFound();
 
   const events = await loadEventsForOrg(org);
+  const truncated = events.length >= ORG_EVENTS_PAGE_CAP;
   const now = Date.now();
   const upcoming = events.filter(e => new Date(e.end_date ?? e.start_date).getTime() >= now);
   const past = events
@@ -210,6 +219,17 @@ export default async function OrganizationPage({
         <PastEventsDisclosure count={past.length}>
           <EventGrid events={past} accent={org.accent} pastTone />
         </PastEventsDisclosure>
+        {truncated && (
+          <p className="mt-6 text-sm text-gray-500 dark:text-gray-400 text-center">
+            Showing the {ORG_EVENTS_PAGE_CAP} most recent matches for this organization.{" "}
+            <Link
+              href={`/events?q=${encodeURIComponent(org.name)}`}
+              className="font-semibold text-[#0f2a4a] dark:text-white hover:underline"
+            >
+              View all events on /events →
+            </Link>
+          </p>
+        )}
       </main>
     </div>
   );

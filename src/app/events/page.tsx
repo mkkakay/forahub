@@ -13,6 +13,15 @@ type EventRow = Database["public"]["Tables"]["events"]["Row"];
 
 export const dynamic = "force-dynamic";
 
+// SSR page sizes. The /events page used to fetch every event in the
+// twoYearsAgo..endOf2030 window with no limit — fine while the table
+// was small, but the scraper is about to make it a lot bigger. Cap the
+// initial payload at 100 upcoming + 50 past; the EventsClient "Load more"
+// button uses cursor pagination (range) to pull the next page on demand.
+// Keep these constants — removing them reintroduces the unbounded query.
+const UPCOMING_PAGE_SIZE = 100;
+const PAST_PAGE_SIZE = 50;
+
 function pickClientIp(): string | null {
   // Privacy note: this IP is never persisted. It is read from request headers
   // for the current request only, used transiently to call the IP-geo lookup,
@@ -73,18 +82,51 @@ export default async function EventsPage({
   const endOf2030 = "2030-12-31T23:59:59.999Z";
 
   const ip = pickClientIp();
-  const [{ data: eventsData }, location, featured] = await Promise.all([
+  const [
+    { data: upcomingData },
+    { data: pastData },
+    { count: totalCount },
+    location,
+    featured,
+  ] = await Promise.all([
+    // Upcoming events — ascending so the soonest event is first. Capped at
+    // UPCOMING_PAGE_SIZE; client lazy-loads more via the "Load more" button.
+    supabase
+      .from("events")
+      .select("*")
+      .gte("start_date", today)
+      .lte("start_date", endOf2030)
+      .order("start_date", { ascending: true })
+      .limit(UPCOMING_PAGE_SIZE),
+    // Past events — descending (most recent first), so the user sees fresh
+    // history at the top of the Past tab. Smaller cap; the historical tail
+    // is rarely scrolled in full.
     supabase
       .from("events")
       .select("*")
       .gte("start_date", twoYearsAgo)
-      .lte("start_date", endOf2030)
-      .order("start_date", { ascending: true }),
+      .lt("start_date", today)
+      .order("start_date", { ascending: false })
+      .limit(PAST_PAGE_SIZE),
+    // Total count over the same window, for the page subtitle. head:true
+    // means PostgREST returns the count only; no rows.
+    supabase
+      .from("events")
+      .select("id", { count: "exact", head: true })
+      .gte("start_date", twoYearsAgo)
+      .lte("start_date", endOf2030),
     getLocationFromIp(ip).catch(() => null),
     fetchFeatured(today),
   ]);
 
-  const events = (eventsData as EventRow[] | null) ?? [];
+  // Merge upcoming + past for the client. Both come pre-sorted; we put
+  // upcoming first so the client's existing "upcoming first" filter logic
+  // continues to work unchanged. Past is reversed so the combined array is
+  // still ascending by start_date for the calendar view.
+  const events: EventRow[] = [
+    ...((pastData as EventRow[] | null) ?? []).slice().reverse(),
+    ...((upcomingData as EventRow[] | null) ?? []),
+  ];
   const nearby = location ? await fetchNearby(location, today).catch(() => []) : [];
 
   // Auto-hide the Featured strip when fewer than 3 featured events have a real
@@ -117,6 +159,9 @@ export default async function EventsPage({
   const searchQuery = searchParams.q?.trim() ?? "";
   const banner = await getPageBanner("events").catch(() => null);
 
+  const upcomingLoaded = ((upcomingData as EventRow[] | null) ?? []).length;
+  const pastLoaded = ((pastData as EventRow[] | null) ?? []).length;
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900 font-sans">
       <Navbar />
@@ -124,7 +169,7 @@ export default async function EventsPage({
       <PageHeader
         pageKey="events"
         title="Events"
-        subtitle={`${events.length.toLocaleString()} events across all SDG goals`}
+        subtitle={`${(totalCount ?? events.length).toLocaleString()} events across all SDG goals`}
         breadcrumb={[{ label: "Home", href: "/" }, { label: "Events" }]}
         banner={banner}
       />
@@ -137,6 +182,12 @@ export default async function EventsPage({
         nearby={nearby}
         nearbyCountryName={location?.country_name ?? null}
         orgLogos={orgLogos}
+        initialUpcomingLoaded={upcomingLoaded}
+        initialPastLoaded={pastLoaded}
+        upcomingHasMore={upcomingLoaded === UPCOMING_PAGE_SIZE}
+        pastHasMore={pastLoaded === PAST_PAGE_SIZE}
+        windowStartIso={twoYearsAgo}
+        windowEndIso={endOf2030}
       />
     </div>
   );
