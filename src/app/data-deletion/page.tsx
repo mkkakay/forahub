@@ -18,7 +18,7 @@ export default async function DataDeletionPage() {
     {
       title: "1. Option A — Delete from your Profile",
       content:
-        "If you can sign in, the fastest way is the self-serve option. Go to your Profile page, scroll to the danger zone, and click \"Yes, delete my account\". This is immediate and irreversible. All personal data described below is removed.",
+        "If you can sign in, the fastest way is the self-serve option. Open your Profile page, scroll to the Danger Zone, click \"Delete my account\", and type DELETE in the confirmation prompt. The deletion is immediate, irreversible, and you'll receive a confirmation email. If you're the only manager of an organization on ForaHub, we'll ask you to add another manager first so the org isn't left without anyone able to update it.",
     },
     {
       title: "2. Option B — Email request",
@@ -59,7 +59,11 @@ export default async function DataDeletionPage() {
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
         <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
           You can request deletion of your ForaHub account and the personal data
-          we hold about you at any time, free of charge. See also our{" "}
+          we hold about you at any time, free of charge.{" "}
+          <Link href="/profile#danger" className="text-[#4ea8de] hover:underline font-semibold">
+            Jump straight to the self-serve delete on your Profile →
+          </Link>{" "}
+          See also our{" "}
           <Link href="/privacy" className="text-[#4ea8de] hover:underline">
             Privacy Policy
           </Link>{" "}

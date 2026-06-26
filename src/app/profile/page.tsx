@@ -6,9 +6,10 @@ import PrivacyPreferencesCard from "@/components/PrivacyPreferencesCard";
 import { useSubscription } from "@/context/SubscriptionContext";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
-import { Save, AlertTriangle, Copy, Check } from "lucide-react";
+import { Save, Copy, Check } from "lucide-react";
 import ClientPageHeader from "@/components/ClientPageHeader";
 import Link from "next/link";
+import DeleteAccountAction from "@/components/DeleteAccountAction";
 
 const ROLES = ["Researcher", "Practitioner", "Policy Advisor", "Programme Officer", "Consultant", "Student", "Donor", "Other"];
 const REGIONS = ["Africa", "Asia-Pacific", "Middle East", "Americas", "Europe", "Pacific Islands", "Other"];
@@ -27,9 +28,6 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [referralCode, setReferralCode] = useState("");
   const [copied, setCopied] = useState(false);
-  const [showDelete, setShowDelete] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-
   useEffect(() => {
     if (!isLoading && !userId) router.push("/auth/signin");
   }, [isLoading, userId, router]);
@@ -76,16 +74,6 @@ export default function ProfilePage() {
     navigator.clipboard.writeText(link);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  }
-
-  async function deleteAccount() {
-    setDeleteLoading(true);
-    await supabase.from("saved_events").delete().eq("user_id", userId!);
-    await supabase.from("keyword_alerts").delete().eq("user_id", userId!);
-    await supabase.from("abstracts").delete().eq("user_id", userId!);
-    await supabase.from("notifications").delete().eq("user_id", userId!);
-    await supabase.auth.signOut();
-    router.push("/");
   }
 
   return (
@@ -201,30 +189,11 @@ export default function ProfilePage() {
           ))}
         </div>
 
-        {/* Delete account */}
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-red-200 dark:border-red-900/50 p-5">
-          <h2 className="font-bold text-red-600 mb-2 flex items-center gap-2">
-            <AlertTriangle size={16} /> Danger Zone
-          </h2>
-          {!showDelete ? (
-            <button onClick={() => setShowDelete(true)} className="text-sm text-red-600 hover:underline">
-              Delete my account
-            </button>
-          ) : (
-            <div className="space-y-3">
-              <p className="text-sm text-gray-600 dark:text-gray-400">This will permanently delete your account and all data. This cannot be undone.</p>
-              <div className="flex gap-3">
-                <button onClick={deleteAccount} disabled={deleteLoading}
-                  className="text-sm font-semibold px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg disabled:opacity-60 transition-colors">
-                  {deleteLoading ? "Deleting…" : "Yes, delete my account"}
-                </button>
-                <button onClick={() => setShowDelete(false)} className="text-sm px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+        {/* Danger zone — irreversible account deletion with typed
+            confirmation + sole-manager guard. See
+            src/components/DeleteAccountAction.tsx and
+            src/app/api/account/delete/route.ts. */}
+        <DeleteAccountAction />
       </main>
     </div>
   );
