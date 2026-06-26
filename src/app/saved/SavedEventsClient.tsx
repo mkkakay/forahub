@@ -17,6 +17,7 @@ import {
 import Link from "next/link";
 import CalendarExportMenu from "@/components/CalendarExportMenu";
 import ShareMenu from "@/components/ShareMenu";
+import { formatDateRange } from "@/lib/date";
 
 type AttendanceStatus = "interested" | "registered" | "attended";
 
@@ -79,18 +80,6 @@ const FORMAT_LABELS: Record<string, string> = {
   virtual: "Virtual",
   hybrid: "Hybrid",
 };
-
-function formatDateRange(start: string, end: string | null): string {
-  const fmt = (d: string) =>
-    new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
-  if (!end) return fmt(start);
-  const s = new Date(start);
-  const e = new Date(end);
-  if (s.getUTCFullYear() === e.getUTCFullYear() && s.getUTCMonth() === e.getUTCMonth()) {
-    return `${s.toLocaleDateString("en-US", { month: "short", timeZone: "UTC" })} ${s.getUTCDate()}–${e.getUTCDate()}, ${s.getUTCFullYear()}`;
-  }
-  return `${fmt(start)} – ${fmt(end)}`;
-}
 
 function toDateInputValue(isoStr: string | null): string {
   if (!isoStr) return "";
@@ -345,16 +334,16 @@ export default function SavedEventsClient() {
   if (savedEvents.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
-        <Calendar size={48} className="text-gray-300 dark:text-slate-600 mb-4" />
-        <p className="text-gray-500 dark:text-slate-400 text-lg font-medium">No saved events yet</p>
-        <p className="text-gray-400 dark:text-slate-500 text-sm mt-2 max-w-sm">
-          Browse events and click the bookmark icon to save them here.
+        <Calendar size={48} className="text-gray-300 dark:text-slate-600 mb-4" aria-hidden="true" />
+        <p className="text-lg font-semibold text-[#0f2a4a] dark:text-white">No saved events yet</p>
+        <p className="text-sm text-gray-500 dark:text-slate-400 mt-1 max-w-sm">
+          Click the bookmark icon on any event to save it here and get reminders.
         </p>
         <Link
           href="/events"
-          className="mt-4 inline-block text-[#4ea8de] hover:text-[#3a95cc] text-sm font-medium transition-colors"
+          className="mt-5 inline-flex items-center gap-1.5 bg-[#4ea8de] hover:bg-[#3a95cc] text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors"
         >
-          Browse events to save →
+          Browse upcoming events
         </Link>
       </div>
     );

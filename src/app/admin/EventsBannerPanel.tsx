@@ -5,7 +5,6 @@ import {
   CalendarDays, ChevronDown, ChevronRight, Loader2, Upload, Sparkles,
   Search, AlertCircle, Check, X, Link as LinkIcon, Play, Star, RefreshCw,
 } from "lucide-react";
-
 interface EventRow {
   id: string;
   title: string;

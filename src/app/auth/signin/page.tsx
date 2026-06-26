@@ -22,7 +22,7 @@ function safeNext(raw: string | null): string | null {
 
 export default function SignInPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-50 dark:bg-[#0f172a]" />}>
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 dark:bg-slate-900" />}>
       <SignInInner />
     </Suspense>
   );
@@ -50,14 +50,14 @@ function SignInInner() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0f172a] flex flex-col">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex flex-col">
       <nav className="bg-[#0f2a4a] shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center">
           <Link href="/" className="text-white text-xl font-bold tracking-tight">Fora<span className="text-[#4ea8de]">Hub</span></Link>
         </div>
       </nav>
       <div className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-[#334155] shadow-sm p-8 w-full max-w-md">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm p-8 w-full max-w-md">
           <h1 className="text-2xl font-bold text-[#0f2a4a] dark:text-white mb-1">{t(lang, "auth.signin")}</h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm mb-5">
             Don&apos;t have an account?{" "}
@@ -90,7 +90,7 @@ function SignInInner() {
                 <div>
                   <label htmlFor="email" className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">{t(lang, "auth.email")}</label>
                   <input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
                     placeholder="you@example.com" />
                 </div>
                 <div>
@@ -99,7 +99,7 @@ function SignInInner() {
                     <Link href="/auth/forgot-password" className="text-xs text-[#4ea8de] hover:underline">{t(lang, "auth.forgotpassword")}</Link>
                   </div>
                   <input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
                     placeholder="••••••••" />
                 </div>
                 {error && <p className="text-red-600 text-xs bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 px-3 py-2 rounded-md">{error}</p>}

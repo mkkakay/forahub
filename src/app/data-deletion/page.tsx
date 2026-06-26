@@ -89,7 +89,7 @@ export default async function DataDeletionPage() {
             <Link href="/profile#privacy" className="text-[#4ea8de] hover:underline">Profile &rarr; Privacy preferences</Link>.
           </p>
         </section>
-        <p className="text-sm text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-[#334155] pt-6">
+        <p className="text-sm text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-slate-700 pt-6">
           Questions about a deletion request? Email{" "}
           <a
             href="mailto:admin@forahub.org"

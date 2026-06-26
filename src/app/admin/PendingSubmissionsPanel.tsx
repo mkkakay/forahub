@@ -6,6 +6,7 @@ import {
   Upload, LinkIcon, PencilLine, ExternalLink,
 } from "lucide-react";
 import { parseApiResponse } from "@/lib/admin/fetchJson";
+import { formatDateTime as formatDate } from "@/lib/date";
 
 interface PendingRow {
   id: string;
@@ -21,14 +22,6 @@ interface PendingRow {
   submitted_at: string | null;
   registration_url: string | null;
   description: string | null;
-}
-
-function formatDate(d: string | null): string {
-  if (!d) return "—";
-  return new Date(d).toLocaleString("en-US", {
-    month: "short", day: "numeric", year: "numeric",
-    hour: "numeric", minute: "2-digit", timeZone: "UTC",
-  });
 }
 
 function sourceIcon(source: PendingRow["submission_source"]) {

@@ -29,7 +29,7 @@ export default function PrivacyPreferencesCard() {
   return (
     <div
       id="privacy"
-      className="bg-white dark:bg-[#1e293b] rounded-xl border border-gray-200 dark:border-[#334155] p-5"
+      className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-5"
     >
       <h2 className="font-bold text-[#0f2a4a] dark:text-white flex items-center gap-2 mb-1">
         <Shield size={16} className="text-[#4ea8de]" /> Privacy preferences
@@ -47,7 +47,7 @@ export default function PrivacyPreferencesCard() {
           </span>
         </div>
       ) : (
-        <div className="flex items-center justify-between gap-3 border border-gray-200 dark:border-[#334155] rounded-xl px-4 py-3">
+        <div className="flex items-center justify-between gap-3 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3">
           <div className="min-w-0">
             <div className="text-sm font-semibold text-[#0f2a4a] dark:text-white">
               Analytics logging is {allowed ? "on" : "off"}
@@ -68,7 +68,7 @@ export default function PrivacyPreferencesCard() {
               className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg border ${
                 allowed
                   ? "text-red-700 border-red-200 hover:bg-red-50 dark:border-red-900/50 dark:hover:bg-red-900/20"
-                  : "text-gray-300 dark:text-gray-600 border-gray-200 dark:border-[#334155] cursor-not-allowed"
+                  : "text-gray-300 dark:text-gray-600 border-gray-200 dark:border-slate-700 cursor-not-allowed"
               }`}
             >
               {busy && !allowed ? <Loader2 size={12} className="animate-spin" /> : <X size={12} />} Turn off
@@ -79,7 +79,7 @@ export default function PrivacyPreferencesCard() {
               disabled={busy || allowed}
               className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg ${
                 allowed
-                  ? "text-gray-300 dark:text-gray-600 border border-gray-200 dark:border-[#334155] cursor-not-allowed"
+                  ? "text-gray-300 dark:text-gray-600 border border-gray-200 dark:border-slate-700 cursor-not-allowed"
                   : "bg-[#4ea8de] hover:bg-[#3a95cc] text-white"
               }`}
             >

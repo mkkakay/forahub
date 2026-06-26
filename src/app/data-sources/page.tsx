@@ -45,7 +45,7 @@ export default async function DataSourcesPage() {
           <h2 className="text-xl font-bold text-[#0f2a4a] dark:text-white mb-4">Source Categories</h2>
           <div className="space-y-3">
             {categories.map(({ name, examples }) => (
-              <div key={name} className="bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-[#334155] rounded-xl p-4">
+              <div key={name} className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-4">
                 <h3 className="font-semibold text-sm text-[#0f2a4a] dark:text-white">{name}</h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{examples}</p>
               </div>
@@ -77,7 +77,7 @@ export default async function DataSourcesPage() {
             <a href="mailto:admin@forahub.org" className="text-[#4ea8de] hover:underline">admin@forahub.org</a>.
           </p>
           <div className="space-y-3">
-            <div className="bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-[#334155] rounded-xl p-4">
+            <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-4">
               <h3 className="font-semibold text-sm text-[#0f2a4a] dark:text-white">
                 Research Organization Registry (ROR)
               </h3>
@@ -89,7 +89,7 @@ export default async function DataSourcesPage() {
                 Open registry of research organizations — universities, institutes, hospitals, government labs, funders — maintained by Crossref, DataCite, and a community of contributors. ForaHub imports ROR records (names, aliases, types, country, official website, Wikidata / GRID / ISNI / FundRef cross-references) to seed the global organization directory.
               </p>
             </div>
-            <div className="bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-[#334155] rounded-xl p-4">
+            <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-4">
               <h3 className="font-semibold text-sm text-[#0f2a4a] dark:text-white">
                 International Aid Transparency Initiative (IATI) — Bulk Data Service
               </h3>
@@ -101,7 +101,7 @@ export default async function DataSourcesPage() {
                 The IATI Reporting Orgs Index — a single open JSON file maintained by the IATI Standard team. We import names, IATI organisation identifiers, organisation types, HQ country, and official websites for the ~2,000 bilateral donors, multilateral agencies, INGOs, national NGOs, and foundations registered with IATI.
               </p>
             </div>
-            <div className="bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-[#334155] rounded-xl p-4">
+            <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-4">
               <h3 className="font-semibold text-sm text-[#0f2a4a] dark:text-white">
                 OpenStreetMap, OpenMapTiles, Stadia Maps, CARTO
               </h3>

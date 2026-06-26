@@ -12,6 +12,7 @@ import { supabase } from "@/lib/supabase/client";
 import { useLanguage } from "@/context/LanguageContext";
 import { t } from "@/lib/i18n";
 import { FEATURED_CALENDARS as DEFAULT_FEATURED_CALENDARS } from "@/lib/organizations";
+import { formatDate } from "@/lib/date";
 
 // Subset of ResolvedOrg the homepage actually uses — defined here so HomeClient
 // stays a clean client component (no server-only imports).
@@ -86,9 +87,6 @@ export interface EventPreview {
   registration_full?: boolean | null;
 }
 
-function formatDate(d: string) {
-  return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
-}
 
 function CountUp({ target, suffix = "" }: { target: number; suffix?: string }) {
   const [count, setCount] = useState(0);
@@ -176,12 +174,12 @@ function FeaturedOrgCard({ org }: { org: FeaturedOrg }) {
   return (
     <Link
       href={`/organizations/${org.slug}`}
-      className="shrink-0 w-52 snap-start bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-100 dark:border-[#334155] shadow-sm hover:shadow-lg transition-all duration-200 group overflow-hidden flex flex-col"
+      className="shrink-0 w-52 snap-start bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm hover:shadow-lg transition-all duration-200 group overflow-hidden flex flex-col"
     >
       {/* Tinted brand-color logo tile (or full color when dark mode is on);
           full-bleed photo fill when display_mode = "cover". */}
       <div
-        className={`h-32 border-b border-gray-100 dark:border-[#334155] overflow-hidden ${
+        className={`h-32 border-b border-gray-100 dark:border-slate-700 overflow-hidden ${
           org.logo_display_mode === "cover" ? "" : "flex items-center justify-center p-6"
         }`}
         style={{ backgroundColor: headerBg }}
@@ -315,7 +313,7 @@ export function EventCard({ event }: { event: EventPreview }) {
     <div className="relative group/card">
       <Link
         href={`/events/${event.id}`}
-        className="block bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-[#334155] shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 group overflow-hidden min-h-[260px] flex flex-col"
+        className="block bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 group overflow-hidden min-h-[260px] flex flex-col"
       >
         {/* Cover: real image when available, SDG gradient when not — never a broken state */}
         <div
@@ -434,7 +432,7 @@ export function EventCard({ event }: { event: EventPreview }) {
           onClick={() => setReportOpen(false)}
         >
           <div
-            className="bg-white dark:bg-[#1e293b] rounded-2xl p-6 max-w-sm w-full shadow-2xl"
+            className="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl"
             onClick={e => e.stopPropagation()}
           >
             <h3 className="text-base font-bold text-[#0f2a4a] dark:text-white mb-4">Report this event</h3>
@@ -458,12 +456,12 @@ export function EventCard({ event }: { event: EventPreview }) {
               onChange={e => setNotes(e.target.value)}
               placeholder="Additional notes (optional)"
               rows={3}
-              className="w-full px-3 py-2 mb-4 text-sm border border-gray-200 dark:border-[#334155] rounded-xl bg-gray-50 dark:bg-[#0f172a] text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#4ea8de] resize-none"
+              className="w-full px-3 py-2 mb-4 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-900 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#4ea8de] resize-none"
             />
             <div className="flex gap-2">
               <button
                 onClick={() => setReportOpen(false)}
-                className="flex-1 py-2 rounded-xl border border-gray-200 dark:border-[#334155] text-sm text-gray-500 hover:bg-gray-50 dark:hover:bg-[#334155] transition-colors"
+                className="flex-1 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-sm text-gray-500 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
               >
                 Cancel
               </button>
@@ -530,7 +528,7 @@ export default function HomeClient({
     <OrgLogosContext.Provider value={orgLogos}>
     <main className="flex-1">
       {/* Upcoming Events */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-0 border-t border-gray-100 dark:border-[#334155]">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-0 border-t border-gray-100 dark:border-slate-700">
         <div className="flex items-baseline justify-between mb-2">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">{t(lang, "events.upcoming")}</h2>
           <Link href="/events" className="text-blue-700 hover:text-blue-900 dark:text-[#4ea8de] dark:hover:text-[#3a95cc] text-sm font-medium flex items-center gap-1 transition-colors">
@@ -551,7 +549,7 @@ export default function HomeClient({
 
       {/* Past Events */}
       {pastEvents.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-0 border-t border-gray-100 dark:border-[#334155]">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-0 border-t border-gray-100 dark:border-slate-700">
           <div className="flex items-baseline justify-between mb-2">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Past Events</h2>
             <Link href="/events?filter=past" className="text-blue-700 hover:text-blue-900 dark:text-[#4ea8de] dark:hover:text-[#3a95cc] text-sm font-medium flex items-center gap-1 transition-colors">
@@ -566,13 +564,13 @@ export default function HomeClient({
 
       {/* Events around the world (map teaser) — only when enough events have coordinates */}
       {mapEventsCount >= 5 && (
-        <div className="border-t border-gray-100 dark:border-[#334155]">
+        <div className="border-t border-gray-100 dark:border-slate-700">
           <HomeMapSection totalWithCoords={mapEventsCount} />
         </div>
       )}
 
       {/* Featured Calendars */}
-      <section className="bg-gray-50 dark:bg-[#0f172a] pt-3 pb-0 border-t border-gray-100 dark:border-[#334155]">
+      <section className="bg-gray-50 dark:bg-slate-900 pt-3 pb-0 border-t border-gray-100 dark:border-slate-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-baseline justify-between mb-2">
             <div>
@@ -603,7 +601,7 @@ export default function HomeClient({
       </section>
 
       {/* Browse by SDG */}
-      <section className="bg-gray-50 dark:bg-[#0f172a] pt-3 pb-3 border-t border-gray-100 dark:border-[#334155]">
+      <section className="bg-gray-50 dark:bg-slate-900 pt-3 pb-3 border-t border-gray-100 dark:border-slate-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-start justify-between mb-2">
             <div>
@@ -622,7 +620,7 @@ export default function HomeClient({
           <div className="flex justify-center mt-2">
             <Link
               href="/events"
-              className="border border-gray-300 dark:border-[#334155] text-gray-600 dark:text-gray-300 px-6 py-2 rounded-xl text-sm hover:bg-gray-50 dark:hover:bg-[#1e293b] transition-colors"
+              className="border border-gray-300 dark:border-slate-700 text-gray-600 dark:text-gray-300 px-6 py-2 rounded-xl text-sm hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
             >
               View All 17 SDG Goals
             </Link>
@@ -672,7 +670,7 @@ export default function HomeClient({
       )}
 
       {/* Stats */}
-      <section className="bg-white dark:bg-[#1e293b] border-t border-gray-100 border-b border-gray-200 dark:border-[#334155]">
+      <section className="bg-white dark:bg-slate-800 border-t border-gray-100 border-b border-gray-200 dark:border-slate-700">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-3 tracking-tight">
             ForaHub by the numbers

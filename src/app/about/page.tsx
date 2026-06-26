@@ -123,7 +123,7 @@ export default async function AboutPage() {
               const Icon = iconFor(card.icon);
               const bg = card.bg_class ?? "bg-white";
               const iconColor = card.icon_color_class ?? "text-[#4ea8de]";
-              const cardClass = `flex items-center gap-3 ${bg} border border-gray-200 dark:border-[#334155] rounded-xl px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:shadow-md hover:-translate-y-0.5 transition`;
+              const cardClass = `flex items-center gap-3 ${bg} border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:shadow-md hover:-translate-y-0.5 transition`;
               const inner = (
                 <>
                   {card.image_url ? (
@@ -168,7 +168,7 @@ export default async function AboutPage() {
                   <div
                     key={`${copy}-${name}`}
                     aria-hidden={copy === 1 ? true : undefined}
-                    className="shrink-0 w-80 min-h-[240px] bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-[#334155] rounded-xl p-5 flex flex-col justify-between"
+                    className="shrink-0 w-80 min-h-[240px] bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-5 flex flex-col justify-between"
                   >
                     <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed">
                       &ldquo;{quote}&rdquo;
@@ -244,7 +244,7 @@ export default async function AboutPage() {
           />
         </section>
 
-        <section className="bg-gray-50 dark:bg-[#1e293b] rounded-xl border border-gray-200 dark:border-[#334155] p-6">
+        <section className="bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-6">
           <h2 className="text-xl font-bold text-[#0f2a4a] dark:text-white mb-2">Get in Touch</h2>
           <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">We&apos;d love to hear from you — whether you want to add your organization&apos;s events, report an issue, or explore a partnership.</p>
           <div className="flex flex-col sm:flex-row gap-3">

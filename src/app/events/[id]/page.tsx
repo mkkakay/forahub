@@ -8,6 +8,10 @@ import AnalyticsViewTracker from "@/components/AnalyticsViewTracker";
 import RegistrationLink from "@/components/RegistrationLink";
 import type { Database } from "@/lib/supabase/types";
 import { getCategory } from "@/lib/categories";
+import { formatDateRange as formatDateRangeBase } from "@/lib/date";
+
+const formatDateRange = (start: string, end: string | null) =>
+  formatDateRangeBase(start, end, { monthStyle: "long" });
 
 type EventRow = Database["public"]["Tables"]["events"]["Row"];
 
@@ -39,18 +43,6 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
   training: "Training",
 };
 
-function formatDateRange(start: string, end: string | null): string {
-  const fmt = (d: string) =>
-    new Date(d).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
-  if (!end) return fmt(start);
-  const s = new Date(start);
-  const e = new Date(end);
-  if (s.getUTCFullYear() === e.getUTCFullYear() && s.getUTCMonth() === e.getUTCMonth()) {
-    return `${s.toLocaleDateString("en-US", { month: "long", timeZone: "UTC" })} ${s.getUTCDate()}–${e.getUTCDate()}, ${s.getUTCFullYear()}`;
-  }
-  return `${fmt(start)} – ${fmt(end)}`;
-}
-
 export default async function EventDetailPage({ params }: { params: { id: string } }) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -80,7 +72,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
     : null;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0f172a]">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       {/* Fire a consent-gated view event once per session. No-op when
           consent isn't granted — see lib/analytics/track.ts. */}
       <AnalyticsViewTracker eventId={typedEvent.id} />
@@ -197,7 +189,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Description + SDG tags */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-[#334155] shadow-sm p-6">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm p-6">
               <h2 className="text-lg font-bold text-[#0f2a4a] dark:text-white mb-4">About this event</h2>
               {typedEvent.description ? (
                 <p className="text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap text-base">
@@ -239,7 +231,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
           <div className="flex flex-col gap-4">
             {/* Register CTA — top of sidebar (hidden for past events) */}
             {typedEvent.registration_url && !isPast && (
-              <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-[#334155] shadow-sm p-5">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm p-5">
                 <RegistrationLink eventId={typedEvent.id} href={typedEvent.registration_url} />
                 {daysUntil !== null && daysUntil > 0 && (
                   <p className="text-center text-xs text-red-500 dark:text-red-400 mt-2 font-medium">
@@ -253,7 +245,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
             )}
 
             {/* Event details card */}
-            <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-[#334155] shadow-sm p-5">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm p-5">
               <h2 className="text-xs font-bold text-gray-400 dark:text-gray-500 mb-4 uppercase tracking-widest">Event Details</h2>
               <div className="flex flex-col gap-4 text-sm">
                 <div className="flex items-start gap-3">
@@ -301,7 +293,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
             </div>
 
             {/* Share card */}
-            <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-[#334155] shadow-sm p-5">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm p-5">
               <p className="text-xs font-bold text-gray-400 dark:text-gray-500 mb-3 uppercase tracking-widest flex items-center gap-1.5">
                 <Share2 size={12} /> Share
               </p>
@@ -310,7 +302,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
                   href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(typedEvent.title)}&url=${encodeURIComponent(`https://forahub.org/events/${typedEvent.id}`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 text-center text-xs font-semibold py-2 rounded-lg bg-gray-100 dark:bg-[#334155] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#475569] transition-colors"
+                  className="flex-1 text-center text-xs font-semibold py-2 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#475569] transition-colors"
                 >
                   X / Twitter
                 </a>
@@ -318,7 +310,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
                   href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(`https://forahub.org/events/${typedEvent.id}`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 text-center text-xs font-semibold py-2 rounded-lg bg-gray-100 dark:bg-[#334155] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#475569] transition-colors"
+                  className="flex-1 text-center text-xs font-semibold py-2 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#475569] transition-colors"
                 >
                   LinkedIn
                 </a>

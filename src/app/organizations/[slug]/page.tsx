@@ -11,6 +11,7 @@
 // Existing map / search / detail reads are untouched.
 
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
@@ -211,7 +212,7 @@ export default async function OrganizationPage({
     .sort((a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime());
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0f172a]">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       <Navbar />
       <Hero org={org} upcomingCount={upcoming.length} totalCount={events.length} />
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
@@ -255,12 +256,18 @@ function Hero({ org, upcomingCount, totalCount }: {
       >
         {org.cover && (
           <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            {/* next/image gives us automatic preload (priority), CLS-safe
+                aspect, and a single React-managed surface. `unoptimized`
+                because org covers come from arbitrary user-supplied URLs
+                we don't want to add to remotePatterns just to proxy. */}
+            <Image
               src={org.cover}
               alt=""
-              className="absolute inset-0 w-full h-full object-cover"
-              loading="eager"
+              fill
+              priority
+              sizes="100vw"
+              unoptimized
+              className="object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0f2a4a]/85 via-[#0f2a4a]/35 to-transparent" />
           </>
@@ -278,13 +285,17 @@ function Hero({ org, upcomingCount, totalCount }: {
 
       {/* Identity card — pulls up into the cover with a negative margin */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 sm:-mt-16 md:-mt-20">
-        <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-[#334155] shadow-lg p-5 md:p-6 flex flex-col md:flex-row gap-5 md:gap-6">
-          <div className="w-20 h-20 md:w-28 md:h-28 rounded-2xl bg-white dark:bg-[#0f172a] border border-gray-200 dark:border-[#334155] flex items-center justify-center p-2.5 shrink-0 shadow-sm">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-lg p-5 md:p-6 flex flex-col md:flex-row gap-5 md:gap-6">
+          <div className="w-20 h-20 md:w-28 md:h-28 rounded-2xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 flex items-center justify-center p-2.5 shrink-0 shadow-sm">
             {org.logo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              // next/image with explicit dimensions for CLS; `unoptimized`
+              // for the same arbitrary-host reason as the cover above.
+              <Image
                 src={org.logo}
                 alt={`${org.name} logo`}
+                width={112}
+                height={112}
+                unoptimized
                 className="max-w-full max-h-full object-contain"
               />
             ) : (
@@ -383,7 +394,7 @@ function SocialPills({
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#0f2a4a] dark:text-white bg-gray-50 dark:bg-[#0f172a] border border-gray-200 dark:border-[#334155] hover:border-[#4ea8de] hover:text-[#3a95cc] rounded-full px-2.5 py-1 transition-colors"
+          className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#0f2a4a] dark:text-white bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 hover:border-[#4ea8de] hover:text-[#3a95cc] rounded-full px-2.5 py-1 transition-colors"
         >
           <Icon className="w-3 h-3" />
           {label}
@@ -436,18 +447,26 @@ function UpcomingSection({ org, events }: { org: ResolvedOrg; events: EventRow[]
 
 function EmptyEvents({ orgName }: { orgName: string }) {
   return (
-    <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-dashed border-gray-300 dark:border-[#334155] p-10 md:p-12 text-center">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-dashed border-gray-300 dark:border-slate-700 p-10 md:p-12 text-center">
       <Calendar className="w-9 h-9 text-gray-300 mx-auto mb-3" aria-hidden="true" />
       <h3 className="text-base font-bold text-[#0f2a4a] dark:text-white">No upcoming events for {orgName} yet</h3>
       <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-md mx-auto">
         We&apos;ll surface them here as soon as they&apos;re published. In the meantime, browse the wider network.
       </p>
-      <Link
-        href="/events"
-        className="inline-flex items-center gap-1.5 mt-5 bg-[#0f2a4a] hover:bg-[#1a3f6e] text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors"
-      >
-        Browse all events
-      </Link>
+      <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+        <Link
+          href="/events"
+          className="inline-flex items-center gap-1.5 bg-[#0f2a4a] hover:bg-[#1a3f6e] text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors"
+        >
+          Browse all events
+        </Link>
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#0f2a4a] dark:text-slate-100 border border-gray-200 dark:border-slate-700 hover:border-[#4ea8de] hover:text-[#3a95cc] px-5 py-2.5 rounded-xl transition-colors"
+        >
+          Browse other organizations
+        </Link>
+      </div>
     </div>
   );
 }
@@ -482,7 +501,7 @@ function EventCard({ event, accent, pastTone }: {
   return (
     <Link
       href={`/events/${event.id}`}
-      className={`group block bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-[#334155] hover:border-[#4ea8de] dark:hover:border-[#4ea8de] hover:shadow-md transition-all p-4 sm:p-5 ${
+      className={`group block bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 hover:border-[#4ea8de] dark:hover:border-[#4ea8de] hover:shadow-md transition-all p-4 sm:p-5 ${
         pastTone ? "opacity-70 hover:opacity-100" : ""
       }`}
     >

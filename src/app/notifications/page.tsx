@@ -108,7 +108,7 @@ export default function NotificationsPage() {
               onClick={() => { if (!n.read) markRead(n.id); }}
               className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-colors ${
                 n.read
-                  ? "bg-white dark:bg-[#1e293b] border-gray-200 dark:border-[#334155]"
+                  ? "bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
                   : "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700"
               }`}
             >

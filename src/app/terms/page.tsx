@@ -69,7 +69,7 @@ export default async function TermsPage() {
             <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-sm">{content}</p>
           </section>
         ))}
-        <p className="text-sm text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-[#334155] pt-6">
+        <p className="text-sm text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-slate-700 pt-6">
           Questions? Contact us at{" "}
           <a href="mailto:admin@forahub.org" className="text-[#4ea8de] hover:underline">admin@forahub.org</a>
         </p>

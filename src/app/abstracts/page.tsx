@@ -112,7 +112,7 @@ export default function AbstractsPage() {
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {showForm && (
-          <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-gray-200 dark:border-[#334155] p-5 mb-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-5 mb-6">
             <h2 className="font-bold text-[#0f2a4a] dark:text-white mb-4">Add New Submission</h2>
             <form onSubmit={addAbstract} className="space-y-3">
               <div>
@@ -122,7 +122,7 @@ export default function AbstractsPage() {
                   required value={form.event_name}
                   onChange={e => setForm(p => ({ ...p, event_name: e.target.value }))}
                   placeholder="Conference / Event Name"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
                 />
               </div>
               <div>
@@ -132,7 +132,7 @@ export default function AbstractsPage() {
                   required value={form.title}
                   onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
                   placeholder="Abstract Title"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
                 />
               </div>
               <div className="flex gap-3">
@@ -142,7 +142,7 @@ export default function AbstractsPage() {
                     id="abstract-deadline"
                     type="date" value={form.deadline}
                     onChange={e => setForm(p => ({ ...p, deadline: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
                   />
                 </div>
               </div>
@@ -153,7 +153,7 @@ export default function AbstractsPage() {
                   value={form.notes}
                   onChange={e => setForm(p => ({ ...p, notes: e.target.value }))}
                   placeholder="Notes (optional)" rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de] resize-none"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de] resize-none"
                 />
               </div>
               <div className="flex gap-2">
@@ -188,7 +188,7 @@ export default function AbstractsPage() {
                 </div>
                 <div className="space-y-2">
                   {grouped[status].map(abs => (
-                    <div key={abs.id} className="bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-[#334155] rounded-xl p-3">
+                    <div key={abs.id} className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-3">
                       <p className="text-xs font-semibold text-[#0f2a4a] dark:text-white line-clamp-1">{abs.title}</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-1">{abs.event_name}</p>
                       {abs.deadline && (
@@ -201,7 +201,7 @@ export default function AbstractsPage() {
                           value={abs.status}
                           onChange={e => updateStatus(abs.id, e.target.value)}
                           aria-label={`Status for ${abs.title}`}
-                          className="flex-1 text-xs bg-gray-50 dark:bg-[#0f172a] border border-gray-200 dark:border-[#334155] rounded-md px-2 py-1 text-gray-700 dark:text-gray-300 focus:outline-none"
+                          className="flex-1 text-xs bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-md px-2 py-1 text-gray-700 dark:text-gray-300 focus:outline-none"
                         >
                           {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
@@ -216,8 +216,8 @@ export default function AbstractsPage() {
                     </div>
                   ))}
                   {grouped[status].length === 0 && (
-                    <div className="border-2 border-dashed border-gray-200 dark:border-[#334155] rounded-xl p-4 text-xs text-gray-400 text-center">
-                      None
+                    <div className="border-2 border-dashed border-gray-200 dark:border-slate-700 rounded-xl p-4 text-xs text-gray-400 dark:text-slate-500 text-center">
+                      No submissions in this status
                     </div>
                   )}
                 </div>

@@ -39,7 +39,7 @@ export default async function HelpPage() {
         <h2 className="text-xl font-bold text-[#0f2a4a] dark:text-white mb-6">Frequently Asked Questions</h2>
         <div className="space-y-3 mb-10">
           {FAQS.map(({ q, a }) => (
-            <details key={q} className="group bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-[#334155] rounded-xl p-4">
+            <details key={q} className="group bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-4">
               <summary className="flex items-center justify-between cursor-pointer font-semibold text-sm text-[#0f2a4a] dark:text-white list-none">
                 {q}
                 <ChevronDown size={16} className="text-gray-400 group-open:rotate-180 transition-transform" />

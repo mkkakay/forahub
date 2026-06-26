@@ -133,7 +133,7 @@ export default function CitySearchInput({
         onFocus={() => results.length > 0 && setOpen(true)}
         placeholder={placeholder}
         autoFocus={autoFocus}
-        className="w-full bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-[#334155] rounded-xl pl-9 pr-9 py-2 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-500 transition-colors"
+        className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-9 pr-9 py-2 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-500 transition-colors"
       />
       {(loading || resolving) && (
         <Loader2 size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 animate-spin" />
@@ -141,13 +141,13 @@ export default function CitySearchInput({
       {/* z-[1100] beats Leaflet's popupPane (700) and zoomControl (~1000)
           so the dropdown is always clickable above the map below. */}
       {open && results.length > 0 && (
-        <ul className="absolute z-[1100] mt-1 w-full bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-[#334155] rounded-xl shadow-lg overflow-hidden max-h-64 overflow-y-auto">
+        <ul className="absolute z-[1100] mt-1 w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden max-h-64 overflow-y-auto">
           {results.map((s, i) => (
             <li key={i}>
               <button
                 type="button"
                 onClick={() => pick(s)}
-                className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 dark:hover:bg-[#334155] flex items-start gap-2 border-b border-slate-100 dark:border-[#334155] last:border-b-0"
+                className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 dark:hover:bg-slate-700 flex items-start gap-2 border-b border-slate-100 dark:border-slate-700 last:border-b-0"
               >
                 <MapPin size={13} className="mt-0.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span className="flex-1">

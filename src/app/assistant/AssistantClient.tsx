@@ -32,7 +32,7 @@ function MessageBubble({ msg }: { msg: Message }) {
         className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
           isUser
             ? "bg-[#4ea8de] text-white rounded-br-sm"
-            : "bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-[#334155] text-gray-800 dark:text-gray-100 rounded-bl-sm"
+            : "bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-100 rounded-bl-sm"
         }`}
       >
         {msg.content.split("\n").map((line, i) => (
@@ -114,7 +114,7 @@ export default function AssistantClient() {
                 <button
                   key={s}
                   onClick={() => sendMessage(s)}
-                  className="text-left text-sm px-4 py-3 rounded-xl bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-[#334155] text-gray-700 dark:text-gray-300 hover:border-[#4ea8de] hover:text-[#4ea8de] transition-colors"
+                  className="text-left text-sm px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-300 hover:border-[#4ea8de] hover:text-[#4ea8de] transition-colors"
                 >
                   {s}
                 </button>
@@ -128,7 +128,7 @@ export default function AssistantClient() {
             <div className="w-8 h-8 rounded-full bg-[#4ea8de] flex items-center justify-center shrink-0">
               <Sparkles size={14} className="text-white" />
             </div>
-            <div className="bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-[#334155] rounded-2xl rounded-bl-sm px-4 py-3">
+            <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl rounded-bl-sm px-4 py-3">
               <div className="flex gap-1.5">
                 <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]" />
                 <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]" />
@@ -154,7 +154,7 @@ export default function AssistantClient() {
       <div className="sticky bottom-4">
         <form
           onSubmit={(e) => { e.preventDefault(); sendMessage(input); }}
-          className="flex gap-2 bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-[#334155] rounded-2xl p-2 shadow-lg"
+          className="flex gap-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl p-2 shadow-lg"
         >
           <input
             value={input}

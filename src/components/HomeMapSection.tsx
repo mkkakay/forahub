@@ -152,7 +152,7 @@ export default function HomeMapSection({ totalWithCoords }: { totalWithCoords: n
         )}
 
         {/* Map card — matches design system */}
-        <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-[#334155] shadow-sm bg-white dark:bg-[#1e293b]">
+        <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800">
           <div className="h-[320px] sm:h-[400px]">
             {shouldLoad ? (
               <EventsMap

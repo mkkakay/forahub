@@ -9,6 +9,7 @@ import Link from "next/link";
 import { Calendar, Globe, Star, Bookmark, Trophy, ArrowRight, Sparkles, Target, Award, Palette } from "lucide-react";
 import ClientPageHeader from "@/components/ClientPageHeader";
 import WelcomeOnboardingBanner from "@/components/WelcomeOnboardingBanner";
+import { formatDate } from "@/lib/date";
 
 const SDG_COLORS: Record<number, string> = {
   1:"#E5243B",2:"#DDA63A",3:"#4C9F38",4:"#C5192D",5:"#FF3A21",
@@ -100,10 +101,6 @@ export default function DashboardPage() {
     return false;
   });
 
-  function formatDate(d: string) {
-    return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
-  }
-
   function daysUntil(d: string) {
     return Math.ceil((new Date(d).getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
   }
@@ -130,7 +127,7 @@ export default function DashboardPage() {
             { icon: <Star size={20} className="text-amber-500" />, value: uniqueSDGs.length, label: "SDG Goals" },
             { icon: <Globe size={20} className="text-purple-500" />, value: earnedBadges.length, label: "Badges Earned" },
           ].map(({ icon, value, label }) => (
-            <div key={label} className="bg-white dark:bg-[#1e293b] rounded-xl border border-gray-200 dark:border-[#334155] p-4 flex flex-col gap-2">
+            <div key={label} className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-4 flex flex-col gap-2">
               <div className="flex items-center justify-between">
                 {icon}
                 <span className="text-2xl font-bold text-[#0f2a4a] dark:text-white">{value}</span>
@@ -156,7 +153,7 @@ export default function DashboardPage() {
                 const sdg = event.sdg_goals?.[0];
                 return (
                   <Link key={event.id} href={`/events/${event.id}`}
-                    className="flex items-center gap-4 bg-white dark:bg-[#1e293b] rounded-xl border border-gray-200 dark:border-[#334155] p-4 hover:shadow-md transition-shadow">
+                    className="flex items-center gap-4 bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-4 hover:shadow-md transition-shadow">
                     {sdg && (
                       <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0" style={{ backgroundColor: SDG_COLORS[sdg] }}>
                         {sdg}
@@ -207,7 +204,7 @@ export default function DashboardPage() {
                 <div key={badge.id} className={`rounded-xl border p-3 text-center transition-all ${
                   earned
                     ? "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-700"
-                    : "bg-gray-50 dark:bg-[#1e293b] border-gray-200 dark:border-[#334155] opacity-40"
+                    : "bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700 opacity-40"
                 }`}>
                   <div className="mb-1 flex justify-center">{badge.icon}</div>
                   <p className="text-xs font-bold text-[#0f2a4a] dark:text-white">{badge.label}</p>

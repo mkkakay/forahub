@@ -17,6 +17,7 @@ import BookmarkButton from "@/components/BookmarkButton";
 import CalendarExportMenu from "@/components/CalendarExportMenu";
 import ShareMenu from "@/components/ShareMenu";
 import CalendarSection from "@/components/calendar/CalendarSection";
+import { formatDateRange } from "@/lib/date";
 
 type EventRow = Database["public"]["Tables"]["events"]["Row"];
 type TimeView = "upcoming" | "past" | "all";
@@ -88,17 +89,6 @@ function deriveRegion(location: string | null): string {
   return "Other";
 }
 
-function formatDateRange(start: string, end: string | null): string {
-  const fmt = (d: string) =>
-    new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
-  if (!end) return fmt(start);
-  const s = new Date(start);
-  const e = new Date(end);
-  if (s.getUTCFullYear() === e.getUTCFullYear() && s.getUTCMonth() === e.getUTCMonth()) {
-    return `${s.toLocaleDateString("en-US", { month: "short", timeZone: "UTC" })} ${s.getUTCDate()}–${e.getUTCDate()}, ${s.getUTCFullYear()}`;
-  }
-  return `${fmt(start)} – ${fmt(end)}`;
-}
 
 function getCountdown(event: EventRow, today: string): { label: string; urgent: boolean } | null {
   const now = new Date(today);

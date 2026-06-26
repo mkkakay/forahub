@@ -104,7 +104,7 @@ export default function CreateEventPage() {
     }
   }
 
-  const inputClass = "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de]";
+  const inputClass = "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de]";
 
   if (submitted) {
     return (
@@ -159,7 +159,7 @@ export default function CreateEventPage() {
       </div>
 
       <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-gray-200 dark:border-[#334155] p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-6">
           {step === 0 && (
             <div className="space-y-4">
               <h2 className="font-bold text-lg text-[#0f2a4a] dark:text-white">Basic Details</h2>
@@ -282,7 +282,7 @@ export default function CreateEventPage() {
           {step === 4 && (
             <div className="space-y-4">
               <h2 className="font-bold text-lg text-[#0f2a4a] dark:text-white">Review & Submit</h2>
-              <div className="bg-gray-50 dark:bg-[#0f172a] rounded-xl p-4 space-y-2 text-sm">
+              <div className="bg-gray-50 dark:bg-slate-900 rounded-xl p-4 space-y-2 text-sm">
                 <p><strong>Title:</strong> {form.title}</p>
                 <p><strong>Type:</strong> {form.event_type} · {form.format}</p>
                 <p><strong>Date:</strong> {form.start_date}{form.end_date ? ` – ${form.end_date}` : ""}</p>

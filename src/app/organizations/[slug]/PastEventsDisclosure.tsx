@@ -20,7 +20,7 @@ export default function PastEventsDisclosure({
         onClick={() => setOpen(v => !v)}
         aria-expanded={open}
         aria-label={`${open ? "Hide" : "Show"} ${count} past event${count === 1 ? "" : "s"}`}
-        className="w-full flex items-center justify-between gap-3 bg-white/5 dark:bg-white/5 border border-gray-200 dark:border-[#334155] hover:border-[#4ea8de] rounded-2xl px-4 py-3 text-left transition-colors group"
+        className="w-full flex items-center justify-between gap-3 bg-white/5 dark:bg-white/5 border border-gray-200 dark:border-slate-700 hover:border-[#4ea8de] rounded-2xl px-4 py-3 text-left transition-colors group"
       >
         <span className="inline-flex items-center gap-2 text-sm font-semibold text-[#0f2a4a] dark:text-white">
           <History className="w-4 h-4 text-gray-400 group-hover:text-[#4ea8de]" aria-hidden="true" />

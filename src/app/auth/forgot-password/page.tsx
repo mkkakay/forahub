@@ -23,14 +23,14 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0f172a] flex flex-col">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex flex-col">
       <nav className="bg-[#0f2a4a] shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center">
           <Link href="/" className="text-white text-xl font-bold tracking-tight">Fora<span className="text-[#4ea8de]">Hub</span></Link>
         </div>
       </nav>
       <div className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-gray-200 dark:border-[#334155] shadow-sm p-8 w-full max-w-md">
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm p-8 w-full max-w-md">
           {sent ? (
             <div className="text-center">
               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -52,7 +52,7 @@ export default function ForgotPasswordPage() {
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
                   <input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
                     placeholder="you@example.com" />
                 </div>
                 {error && <p className="text-red-600 text-sm bg-red-50 px-3 py-2 rounded-lg">{error}</p>}

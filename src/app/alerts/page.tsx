@@ -97,7 +97,7 @@ export default function AlertsPage() {
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {!loading && (
           <>
-            <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-gray-200 dark:border-[#334155] p-5 mb-6">
+            <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-5 mb-6">
               <h2 className="font-bold text-[#0f2a4a] dark:text-white mb-4">Add New Alert</h2>
               {!canAddMore ? (
                 <div className="flex items-center gap-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg">
@@ -114,7 +114,7 @@ export default function AlertsPage() {
                     id="alert-keyword"
                     value={keyword} onChange={e => setKeyword(e.target.value)}
                     placeholder="e.g. antimicrobial resistance, health financing, climate"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
                     required
                   />
                   <div className="flex gap-2">
@@ -122,7 +122,7 @@ export default function AlertsPage() {
                     <select
                       id="alert-region"
                       value={region} onChange={e => setRegion(e.target.value)}
-                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
+                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
                     >
                       <option value="">All regions</option>
                       {REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
@@ -131,7 +131,7 @@ export default function AlertsPage() {
                     <select
                       id="alert-format"
                       value={format} onChange={e => setFormat(e.target.value)}
-                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
+                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
                     >
                       <option value="">All formats</option>
                       {FORMATS.map(f => <option key={f} value={f}>{f.replace("_", " ")}</option>)}
@@ -151,15 +151,30 @@ export default function AlertsPage() {
                 <span className="text-sm text-gray-500 dark:text-gray-400">{alerts.length}/{maxAlerts}</span>
               </div>
               {alerts.length === 0 ? (
-                <div className="text-center py-12 text-gray-400">
-                  <Bell size={36} className="mx-auto mb-3 opacity-40" />
-                  <p className="text-sm">No alerts yet. Add one above.</p>
+                <div className="text-center py-12">
+                  <Bell size={36} className="mx-auto mb-3 text-gray-300 dark:text-slate-600" aria-hidden="true" />
+                  <p className="text-base font-semibold text-[#0f2a4a] dark:text-white">No alerts yet</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-sm mx-auto">
+                    Create one to get an email when a new event matches your keyword.
+                  </p>
+                  {canAddMore && (
+                    <a
+                      href="#alert-keyword"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        document.getElementById("alert-keyword")?.focus();
+                      }}
+                      className="mt-4 inline-flex items-center gap-1.5 bg-[#4ea8de] hover:bg-[#3a95cc] text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors"
+                    >
+                      <Plus size={14} aria-hidden="true" /> Create your first alert
+                    </a>
+                  )}
                 </div>
               ) : (
                 alerts.map(alert => (
                   <div key={alert.id}
-                    className={`flex items-center gap-3 bg-white dark:bg-[#1e293b] border rounded-xl px-4 py-3 ${
-                      alert.is_active ? "border-gray-200 dark:border-[#334155]" : "border-gray-100 dark:border-[#1e293b] opacity-50"
+                    className={`flex items-center gap-3 bg-white dark:bg-slate-800 border rounded-xl px-4 py-3 ${
+                      alert.is_active ? "border-gray-200 dark:border-slate-700" : "border-gray-100 dark:border-slate-800 opacity-50"
                     }`}>
                     <div className="flex-1">
                       <p className="font-semibold text-sm text-[#0f2a4a] dark:text-white">{alert.keyword}</p>

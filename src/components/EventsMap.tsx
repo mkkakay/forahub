@@ -472,20 +472,20 @@ export default function EventsMap({
 
   return (
     <div className="relative w-full" style={{ height }}>
-      <div ref={containerRef} className="absolute inset-0 bg-slate-50 dark:bg-[#0f172a]" />
+      <div ref={containerRef} className="absolute inset-0 bg-slate-50 dark:bg-slate-900" />
       {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white/40 dark:bg-[#0f172a]/40 pointer-events-none">
+        <div className="absolute inset-0 flex items-center justify-center bg-white/40 dark:bg-slate-900/40 pointer-events-none">
           <div className="animate-pulse text-xs text-slate-500 dark:text-slate-300">Loading map…</div>
         </div>
       )}
       {emptyAfterFilter && !loading && (
-        <div className="absolute inset-x-0 top-3 mx-auto w-fit max-w-[90%] bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-[#334155] text-slate-700 dark:text-slate-200 text-xs rounded-full px-4 py-2 shadow-md text-center">
+        <div className="absolute inset-x-0 top-3 mx-auto w-fit max-w-[90%] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs rounded-full px-4 py-2 shadow-md text-center">
           No events match this filter — adjust filters or{" "}
           <a href="/events" className="font-semibold text-blue-600 hover:underline">browse all events</a>.
         </div>
       )}
       {error && (
-        <div className="absolute inset-x-0 bottom-3 mx-auto w-fit bg-white dark:bg-[#1e293b] border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs rounded-full px-3 py-1.5 shadow-md flex items-center gap-2">
+        <div className="absolute inset-x-0 bottom-3 mx-auto w-fit bg-white dark:bg-slate-800 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs rounded-full px-3 py-1.5 shadow-md flex items-center gap-2">
           {error}
           <button
             type="button"

@@ -98,7 +98,7 @@ export default function ProfilePage() {
       />
 
       <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        <form onSubmit={saveProfile} className="bg-white dark:bg-[#1e293b] rounded-xl border border-gray-200 dark:border-[#334155] p-6 space-y-4">
+        <form onSubmit={saveProfile} className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-6 space-y-4">
           <h2 className="font-bold text-[#0f2a4a] dark:text-white">Personal Information</h2>
           {[
             { id: "full_name", label: "Full Name", placeholder: "Your full name" },
@@ -111,7 +111,7 @@ export default function ProfilePage() {
                 value={(profile as Record<string, unknown>)[id] as string}
                 onChange={e => setProfile(p => ({ ...p, [id]: e.target.value }))}
                 placeholder={placeholder}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
               />
             </div>
           ))}
@@ -122,14 +122,14 @@ export default function ProfilePage() {
               onChange={e => setProfile(p => ({ ...p, bio: e.target.value }))}
               rows={3}
               placeholder="Brief bio for your profile…"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de] resize-none"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de] resize-none"
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Region</label>
               <select value={profile.region} onChange={e => setProfile(p => ({ ...p, region: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]">
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]">
                 <option value="">Select region</option>
                 {REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
               </select>
@@ -137,7 +137,7 @@ export default function ProfilePage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Role</label>
               <select value={profile.role} onChange={e => setProfile(p => ({ ...p, role: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]">
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]">
                 <option value="">Select role</option>
                 {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
               </select>
@@ -169,11 +169,11 @@ export default function ProfilePage() {
 
         {/* Referral */}
         {referralCode && (
-          <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-gray-200 dark:border-[#334155] p-5">
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-5">
             <h2 className="font-bold text-[#0f2a4a] dark:text-white mb-2">Referral Program</h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">Share your link. When someone upgrades to Pro, you get 1 free month.</p>
             <div className="flex items-center gap-2">
-              <code className="flex-1 bg-gray-50 dark:bg-[#0f172a] border border-gray-200 dark:border-[#334155] rounded-lg px-3 py-2 text-xs text-gray-700 dark:text-gray-300 truncate">
+              <code className="flex-1 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-gray-700 dark:text-gray-300 truncate">
                 {typeof window !== "undefined" ? `${window.location.origin}/?ref=${referralCode}` : `forahub.org/?ref=${referralCode}`}
               </code>
               <button onClick={copyReferral}
@@ -195,14 +195,14 @@ export default function ProfilePage() {
             { href: "/dashboard", label: "My Dashboard" },
             { href: "/pricing", label: "Upgrade Plan" },
           ].map(({ href, label }) => (
-            <Link key={href} href={href} className="bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-[#334155] rounded-xl p-4 text-sm font-semibold text-[#0f2a4a] dark:text-white hover:border-[#4ea8de] hover:text-[#4ea8de] transition-colors text-center">
+            <Link key={href} href={href} className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-4 text-sm font-semibold text-[#0f2a4a] dark:text-white hover:border-[#4ea8de] hover:text-[#4ea8de] transition-colors text-center">
               {label}
             </Link>
           ))}
         </div>
 
         {/* Delete account */}
-        <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-red-200 dark:border-red-900/50 p-5">
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-red-200 dark:border-red-900/50 p-5">
           <h2 className="font-bold text-red-600 mb-2 flex items-center gap-2">
             <AlertTriangle size={16} /> Danger Zone
           </h2>

@@ -30,7 +30,11 @@ interface Initial {
   linkedin_url: string;
 }
 
-const labelClass = "block text-[11px] font-semibold text-gray-600 dark:text-slate-300 uppercase tracking-wider mb-1.5";
+// Labels read as proper field names, not tiny caps. Uppercase tracking-
+// wider made the form feel like a tabular editor; sm + semibold reads
+// as a confident institutional form. Section headers retain the small-
+// caps treatment so they stay clearly subordinate to the form.
+const labelClass = "block text-sm font-semibold text-gray-800 dark:text-slate-100 mb-1.5";
 const inputClass =
   "w-full bg-white dark:bg-slate-800 border border-gray-200/80 dark:border-slate-700/80 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 dark:text-slate-100 placeholder-gray-400/90 dark:placeholder-slate-500/90 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]/30 focus:border-[#4ea8de] transition-colors";
 
@@ -259,9 +263,9 @@ export default function ManageOrgForm({ slug, initial }: { slug: string; initial
 
 function SectionHeader({ title, subtitle }: { title: string; subtitle: string }) {
   return (
-    <div className="mt-6 mb-4 pt-5 first:mt-0 first:pt-0 first:border-t-0 border-t border-gray-100 dark:border-slate-800">
-      <h3 className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">{title}</h3>
-      <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">{subtitle}</p>
+    <div className="mt-8 mb-5 pt-6 first:mt-0 first:pt-0 first:border-t-0 border-t border-gray-100 dark:border-slate-800">
+      <h3 className="text-base font-bold text-[#0f2a4a] dark:text-slate-100">{title}</h3>
+      <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">{subtitle}</p>
     </div>
   );
 }
