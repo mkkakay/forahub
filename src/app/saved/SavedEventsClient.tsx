@@ -490,9 +490,9 @@ export default function SavedEventsClient() {
                     <button
                       onClick={() => removeEvent(se.id)}
                       className="ml-auto p-1 rounded text-gray-300 dark:text-slate-600 hover:text-red-500 transition-colors"
-                      aria-label="Remove saved event"
+                      aria-label={`Remove saved event: ${event.title}`}
                     >
-                      <Trash2 size={15} />
+                      <Trash2 size={15} aria-hidden="true" />
                     </button>
                   </div>
 

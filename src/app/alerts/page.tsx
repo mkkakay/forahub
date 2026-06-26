@@ -5,7 +5,7 @@ import Navbar from "@/components/Navbar";
 import { useSubscription } from "@/context/SubscriptionContext";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
-import { Bell, Plus, Trash2, Lock } from "lucide-react";
+import { Bell, Plus, Trash2, Lock, Check, Pause } from "lucide-react";
 import Link from "next/link";
 import ClientPageHeader from "@/components/ClientPageHeader";
 
@@ -109,20 +109,30 @@ export default function AlertsPage() {
                 </div>
               ) : (
                 <form onSubmit={addAlert} className="space-y-3">
+                  <label htmlFor="alert-keyword" className="sr-only">Keyword to match</label>
                   <input
+                    id="alert-keyword"
                     value={keyword} onChange={e => setKeyword(e.target.value)}
                     placeholder="e.g. antimicrobial resistance, health financing, climate"
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
                     required
                   />
                   <div className="flex gap-2">
-                    <select value={region} onChange={e => setRegion(e.target.value)}
-                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]">
+                    <label htmlFor="alert-region" className="sr-only">Region filter</label>
+                    <select
+                      id="alert-region"
+                      value={region} onChange={e => setRegion(e.target.value)}
+                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
+                    >
                       <option value="">All regions</option>
                       {REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
                     </select>
-                    <select value={format} onChange={e => setFormat(e.target.value)}
-                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]">
+                    <label htmlFor="alert-format" className="sr-only">Format filter</label>
+                    <select
+                      id="alert-format"
+                      value={format} onChange={e => setFormat(e.target.value)}
+                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
+                    >
                       <option value="">All formats</option>
                       {FORMATS.map(f => <option key={f} value={f}>{f.replace("_", " ")}</option>)}
                     </select>
@@ -157,14 +167,24 @@ export default function AlertsPage() {
                         {[alert.region_filter, alert.format_filter?.replace("_", " ")].filter(Boolean).join(" · ") || "All regions & formats"}
                       </p>
                     </div>
-                    <button onClick={() => toggleAlert(alert.id, alert.is_active)}
-                      className={`text-xs px-2.5 py-1 rounded-full font-medium transition-colors ${
+                    <button
+                      onClick={() => toggleAlert(alert.id, alert.is_active)}
+                      aria-label={alert.is_active ? `Pause alert for "${alert.keyword}"` : `Resume alert for "${alert.keyword}"`}
+                      aria-pressed={alert.is_active}
+                      className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium transition-colors ${
                         alert.is_active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
-                      }`}>
+                      }`}
+                    >
+                      {/* Icon + text so the state reads in monochrome too. */}
+                      {alert.is_active ? <Check size={11} aria-hidden="true" /> : <Pause size={11} aria-hidden="true" />}
                       {alert.is_active ? "Active" : "Paused"}
                     </button>
-                    <button onClick={() => deleteAlert(alert.id)} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors">
-                      <Trash2 size={14} />
+                    <button
+                      onClick={() => deleteAlert(alert.id)}
+                      aria-label={`Delete alert for "${alert.keyword}"`}
+                      className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                    >
+                      <Trash2 size={14} aria-hidden="true" />
                     </button>
                   </div>
                 ))

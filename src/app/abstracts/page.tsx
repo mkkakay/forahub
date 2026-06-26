@@ -115,22 +115,47 @@ export default function AbstractsPage() {
           <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-gray-200 dark:border-[#334155] p-5 mb-6">
             <h2 className="font-bold text-[#0f2a4a] dark:text-white mb-4">Add New Submission</h2>
             <form onSubmit={addAbstract} className="space-y-3">
-              <input required value={form.event_name} onChange={e => setForm(p => ({ ...p, event_name: e.target.value }))}
-                placeholder="Conference / Event Name"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de]" />
-              <input required value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
-                placeholder="Abstract Title"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de]" />
+              <div>
+                <label htmlFor="abstract-event" className="sr-only">Conference or event name</label>
+                <input
+                  id="abstract-event"
+                  required value={form.event_name}
+                  onChange={e => setForm(p => ({ ...p, event_name: e.target.value }))}
+                  placeholder="Conference / Event Name"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
+                />
+              </div>
+              <div>
+                <label htmlFor="abstract-title" className="sr-only">Abstract title</label>
+                <input
+                  id="abstract-title"
+                  required value={form.title}
+                  onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
+                  placeholder="Abstract Title"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
+                />
+              </div>
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="block text-xs text-gray-500 mb-1">Deadline</label>
-                  <input type="date" value={form.deadline} onChange={e => setForm(p => ({ ...p, deadline: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de]" />
+                  <label htmlFor="abstract-deadline" className="block text-xs text-gray-500 mb-1">Deadline</label>
+                  <input
+                    id="abstract-deadline"
+                    type="date" value={form.deadline}
+                    onChange={e => setForm(p => ({ ...p, deadline: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de]"
+                  />
                 </div>
               </div>
-              <textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))}
-                placeholder="Notes (optional)" rows={2} resize-none
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de] resize-none" />
+              <div>
+                <label htmlFor="abstract-notes" className="sr-only">Notes</label>
+                <textarea
+                  id="abstract-notes"
+                  value={form.notes}
+                  onChange={e => setForm(p => ({ ...p, notes: e.target.value }))}
+                  placeholder="Notes (optional)" rows={2}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4ea8de] resize-none"
+                />
+              </div>
               <div className="flex gap-2">
                 <button type="submit" disabled={adding}
                   className="bg-[#4ea8de] hover:bg-[#3a95cc] disabled:opacity-60 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors">
@@ -172,12 +197,20 @@ export default function AbstractsPage() {
                         </p>
                       )}
                       <div className="flex items-center gap-1.5 mt-2">
-                        <select value={abs.status} onChange={e => updateStatus(abs.id, e.target.value)}
-                          className="flex-1 text-xs bg-gray-50 dark:bg-[#0f172a] border border-gray-200 dark:border-[#334155] rounded-md px-2 py-1 text-gray-700 dark:text-gray-300 focus:outline-none">
+                        <select
+                          value={abs.status}
+                          onChange={e => updateStatus(abs.id, e.target.value)}
+                          aria-label={`Status for ${abs.title}`}
+                          className="flex-1 text-xs bg-gray-50 dark:bg-[#0f172a] border border-gray-200 dark:border-[#334155] rounded-md px-2 py-1 text-gray-700 dark:text-gray-300 focus:outline-none"
+                        >
                           {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
-                        <button onClick={() => deleteAbstract(abs.id)} className="p-1 text-gray-400 hover:text-red-500 transition-colors">
-                          <Trash2 size={12} />
+                        <button
+                          onClick={() => deleteAbstract(abs.id)}
+                          aria-label={`Delete abstract submission: ${abs.title}`}
+                          className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                        >
+                          <Trash2 size={12} aria-hidden="true" />
                         </button>
                       </div>
                     </div>

@@ -159,12 +159,19 @@ export default function Navbar() {
 
             {isLoggedIn ? (
               <>
-                <Link href="/notifications" className="p-2 rounded-md text-gray-300 hover:text-white hover:bg-white/10 transition-colors">
-                  <Bell size={18} />
+                <Link
+                  href="/notifications"
+                  aria-label="Notifications"
+                  className="p-2 rounded-md text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
+                >
+                  <Bell size={18} aria-hidden="true" />
                 </Link>
                 <div ref={userRef} className="relative">
                   <button
                     onClick={() => setUserOpen(!userOpen)}
+                    aria-label="Account menu"
+                    aria-haspopup="menu"
+                    aria-expanded={userOpen}
                     className="flex items-center gap-2 p-1.5 rounded-md hover:bg-white/10 transition-colors"
                   >
                     <div className="w-7 h-7 rounded-full bg-[#4ea8de] flex items-center justify-center text-white text-xs font-bold">
@@ -224,15 +231,18 @@ export default function Navbar() {
             <button
               className="md:hidden p-2 rounded-md text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
               onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label={mobileOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileOpen}
+              aria-controls="mobile-nav"
             >
-              {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+              {mobileOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
             </button>
           </div>
         </div>
       </div>
 
       {mobileOpen && (
-        <div className="md:hidden bg-[#0f2a4a] border-t border-white/10 px-4 py-4 space-y-3">
+        <div id="mobile-nav" className="md:hidden bg-[#0f2a4a] border-t border-white/10 px-4 py-4 space-y-3">
           <Link
             href="/submit"
             className="flex items-center justify-center gap-1.5 w-full px-4 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold text-sm shadow-md"

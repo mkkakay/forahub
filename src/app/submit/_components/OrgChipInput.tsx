@@ -212,7 +212,7 @@ function ChipResultRow({ org, onPick }: { org: OrgSuggestion; onPick: () => void
         <span className="shrink-0 w-7 h-7 rounded bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 flex items-center justify-center overflow-hidden">
           {org.logo_url ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={org.logo_url} alt="" className="max-w-full max-h-full object-contain p-0.5" />
+            <img src={org.logo_url} alt={`${org.name} logo`} className="max-w-full max-h-full object-contain p-0.5" />
           ) : (
             <Building2 size={12} className="text-gray-400 dark:text-slate-500" />
           )}

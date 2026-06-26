@@ -111,9 +111,15 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Focus visible outline for accessibility */
+/* Focus visible outline for accessibility.
+   !important is intentional: Tailwind's `focus:outline-none` utility
+   (used on many inputs/buttons that pair it with a custom ring) has
+   higher specificity than `:focus-visible` alone, so without
+   !important keyboard users would see nothing on elements without a
+   custom ring. Mouse users still don't see this (UA distinguishes
+   :focus from :focus-visible). */
 :focus-visible {
-  outline: 2px solid var(--ring);
+  outline: 2px solid var(--ring) !important;
   outline-offset: 2px;
 }
 
@@ -181,6 +187,28 @@ html {
   display: flex;
   white-space: nowrap;
   will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  /* Decorative-only ticker — pause when the user has asked for less
+     motion. (The logo trust strip stays alive but slowed; the ticker
+     is a vanity element, no information is lost when it's still.) */
+  .ticker-track { animation: none !important; }
+}
+
+/* Site-wide decorative animations honour prefers-reduced-motion.
+   Hero / Ken Burns / scroll-marquee already handle this individually
+   above. This block covers the broader set: the AIWidget loading
+   bouncers, generic Tailwind `animate-*` decorative motion, and any
+   transition that's stylistic rather than informational. Loading
+   spinners (animate-spin) are LEFT animating — they communicate
+   pending state and shouldn't freeze. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-bounce,
+  .animate-pulse,
+  .animate-ping {
+    animation: none !important;
+  }
+  /* Don't kill animate-spin — it's the loading affordance. */
 }
 
 /* Swiper hero carousel: Ken Burns zoom on active slide */

@@ -110,7 +110,7 @@ export default function ManageOrgForm({ slug, initial }: { slug: string; initial
         <SectionHeader title="Brand" subtitle="Logo and cover image." />
 
         <div id="field-logo" className="scroll-mt-24">
-          <label className={labelClass}>Logo</label>
+          <label htmlFor="org-logo-url" className={labelClass}>Logo</label>
           <ImageField
             slug={slug}
             kind="logo"
@@ -123,7 +123,7 @@ export default function ManageOrgForm({ slug, initial }: { slug: string; initial
         </div>
 
         <div id="field-cover" className="scroll-mt-24 mt-5">
-          <label className={labelClass}>Cover image</label>
+          <label htmlFor="org-cover-url" className={labelClass}>Cover image</label>
           <p className="text-[11px] text-gray-500 dark:text-slate-400 mb-1.5">Recommended: 1200 × 400px or larger, landscape.</p>
           <ImageField
             slug={slug}
@@ -141,8 +141,9 @@ export default function ManageOrgForm({ slug, initial }: { slug: string; initial
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div id="field-name" className="scroll-mt-24">
-            <label className={labelClass}>Display name <span className="text-rose-500" aria-label="required">*</span></label>
+            <label htmlFor="org-name" className={labelClass}>Display name <span className="text-rose-500" aria-label="required">*</span></label>
             <input
+              id="org-name"
               value={form.name}
               onChange={e => update("name", e.target.value)}
               maxLength={120}
@@ -151,8 +152,9 @@ export default function ManageOrgForm({ slug, initial }: { slug: string; initial
             />
           </div>
           <div>
-            <label className={labelClass}>Short name</label>
+            <label htmlFor="org-short-name" className={labelClass}>Short name</label>
             <input
+              id="org-short-name"
               value={form.short_name}
               onChange={e => update("short_name", e.target.value)}
               maxLength={120}
@@ -163,8 +165,9 @@ export default function ManageOrgForm({ slug, initial }: { slug: string; initial
         </div>
 
         <div id="field-description" className="scroll-mt-24 mt-5">
-          <label className={labelClass}>Description</label>
+          <label htmlFor="org-description" className={labelClass}>Description</label>
           <textarea
+            id="org-description"
             value={form.description}
             onChange={e => update("description", e.target.value)}
             rows={3}
@@ -179,10 +182,11 @@ export default function ManageOrgForm({ slug, initial }: { slug: string; initial
         <SectionHeader title="Online presence" subtitle="Where people can find you elsewhere." />
 
         <div id="field-website" className="scroll-mt-24">
-          <label className={labelClass}>Website</label>
+          <label htmlFor="org-website" className={labelClass}>Website</label>
           <div className="relative">
-            <Globe size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-600" />
+            <Globe size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-600" aria-hidden="true" />
             <input
+              id="org-website"
               type="url"
               value={form.website_url}
               onChange={e => update("website_url", e.target.value)}
@@ -194,10 +198,11 @@ export default function ManageOrgForm({ slug, initial }: { slug: string; initial
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div id="field-twitter" className="scroll-mt-24">
-            <label className={labelClass}>Twitter / X</label>
+            <label htmlFor="org-twitter" className={labelClass}>Twitter / X</label>
             <div className="relative">
-              <AtSign size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-500" />
+              <AtSign size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-500" aria-hidden="true" />
               <input
+                id="org-twitter"
                 type="url"
                 value={form.twitter_url}
                 onChange={e => update("twitter_url", e.target.value)}
@@ -207,10 +212,11 @@ export default function ManageOrgForm({ slug, initial }: { slug: string; initial
             </div>
           </div>
           <div id="field-linkedin" className="scroll-mt-24">
-            <label className={labelClass}>LinkedIn</label>
+            <label htmlFor="org-linkedin" className={labelClass}>LinkedIn</label>
             <div className="relative">
-              <Briefcase size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-700" />
+              <Briefcase size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-700" aria-hidden="true" />
               <input
+                id="org-linkedin"
                 type="url"
                 value={form.linkedin_url}
                 onChange={e => update("linkedin_url", e.target.value)}
@@ -328,9 +334,11 @@ function ImageField({
         </div>
         <div className="flex-1 min-w-0">
           <div className="relative">
-            <LinkIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
+            <LinkIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" aria-hidden="true" />
             <input
               type="url"
+              id={`org-${kind}-url`}
+              aria-label={`${kind === "logo" ? "Logo" : "Cover image"} URL`}
               value={value}
               onChange={e => onChange(e.target.value)}
               placeholder={placeholder}

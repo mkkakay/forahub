@@ -126,9 +126,10 @@ export default function NotificationsPage() {
               </div>
               <button
                 onClick={(e) => { e.stopPropagation(); deleteNotification(n.id); }}
+                aria-label={`Delete notification: ${n.title}`}
                 className="p-1.5 text-gray-400 hover:text-red-500 transition-colors shrink-0"
               >
-                <Trash2 size={13} />
+                <Trash2 size={13} aria-hidden="true" />
               </button>
             </div>
           ))}
