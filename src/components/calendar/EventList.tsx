@@ -109,7 +109,7 @@ export default function EventList({
       </div>
       <div className="overflow-y-auto flex-1">
         {grouped.length === 0 && (
-          <div className="p-6 text-center text-slate-500 dark:text-slate-400 dark:dark:text-slate-500 text-sm">No events this month.</div>
+          <div className="p-6 text-center text-slate-500 dark:text-slate-400 dark:dark:text-slate-400 text-sm">No events this month.</div>
         )}
         {grouped.map((group, gi) => (
           <div key={gi}>

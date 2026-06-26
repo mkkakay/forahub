@@ -179,7 +179,7 @@ export default function ManageOrgForm({ slug, initial }: { slug: string; initial
             placeholder="One short paragraph about your organization."
             className={inputClass}
           />
-          <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1">{form.description.length}/600</p>
+          <p className="text-[11px] text-gray-600 dark:text-slate-400 mt-1">{form.description.length}/600</p>
         </div>
 
         {/* ── 3. Online presence ──────────────────────────────── */}

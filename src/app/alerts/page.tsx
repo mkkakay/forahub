@@ -197,7 +197,7 @@ export default function AlertsPage() {
                     <button
                       onClick={() => deleteAlert(alert.id)}
                       aria-label={`Delete alert for "${alert.keyword}"`}
-                      className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                      className="p-1.5 text-gray-600 hover:text-red-500 transition-colors"
                     >
                       <Trash2 size={14} aria-hidden="true" />
                     </button>

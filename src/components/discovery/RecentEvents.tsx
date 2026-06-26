@@ -85,7 +85,7 @@ export default function RecentEvents({
                   )}
                 </p>
               </div>
-              <span className="shrink-0 text-[11px] text-gray-400 dark:text-slate-500 mt-0.5">added {fmtAddedAt(e.created_at)}</span>
+              <span className="shrink-0 text-[11px] text-gray-600 dark:text-slate-400 mt-0.5">added {fmtAddedAt(e.created_at)}</span>
             </Link>
           </li>
         ))}

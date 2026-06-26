@@ -321,7 +321,7 @@ export default function TeamPanel(props: Props) {
                         />
                       )}
                       {m.is_self && (
-                        <span className="text-xs text-gray-400 dark:text-slate-500 shrink-0">(you)</span>
+                        <span className="text-xs text-gray-600 dark:text-slate-400 shrink-0">(you)</span>
                       )}
                     </div>
                     <div className="text-xs text-gray-500 dark:text-slate-400 mt-0.5 inline-flex items-center gap-1.5 truncate">
@@ -596,7 +596,7 @@ function RemoveControl({
         "inline-flex items-center justify-center w-7 h-7 rounded-md transition-colors " +
         (disabled
           ? "text-gray-300 dark:text-slate-600 cursor-not-allowed"
-          : "text-gray-400 dark:text-slate-500 hover:text-red-600 hover:bg-red-50")
+          : "text-gray-600 dark:text-slate-400 hover:text-red-600 hover:bg-red-50")
       }
     >
       <Trash2 className="w-3.5 h-3.5" />

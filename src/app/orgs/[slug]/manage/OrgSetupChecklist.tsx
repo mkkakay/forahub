@@ -136,7 +136,7 @@ export default function OrgSetupChecklist({ slug, signals }: Props) {
           </p>
           <ProgressBar pct={signals.corePct} done={fullySetUp} />
         </div>
-        <span className="text-gray-400 dark:text-slate-500" aria-hidden="true">
+        <span className="text-gray-600 dark:text-slate-400" aria-hidden="true">
           {collapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
         </span>
       </button>
@@ -192,7 +192,7 @@ export default function OrgSetupChecklist({ slug, signals }: Props) {
 
           {/* Optional bonus */}
           <div className="pt-2 mt-2 border-t border-gray-100 dark:border-slate-800">
-            <p className="text-[10px] uppercase tracking-wider font-semibold mb-1.5 text-gray-400 dark:text-slate-500">
+            <p className="text-[10px] uppercase tracking-wider font-semibold mb-1.5 text-gray-600 dark:text-slate-400">
               Optional
             </p>
             <ChecklistItem

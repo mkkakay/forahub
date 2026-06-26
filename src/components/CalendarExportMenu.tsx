@@ -116,7 +116,7 @@ export default function CalendarExportMenu({
       <button
         onClick={handleTrigger}
         aria-label="Add to calendar"
-        className="p-1.5 rounded-md text-gray-400 dark:text-slate-500 hover:text-[#4ea8de] transition-colors"
+        className="p-1.5 rounded-md text-gray-600 dark:text-slate-400 hover:text-[#4ea8de] transition-colors"
       >
         <CalendarPlus size={16} />
       </button>
@@ -144,7 +144,7 @@ export default function CalendarExportMenu({
           ) : (
             <div className="px-4 py-3">
               <p className="text-sm text-gray-700 dark:text-slate-200 font-medium mb-1">Calendar export is a Pro feature</p>
-              <p className="text-xs text-gray-400 dark:text-slate-500 mb-2">$9.99/year · cancel anytime</p>
+              <p className="text-xs text-gray-600 dark:text-slate-400 mb-2">$9.99/year · cancel anytime</p>
               <Link
                 href="/pricing"
                 className="text-sm text-[#4ea8de] hover:text-[#3a95cc] font-semibold transition-colors"

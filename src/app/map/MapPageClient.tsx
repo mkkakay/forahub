@@ -374,7 +374,7 @@ export default function MapPageClient() {
 
         <div className="text-xs text-gray-500 dark:text-slate-400">
           Format: <span className="font-semibold text-gray-700 dark:text-slate-200">In-person only</span>
-          <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-0.5">Online events don&apos;t have a location and aren&apos;t shown on the map.</p>
+          <p className="text-[11px] text-gray-600 dark:text-slate-400 mt-0.5">Online events don&apos;t have a location and aren&apos;t shown on the map.</p>
         </div>
 
         {(sdgs.size > 0 || categories.size > 0 || dateFrom || dateTo) && (
@@ -416,14 +416,14 @@ function NearestList({
       <div className="mb-3">
         <h2 className="text-lg font-bold text-[#0f2a4a] dark:text-slate-100">{title}</h2>
         {data && (
-          <p className="text-xs text-slate-500 dark:text-slate-400 dark:dark:text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 dark:dark:text-slate-400 mt-0.5">
             {data.expanded
               ? `Expanded search — nearest events within ${data.radius_used_km} km`
               : `Within ${data.radius_used_km} km`}
           </p>
         )}
       </div>
-      {loading && <p className="text-sm text-slate-500 dark:text-slate-400 dark:dark:text-slate-500">Finding events near you…</p>}
+      {loading && <p className="text-sm text-slate-500 dark:text-slate-400 dark:dark:text-slate-400">Finding events near you…</p>}
       {!loading && data && data.events.length === 0 && (
         <p className="text-sm text-slate-600 dark:text-slate-300">
           No in-person events found nearby.{" "}
@@ -452,7 +452,7 @@ function NearestList({
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-[#0f2a4a] dark:text-slate-100 group-hover:text-[#4ea8de] line-clamp-1">{ev.title}</p>
-                  {ev.organization && <p className="text-xs text-slate-500 dark:text-slate-400 dark:dark:text-slate-500 line-clamp-1">{ev.organization}</p>}
+                  {ev.organization && <p className="text-xs text-slate-500 dark:text-slate-400 dark:dark:text-slate-400 line-clamp-1">{ev.organization}</p>}
                   <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5 inline-flex items-center gap-1">
                     <Calendar className="w-3 h-3 text-blue-600" />
                     {fmtDate(ev.start_date)}

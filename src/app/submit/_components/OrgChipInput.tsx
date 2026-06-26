@@ -170,7 +170,7 @@ export default function OrgChipInput({ value, onChange, placeholder, className }
             <ChipResultRow key={org.slug} org={org} onPick={() => addChip(org.name)} />
           ))}
           {tier1.length > 0 && tierOther.length > 0 && (
-            <li className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 bg-gray-50 dark:bg-slate-900 border-y border-gray-100 dark:border-slate-800">
+            <li className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-600 dark:text-slate-400 bg-gray-50 dark:bg-slate-900 border-y border-gray-100 dark:border-slate-800">
               More organizations
             </li>
           )}

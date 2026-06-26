@@ -89,7 +89,7 @@ export default function OnboardingPage() {
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
                 s < step ? "bg-green-500 text-white" :
                 s === step ? "bg-[#4ea8de] text-white" :
-                "bg-gray-200 dark:bg-slate-700 text-gray-400 dark:text-slate-500"
+                "bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-slate-400"
               }`}>
                 {s < step ? <Check size={14} /> : s}
               </div>
@@ -159,10 +159,10 @@ export default function OnboardingPage() {
                 </div>
                 <div>
                   <p className="font-semibold text-[#0f2a4a] dark:text-slate-100 text-sm">Weekly digest email</p>
-                  <p className="text-gray-400 dark:text-slate-500 text-xs mt-0.5">Events coming up across your SDG interests</p>
+                  <p className="text-gray-600 dark:text-slate-400 text-xs mt-0.5">Events coming up across your SDG interests</p>
                 </div>
               </button>
-              <p className="text-xs text-gray-400 dark:text-slate-500 mb-6">
+              <p className="text-xs text-gray-600 dark:text-slate-400 mb-6">
                 Weekly digest requires a Pro account. You can enable it now and it will activate when you upgrade.
               </p>
               <button

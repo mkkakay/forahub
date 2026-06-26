@@ -115,7 +115,7 @@ export default function HomeSearchBar({ eventTitles }: { eventTitles: string[] }
           {query && (
             <button
               onClick={clearQuery}
-              className="px-2 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
+              className="px-2 text-gray-600 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
               aria-label="Clear search"
             >
               <X size={16} />

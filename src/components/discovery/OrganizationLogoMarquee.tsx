@@ -122,7 +122,7 @@ export default function OrganizationLogoMarquee({
         </div>
       </div>
 
-      <p className="mt-4 text-center text-[11px] text-gray-400 dark:text-slate-500">
+      <p className="mt-4 text-center text-[11px] text-gray-600 dark:text-slate-400">
         {subline}
       </p>
 

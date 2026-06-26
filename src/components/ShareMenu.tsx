@@ -132,7 +132,7 @@ export default function ShareMenu({ eventId, eventTitle, startDate, location }: 
       <button
         onClick={handleTrigger}
         aria-label="Share event"
-        className="p-1.5 rounded-md text-gray-400 dark:text-slate-500 hover:text-[#4ea8de] transition-colors"
+        className="p-1.5 rounded-md text-gray-600 dark:text-slate-400 hover:text-[#4ea8de] transition-colors"
       >
         <Share2 size={16} />
       </button>
@@ -156,7 +156,7 @@ export default function ShareMenu({ eventId, eventTitle, startDate, location }: 
               </div>
               <button
                 onClick={() => setOpen(false)}
-                className="p-1 rounded-md text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition-colors shrink-0"
+                className="p-1 rounded-md text-gray-600 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-300 transition-colors shrink-0"
               >
                 <X size={18} />
               </button>

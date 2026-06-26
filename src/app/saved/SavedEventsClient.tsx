@@ -156,7 +156,7 @@ function CollectionDropdown({
         ))}
         <button
           onClick={e => { e.preventDefault(); e.stopPropagation(); setOpen(prev => !prev); }}
-          className="flex items-center gap-0.5 text-xs text-gray-400 dark:text-slate-500 hover:text-[#4ea8de] transition-colors px-1.5 py-0.5 rounded border border-gray-200 dark:border-slate-700 hover:border-[#4ea8de]"
+          className="flex items-center gap-0.5 text-xs text-gray-600 dark:text-slate-400 hover:text-[#4ea8de] transition-colors px-1.5 py-0.5 rounded border border-gray-200 dark:border-slate-700 hover:border-[#4ea8de]"
         >
           <Plus size={11} />
           Add
@@ -167,7 +167,7 @@ function CollectionDropdown({
       {open && (
         <div className="absolute top-full left-0 mt-1 z-50 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg py-1 min-w-[160px]">
           {collections.length === 0 ? (
-            <p className="text-xs text-gray-400 dark:text-slate-500 px-3 py-2">No collections yet</p>
+            <p className="text-xs text-gray-600 dark:text-slate-400 px-3 py-2">No collections yet</p>
           ) : (
             collections.map(c => {
               const isIn = c.collection_events.some(ce => ce.event_id === eventId);
@@ -448,7 +448,7 @@ export default function SavedEventsClient() {
               {selectedCollectionId ? "No events in this collection" : "No saved events"}
             </p>
             {selectedCollectionId && (
-              <p className="text-gray-400 dark:text-slate-500 text-sm mt-1">
+              <p className="text-gray-600 dark:text-slate-400 text-sm mt-1">
                 Add events to this collection from your saved events list.
               </p>
             )}
@@ -475,7 +475,7 @@ export default function SavedEventsClient() {
                         SDG {primarySdg}
                       </span>
                     )}
-                    <span className="text-xs text-gray-400 dark:text-slate-500">{FORMAT_LABELS[event.format] ?? event.format}</span>
+                    <span className="text-xs text-gray-600 dark:text-slate-400">{FORMAT_LABELS[event.format] ?? event.format}</span>
                     <button
                       onClick={() => removeEvent(se.id)}
                       className="ml-auto p-1 rounded text-gray-300 dark:text-slate-600 hover:text-red-500 transition-colors"
@@ -514,7 +514,7 @@ export default function SavedEventsClient() {
 
                   {/* Row 4: Status pills */}
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="text-xs text-gray-400 dark:text-slate-500 font-medium">Status:</span>
+                    <span className="text-xs text-gray-600 dark:text-slate-400 font-medium">Status:</span>
                     {(["interested", "registered", "attended"] as AttendanceStatus[]).map(s => (
                       <button
                         key={s}
@@ -562,7 +562,7 @@ export default function SavedEventsClient() {
                               setPendingNotes(prev => ({ ...prev, [se.id]: "" }));
                               setExpandedNotes(prev => { const n = new Set(prev); n.add(se.id); return n; });
                             }}
-                            className="text-xs text-gray-400 dark:text-slate-500 hover:text-[#4ea8de] transition-colors"
+                            className="text-xs text-gray-600 dark:text-slate-400 hover:text-[#4ea8de] transition-colors"
                           >
                             + Add note
                           </button>
@@ -589,7 +589,7 @@ export default function SavedEventsClient() {
                               setPendingNotes(prev => { const n = { ...prev }; delete n[se.id]; return n; });
                               setExpandedNotes(prev => { const n = new Set(prev); n.delete(se.id); return n; });
                             }}
-                            className="text-xs text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
+                            className="text-xs text-gray-600 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
                           >
                             Cancel
                           </button>
@@ -600,7 +600,7 @@ export default function SavedEventsClient() {
 
                   {/* Row 7: Reminder */}
                   <div className="mb-3 flex items-center gap-2 flex-wrap">
-                    <span className="text-xs text-gray-400 dark:text-slate-500">Set reminder:</span>
+                    <span className="text-xs text-gray-600 dark:text-slate-400">Set reminder:</span>
                     <input
                       type="date"
                       defaultValue={toDateInputValue(se.reminder_date)}
@@ -619,7 +619,7 @@ export default function SavedEventsClient() {
                         </span>
                         <button
                           onClick={() => updateReminder(se.id, "")}
-                          className="text-xs text-gray-400 dark:text-slate-500 hover:text-red-500 transition-colors"
+                          className="text-xs text-gray-600 dark:text-slate-400 hover:text-red-500 transition-colors"
                         >
                           Clear
                         </button>

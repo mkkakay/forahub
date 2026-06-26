@@ -156,7 +156,7 @@ export default function AnalyticsPanel(props: Props) {
                 </AreaChart>
               </ResponsiveContainer>
             </div>
-            <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-2 px-2 inline-flex items-center gap-3">
+            <p className="text-[10px] text-gray-600 dark:text-slate-400 mt-2 px-2 inline-flex items-center gap-3">
               <Legend swatch="#4ea8de" label="Views" />
               <Legend swatch="#10b981" label="Saves" />
               <Legend swatch="#f59e0b" label="Reg. clicks" />
@@ -231,7 +231,7 @@ function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; va
   return (
     <div className="bg-white dark:bg-slate-800 border border-gray-200/80 dark:border-slate-700/80 rounded-xl px-4 py-3">
       <p className="text-[10px] font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider inline-flex items-center gap-1.5">
-        <span className="text-gray-400 dark:text-slate-500">{icon}</span> {label}
+        <span className="text-gray-600 dark:text-slate-400">{icon}</span> {label}
       </p>
       <p className="text-2xl font-bold text-[#0f2a4a] dark:text-slate-100 mt-1 tabular-nums">{value.toLocaleString()}</p>
     </div>

@@ -107,7 +107,7 @@ function SignupInner() {
               </Link>
               .
             </p>
-            <p className="text-xs text-gray-400 dark:text-slate-500 mt-4">
+            <p className="text-xs text-gray-600 dark:text-slate-400 mt-4">
               Corporate inboxes can take a few minutes. Tip: signing up with Microsoft 365 or Google skips this step entirely.
             </p>
           </div>

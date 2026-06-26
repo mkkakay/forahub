@@ -154,7 +154,7 @@ export default function EventsPanel(props: Props) {
                   {label}
                   <span className={
                     "tabular-nums text-[10px] " +
-                    (isActive ? "text-white/70" : "text-gray-400 dark:text-slate-500")
+                    (isActive ? "text-white/70" : "text-gray-600 dark:text-slate-400")
                   }>
                     {c}
                   </span>

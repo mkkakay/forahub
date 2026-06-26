@@ -125,7 +125,7 @@ export default function OrgCombobox({ value, onChange, onPicked, placeholder, cl
             <ResultRow key={org.slug} org={org} onPick={() => pick(org)} />
           ))}
           {tier1.length > 0 && tierOther.length > 0 && (
-            <li className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 bg-gray-50 dark:bg-slate-900 border-y border-gray-100 dark:border-slate-800">
+            <li className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-600 dark:text-slate-400 bg-gray-50 dark:bg-slate-900 border-y border-gray-100 dark:border-slate-800">
               More organizations
             </li>
           )}
@@ -171,7 +171,7 @@ function ResultRow({ org, onPick }: { org: OrgSuggestion; onPick: () => void }) 
             // eslint-disable-next-line @next/next/no-img-element
             <img src={org.logo_url} alt={`${org.name} logo`} className="max-w-full max-h-full object-contain p-0.5" />
           ) : (
-            <span className="text-[10px] font-bold text-gray-400 dark:text-slate-500">{org.short.slice(0, 3).toUpperCase()}</span>
+            <span className="text-[10px] font-bold text-gray-600 dark:text-slate-400">{org.short.slice(0, 3).toUpperCase()}</span>
           )}
         </span>
         <span className="flex-1 min-w-0">

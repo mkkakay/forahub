@@ -196,7 +196,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
                   {typedEvent.description}
                 </p>
               ) : (
-                <p className="text-gray-400 italic">No description available.</p>
+                <p className="text-gray-600 italic">No description available.</p>
               )}
 
               {typedEvent.sdg_goals && typedEvent.sdg_goals.length > 1 && (
@@ -239,14 +239,14 @@ export default async function EventDetailPage({ params }: { params: { id: string
                   </p>
                 )}
                 {daysUntil !== null && daysUntil <= 0 && (
-                  <p className="text-center text-xs text-gray-400 mt-2">Registration deadline passed</p>
+                  <p className="text-center text-xs text-gray-600 mt-2">Registration deadline passed</p>
                 )}
               </div>
             )}
 
             {/* Event details card */}
             <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm p-5">
-              <h2 className="text-xs font-bold text-gray-400 dark:text-gray-500 mb-4 uppercase tracking-widest">Event Details</h2>
+              <h2 className="text-xs font-bold text-gray-600 dark:text-gray-500 mb-4 uppercase tracking-widest">Event Details</h2>
               <div className="flex flex-col gap-4 text-sm">
                 <div className="flex items-start gap-3">
                   <Calendar size={16} className="shrink-0 text-[#4ea8de] mt-0.5" />
@@ -294,7 +294,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
 
             {/* Share card */}
             <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm p-5">
-              <p className="text-xs font-bold text-gray-400 dark:text-gray-500 mb-3 uppercase tracking-widest flex items-center gap-1.5">
+              <p className="text-xs font-bold text-gray-600 dark:text-gray-500 mb-3 uppercase tracking-widest flex items-center gap-1.5">
                 <Share2 size={12} /> Share
               </p>
               <div className="flex gap-2">

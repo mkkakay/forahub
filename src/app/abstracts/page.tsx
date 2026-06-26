@@ -173,7 +173,7 @@ export default function AbstractsPage() {
           <div className="text-center py-20">
             <FileText size={48} className="text-gray-300 mx-auto mb-4 opacity-40" />
             <p className="text-lg font-semibold text-gray-500">No abstract submissions yet</p>
-            <p className="text-sm text-gray-400 mt-1">Track your conference abstract submissions in one place.</p>
+            <p className="text-sm text-gray-600 mt-1">Track your conference abstract submissions in one place.</p>
           </div>
         )}
 
@@ -184,7 +184,7 @@ export default function AbstractsPage() {
               <div key={status}>
                 <div className="flex items-center gap-2 mb-3">
                   <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${STATUS_COLORS[status]}`}>{status}</span>
-                  <span className="text-xs text-gray-400">{grouped[status].length}</span>
+                  <span className="text-xs text-gray-600">{grouped[status].length}</span>
                 </div>
                 <div className="space-y-2">
                   {grouped[status].map(abs => (
@@ -208,7 +208,7 @@ export default function AbstractsPage() {
                         <button
                           onClick={() => deleteAbstract(abs.id)}
                           aria-label={`Delete abstract submission: ${abs.title}`}
-                          className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                          className="p-1 text-gray-600 hover:text-red-500 transition-colors"
                         >
                           <Trash2 size={12} aria-hidden="true" />
                         </button>
@@ -216,7 +216,7 @@ export default function AbstractsPage() {
                     </div>
                   ))}
                   {grouped[status].length === 0 && (
-                    <div className="border-2 border-dashed border-gray-200 dark:border-slate-700 rounded-xl p-4 text-xs text-gray-400 dark:text-slate-500 text-center">
+                    <div className="border-2 border-dashed border-gray-200 dark:border-slate-700 rounded-xl p-4 text-xs text-gray-600 dark:text-slate-400 text-center">
                       No submissions in this status
                     </div>
                   )}

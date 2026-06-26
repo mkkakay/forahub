@@ -83,7 +83,7 @@ export default function PricingClient({ foundingCount }: { foundingCount: number
             <h2 className="text-lg font-bold text-[#0f2a4a] dark:text-slate-100 mb-1">Free</h2>
             <div className="flex items-baseline gap-1">
               <span className="text-4xl font-extrabold text-[#0f2a4a] dark:text-slate-100">$0</span>
-              <span className="text-gray-400 dark:text-slate-500 text-sm">forever</span>
+              <span className="text-gray-600 dark:text-slate-400 text-sm">forever</span>
             </div>
             <p className="text-gray-500 dark:text-slate-400 text-sm mt-2">Events in the next 30 days, always free.</p>
           </div>
@@ -93,7 +93,7 @@ export default function PricingClient({ foundingCount }: { foundingCount: number
             <Checkmark text="Event detail pages" />
             <Checkmark text="Share events" />
           </ul>
-          <div className="text-sm text-center text-gray-400 dark:text-slate-500 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg font-medium">
+          <div className="text-sm text-center text-gray-600 dark:text-slate-400 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg font-medium">
             Current plan
           </div>
         </div>
@@ -167,7 +167,7 @@ export default function PricingClient({ foundingCount }: { foundingCount: number
             <h2 className="text-lg font-bold text-[#0f2a4a] dark:text-slate-100 mb-1">Founding Member</h2>
             <div className="flex items-baseline gap-1">
               <span className="text-4xl font-extrabold text-[#0f2a4a] dark:text-slate-100">$29</span>
-              <span className="text-gray-400 dark:text-slate-500 text-sm">one-time</span>
+              <span className="text-gray-600 dark:text-slate-400 text-sm">one-time</span>
             </div>
             <p className="text-gray-500 dark:text-slate-400 text-sm mt-2">
               {foundingFull
@@ -186,7 +186,7 @@ export default function PricingClient({ foundingCount }: { foundingCount: number
               <Check className="w-4 h-4" /> You are a Founding Member
             </div>
           ) : isProOrFounding || foundingFull ? (
-            <div className="text-sm text-center text-gray-400 dark:text-slate-500 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg font-medium">
+            <div className="text-sm text-center text-gray-600 dark:text-slate-400 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg font-medium">
               {foundingFull ? "Sold out" : "Not available"}
             </div>
           ) : (

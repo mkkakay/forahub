@@ -79,7 +79,7 @@ export default function BookmarkButton({ eventId, initialSaved, userId, onToggle
         onClick={handleClick}
         disabled={loading || subLoading}
         aria-label={saved ? "Unsave event" : "Save event"}
-        className="p-1.5 rounded-md text-gray-400 dark:text-slate-500 hover:text-[#4ea8de] transition-colors disabled:opacity-50"
+        className="p-1.5 rounded-md text-gray-600 dark:text-slate-400 hover:text-[#4ea8de] transition-colors disabled:opacity-50"
       >
         <Bookmark size={16} className={saved ? "fill-current text-[#4ea8de]" : ""} />
       </button>
@@ -92,7 +92,7 @@ export default function BookmarkButton({ eventId, initialSaved, userId, onToggle
           <p className="text-gray-700 dark:text-slate-200 mb-1.5">{popoverContent.heading}</p>
           {!userId ? popoverContent.cta : (
             <div>
-              <p className="text-gray-400 dark:text-slate-500 text-xs mb-1.5">$9.99/year · cancel anytime</p>
+              <p className="text-gray-600 dark:text-slate-400 text-xs mb-1.5">$9.99/year · cancel anytime</p>
               {popoverContent.cta}
             </div>
           )}

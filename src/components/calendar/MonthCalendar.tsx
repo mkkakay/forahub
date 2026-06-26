@@ -305,7 +305,7 @@ export default function MonthCalendar({
                           <div className="font-bold text-blue-900 text-sm leading-snug mb-1">
                             {bar.title}
                           </div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400 dark:dark:text-slate-500">
+                          <div className="text-xs text-slate-500 dark:text-slate-400 dark:dark:text-slate-400">
                             {formatDateRange(bar.start_date, bar.end_date)}
                             {bar.location ? ` | ${bar.location}` : ''}
                           </div>

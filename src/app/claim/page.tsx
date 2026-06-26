@@ -401,7 +401,7 @@ function StepDot({ label, active, done }: { label: string; active: boolean; done
     ? "text-green-700"
     : active
     ? "text-[#0f2a4a] dark:text-slate-100"
-    : "text-gray-400 dark:text-slate-500";
+    : "text-gray-600 dark:text-slate-400";
   return <span className={color}>{label}</span>;
 }
 

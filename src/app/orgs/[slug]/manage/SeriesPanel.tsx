@@ -639,7 +639,7 @@ function Builder({ slug, defaultOrganization, onSaved }: {
             ))}
           </ul>
         )}
-        <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-2 font-mono break-all">{rrule}</p>
+        <p className="text-[10px] text-gray-600 dark:text-slate-400 mt-2 font-mono break-all">{rrule}</p>
       </div>
 
       {error && (

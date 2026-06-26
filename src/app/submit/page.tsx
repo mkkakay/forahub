@@ -182,7 +182,7 @@ export default async function SubmitChooserPage() {
             <p className="text-sm text-gray-500 dark:text-slate-400 leading-relaxed">
               Built for institutions, NGOs, universities, foundations, and development partners.
             </p>
-            <p className="mt-3 text-xs text-gray-400 dark:text-slate-500">
+            <p className="mt-3 text-xs text-gray-600 dark:text-slate-400">
               Questions?{" "}
               <Link href="/contact" className="text-gray-500 dark:text-slate-400 hover:text-[#0f2a4a] dark:hover:text-slate-100 underline-offset-2 hover:underline">
                 Contact the team

@@ -96,7 +96,7 @@ export default function NotificationsPage() {
           <div className="text-center py-20">
             <Bell size={48} className="text-gray-300 mx-auto mb-4 opacity-40" />
             <p className="text-lg font-semibold text-gray-500">You&apos;re all caught up!</p>
-            <p className="text-sm text-gray-400 mt-1">Notifications about your saved events will appear here.</p>
+            <p className="text-sm text-gray-600 mt-1">Notifications about your saved events will appear here.</p>
             <Link href="/events" className="mt-4 inline-block text-[#4ea8de] hover:underline text-sm">Browse events</Link>
           </div>
         )}
@@ -122,12 +122,12 @@ export default function NotificationsPage() {
                   <p className="font-semibold text-sm text-[#0f2a4a] dark:text-white">{n.title}</p>
                 )}
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{n.message}</p>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{timeAgo(n.created_at)}</p>
+                <p className="text-xs text-gray-600 dark:text-gray-500 mt-1">{timeAgo(n.created_at)}</p>
               </div>
               <button
                 onClick={(e) => { e.stopPropagation(); deleteNotification(n.id); }}
                 aria-label={`Delete notification: ${n.title}`}
-                className="p-1.5 text-gray-400 hover:text-red-500 transition-colors shrink-0"
+                className="p-1.5 text-gray-600 hover:text-red-500 transition-colors shrink-0"
               >
                 <Trash2 size={13} aria-hidden="true" />
               </button>

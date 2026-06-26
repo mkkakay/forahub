@@ -299,7 +299,7 @@ function SubmitProgressBar({
               ? "text-green-700"
               : isCurrent
               ? "text-blue-700 font-bold border-b-2 border-blue-500 rounded-none"
-              : "text-gray-400 dark:text-slate-500";
+              : "text-gray-600 dark:text-slate-400";
             return (
               <li key={s.id}>
                 <button
@@ -1443,7 +1443,7 @@ export default function SubmitPage() {
                   <span className="font-semibold">
                     {EVENT_CATEGORIES.find(c => c.key === categorySuggestion.category)?.label}
                   </span>
-                  <span className="text-gray-400 dark:text-slate-500">
+                  <span className="text-gray-600 dark:text-slate-400">
                     ({Math.round(categorySuggestion.confidence * 100)}% confident)
                   </span>
                 </span>
@@ -1460,7 +1460,7 @@ export default function SubmitPage() {
                 <button
                   type="button"
                   onClick={() => setCategorySuggestion(null)}
-                  className="text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 text-[11px]"
+                  className="text-gray-600 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-300 text-[11px]"
                 >
                   Dismiss
                 </button>
@@ -1513,7 +1513,7 @@ export default function SubmitPage() {
                   <button
                     type="button"
                     onClick={() => setSdgSuggestion(null)}
-                    className="text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 text-[11px]"
+                    className="text-gray-600 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-300 text-[11px]"
                   >
                     Dismiss
                   </button>
@@ -1536,8 +1536,8 @@ export default function SubmitPage() {
               className={inputClass}
             />
             <div className="flex items-center justify-between mt-1">
-              <p className="text-[11px] text-gray-400 dark:text-slate-500">{form.description.length}/500</p>
-              <p className="text-[11px] text-gray-400 dark:text-slate-500">{rewriteCount}/{MAX_REWRITES} AI rewrites used</p>
+              <p className="text-[11px] text-gray-600 dark:text-slate-400">{form.description.length}/500</p>
+              <p className="text-[11px] text-gray-600 dark:text-slate-400">{rewriteCount}/{MAX_REWRITES} AI rewrites used</p>
             </div>
 
             {/* AI Polish toolbar */}
@@ -1711,7 +1711,7 @@ export default function SubmitPage() {
               placeholder="e.g. America/New_York"
               className={inputClass}
             />
-            <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1">Auto-set from the selected location. Override if needed.</p>
+            <p className="text-[11px] text-gray-600 dark:text-slate-400 mt-1">Auto-set from the selected location. Override if needed.</p>
           </div>
 
           {/* ── Registration deadline ────────────────────────────── */}
@@ -1723,7 +1723,7 @@ export default function SubmitPage() {
               onChange={e => { deadlineTouchedRef.current = true; setForm(f => ({ ...f, registration_deadline: e.target.value })); setAiFilled(a => ({ ...a, registration_deadline: false })); }}
               className={inputClass}
             />
-            <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1">Default: 7 days before the event start. Adjust or clear if not applicable.</p>
+            <p className="text-[11px] text-gray-600 dark:text-slate-400 mt-1">Default: 7 days before the event start. Adjust or clear if not applicable.</p>
           </div>
           </FormSection>
 
@@ -1788,12 +1788,12 @@ export default function SubmitPage() {
                 </label>
               ))}
             </div>
-            <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1">Leave all unchecked = open to everyone (default).</p>
+            <p className="text-[11px] text-gray-600 dark:text-slate-400 mt-1">Leave all unchecked = open to everyone (default).</p>
           </div>
 
           {/* ── Capacity ─────────────────────────────────────────── */}
           <div>
-            <label className={labelClass}>Capacity <span className="text-gray-400 dark:text-slate-500 font-normal normal-case tracking-normal">(optional)</span></label>
+            <label className={labelClass}>Capacity <span className="text-gray-600 dark:text-slate-400 font-normal normal-case tracking-normal">(optional)</span></label>
             <input
               type="number"
               min={1}
@@ -1802,7 +1802,7 @@ export default function SubmitPage() {
               placeholder="Leave blank for unlimited"
               className={inputClass}
             />
-            <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1">Maximum attendees. Helps attendees know if there&apos;s a registration cap.</p>
+            <p className="text-[11px] text-gray-600 dark:text-slate-400 mt-1">Maximum attendees. Helps attendees know if there&apos;s a registration cap.</p>
           </div>
           </FormSection>
 
@@ -1829,7 +1829,7 @@ export default function SubmitPage() {
               rows={3}
               className={inputClass}
             />
-            <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1">One per line or comma-separated.</p>
+            <p className="text-[11px] text-gray-600 dark:text-slate-400 mt-1">One per line or comma-separated.</p>
           </div>
           </FormSection>
 
@@ -1866,7 +1866,7 @@ export default function SubmitPage() {
                 <img src={form.banner_image_url} alt="Banner preview" className="w-full max-h-48 object-cover" />
               </div>
             )}
-            <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1 inline-flex items-start gap-1.5">
+            <p className="text-[11px] text-gray-600 dark:text-slate-400 mt-1 inline-flex items-start gap-1.5">
               {form.uploaded_flyer_url && form.banner_image_url === form.uploaded_flyer_url ? (
                 <>
                   <Sparkles className="w-3 h-3 text-purple-600 mt-0.5 shrink-0" />
@@ -1880,7 +1880,7 @@ export default function SubmitPage() {
 
           {/* ── Recording / livestream ───────────────────────────── */}
           <div>
-            <label className={labelClass}>Recording <span className="text-gray-400 dark:text-slate-500 font-normal normal-case tracking-normal">(optional)</span></label>
+            <label className={labelClass}>Recording <span className="text-gray-600 dark:text-slate-400 font-normal normal-case tracking-normal">(optional)</span></label>
             <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-200">
               <input
                 type="checkbox"
@@ -1899,7 +1899,7 @@ export default function SubmitPage() {
                 className={`${inputClass} mt-2`}
               />
             )}
-            <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1">Help attendees who can&apos;t join live.</p>
+            <p className="text-[11px] text-gray-600 dark:text-slate-400 mt-1">Help attendees who can&apos;t join live.</p>
           </div>
 
           {/* ── Event languages ──────────────────────────────────── */}
@@ -1980,7 +1980,7 @@ export default function SubmitPage() {
           )}
 
           <div className="border-t border-gray-100 dark:border-slate-800 pt-6 flex flex-col md:flex-row md:items-center gap-3 md:justify-between">
-            <p className="text-[11px] text-gray-400 dark:text-slate-500 flex items-center gap-1">
+            <p className="text-[11px] text-gray-600 dark:text-slate-400 flex items-center gap-1">
               <Globe size={11} /> Drafts auto-save every 10 seconds.
             </p>
             <button
@@ -2022,7 +2022,7 @@ export default function SubmitPage() {
                       <p className="text-sm font-semibold text-gray-900 dark:text-slate-100 leading-snug line-clamp-2">{d.title}</p>
                       <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
                         {d.organization ?? "—"} · {new Date(d.start_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" })}
-                        <span className="ml-2 text-gray-400 dark:text-slate-500">{Math.round(d.similarity_score * 100)}% match</span>
+                        <span className="ml-2 text-gray-600 dark:text-slate-400">{Math.round(d.similarity_score * 100)}% match</span>
                       </p>
                     </div>
                     <a

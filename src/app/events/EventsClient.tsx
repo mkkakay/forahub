@@ -716,7 +716,7 @@ export default function EventsClient({
                   className="flex-1 min-w-0 text-base md:text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 bg-transparent focus:outline-none"
                 />
                 {search && (
-                  <button onClick={() => setSearch("")} className="text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 transition-colors shrink-0" aria-label="Clear search">
+                  <button onClick={() => setSearch("")} className="text-slate-400 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors shrink-0" aria-label="Clear search">
                     <X size={14} />
                   </button>
                 )}
@@ -888,7 +888,7 @@ export default function EventsClient({
             <div className="flex flex-wrap items-center gap-2">
               {showSectionedView && buckets.some(b => b.events.length > 0) ? (
                 <>
-                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 dark:dark:text-slate-500 uppercase tracking-wide mr-1">Jump to:</span>
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 dark:dark:text-slate-400 uppercase tracking-wide mr-1">Jump to:</span>
                   <div className="flex items-center gap-1.5 flex-wrap md:flex-nowrap overflow-x-auto md:overflow-visible">
                     {buckets
                       .filter(b => b.events.length > 0)
@@ -908,7 +908,7 @@ export default function EventsClient({
               ) : (
                 <span />
               )}
-              <span className="text-sm text-slate-500 dark:text-slate-400 dark:dark:text-slate-500 ml-auto">{countLabel}</span>
+              <span className="text-sm text-slate-500 dark:text-slate-400 dark:dark:text-slate-400 ml-auto">{countLabel}</span>
             </div>
           </div>
         </div>
@@ -923,7 +923,7 @@ export default function EventsClient({
                 <Star className="w-5 h-5 text-amber-500 fill-amber-300" />
                 Featured
               </h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400 dark:dark:text-slate-500">Curated upcoming events</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400 dark:dark:text-slate-400">Curated upcoming events</p>
             </div>
           </div>
           <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2 -mx-1 px-1">
@@ -940,7 +940,7 @@ export default function EventsClient({
               <MapPin className="w-5 h-5 text-emerald-600" />
               {nearbyCountryName ? `Events in ${nearbyCountryName}` : "Events near you"}
             </h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400 dark:dark:text-slate-500 mt-0.5">
+            <p className="text-sm text-slate-500 dark:text-slate-400 dark:dark:text-slate-400 mt-0.5">
               {nearby.length} upcoming event{nearby.length === 1 ? "" : "s"} near you
             </p>
           </div>
@@ -1025,7 +1025,7 @@ export default function EventsClient({
                         }`}
                       >
                         {bucket.label}{" "}
-                        <span className="text-sm font-normal text-slate-500 dark:text-slate-400 dark:dark:text-slate-500">
+                        <span className="text-sm font-normal text-slate-500 dark:text-slate-400 dark:dark:text-slate-400">
                           · {bucket.events.length} event{bucket.events.length === 1 ? "" : "s"}
                         </span>
                       </h2>
@@ -1035,7 +1035,7 @@ export default function EventsClient({
                     </div>
                     {hasMore && (
                       <p className="mt-4 text-right">
-                        <span className="text-sm font-medium text-slate-500 dark:text-slate-400 dark:dark:text-slate-500">
+                        <span className="text-sm font-medium text-slate-500 dark:text-slate-400 dark:dark:text-slate-400">
                           {bucket.events.length - preview.length} more in this bucket — refine filters to narrow down
                         </span>
                       </p>

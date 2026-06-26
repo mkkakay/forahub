@@ -89,7 +89,7 @@ export default function PrivacyPreferencesCard() {
         </div>
       )}
 
-      <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-3">
+      <p className="text-[11px] text-gray-600 dark:text-gray-500 mt-3">
         To erase any logs already recorded under your account, see <a href="/data-deletion#analytics" className="underline">Data deletion → Analytics logs</a>.
       </p>
     </div>
